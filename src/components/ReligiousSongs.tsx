@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const songs = [
   {
-    id: 1,
+    audioUrl: "https://ia600606.us.archive.org/23/items/01-mohaloya/01%20Mohaloya.mp3?cnt=0", //id: 1,
     title: "মহিষাসুরমর্দিনী",
     artist: "বীরেন্দ্রকৃষ্ণ ভদ্র",
     category: "দুর্গাপূজা",
