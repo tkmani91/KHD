@@ -1,14 +1,14 @@
 import { useState } from "react";
 
 const navLinks = [
-  { label: "হোম", href: "#home" },
-  { label: "দুর্গাপূজা", href: "#mahatmya" },
-  { label: "শ্যামাপূজা", href: "#shyama" },
-  { label: "সরস্বতী পূজা", href: "#saraswati" },
-  { label: "পূজার মন্ত্র", href: "#mantra" },
-  { label: "ফটো গ্যালারি", href: "#gallery" },
-  { label: "ধর্মীয় গান", href: "#songs" },
-  { label: "যোগাযোগ", href: "#contact" },
+  { label: "হোম-", href: "#home" },
+  { label: "দুর্গাপূজা-", href: "#mahatmya" },
+  { label: "শ্যামাপূজা-", href: "#shyama" },
+  { label: "সরস্বতী পূজা-", href: "#saraswati" },
+  { label: "পূজার মন্ত্র-", href: "#mantra" },
+  { label: "ফটো গ্যালারি-", href: "#gallery" },
+  { label: "ধর্মীয় গান-", href: "#songs" },
+  { label: "যোগাযোগ-", href: "#contact" },
 ];
 
 export function Navbar() {
