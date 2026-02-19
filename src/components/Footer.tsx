@@ -110,9 +110,9 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { icon: "📧", text: "durgapuja12@gmail.com" },
-                { icon: "📘", text: "facebook.com/durgapuja12" },
+                { icon: "📘", text: "facebook.com/KHDS3" },
                 { icon: "🌐", text: "durgapuja12.blogspot.com" },
-                { icon: "📍", text: "কলম, বাংলাদেশ" },
+                { icon: "📍", text: "কলম,সিংড়া, নাটোর, বাংলাদেশ" },
               ].map((c) => (
                 <li key={c.text} className="flex items-center gap-2 font-hind text-sm text-gray-400">
                   <span>{c.icon}</span> {c.text}
@@ -150,7 +150,7 @@ export function Footer() {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="font-hind text-xs text-gray-500 text-center">
-            © ২০২৫ কলম হিন্দু ধর্মসভা | সর্বস্বত্ব সংরক্ষিত | Durgapuja12.blogspot.com
+            © ২০২৬ কলম হিন্দু ধর্মসভা | সর্বস্বত্ব সংরক্ষিত |
           </p>
           <p className="font-bengali text-xs text-gray-500 text-center">
             🙏 জয় মা দুর্গা | জয় মা কালী | জয় মা সরস্বতী
