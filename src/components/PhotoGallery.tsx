@@ -4,7 +4,7 @@ const years = ["২০২৫", "২০২৪", "২০২৩", "২০২২", "
 
 const galleryData: Record<string, { id: number; emoji: string; caption: string; event: string; color: string }[]> = {
   "২০২৫": [
-    { id: 1, image: "https://i.ibb.co.com/QBbL7mR/BODHON.jpg", emoji: "🪔", caption: "মহাষষ্ঠীর-বোধন — ২০২৫", event: "দুর্গা পূজা", color: "from-red-400 to-orange-500" },
+    { id: 1, image: "https://i.ibb.co.com/QBbL7mR/BODHON.jpg", caption: "মহাষষ্ঠীর বোধন — ২০২৫", event: "দুর্গা পূজা", color: "from-red-400 to-orange-500" },
     { id: 2, emoji: "🌺", caption: "পুষ্পাঞ্জলি — মহাঅষ্টমী", event: "দুর্গাপূজা", color: "from-orange-400 to-yellow-500" },
     { id: 3, emoji: "🥁", caption: "ঢাকের বাদ্য — সন্ধিপূজা", event: "দুর্গাপূজা", color: "from-yellow-500 to-red-500" },
     { id: 4, emoji: "💧", caption: "বিসর্জনের মুহূর্ত — দশমী", event: "দুর্গাপূজা", color: "from-blue-400 to-indigo-500" },
