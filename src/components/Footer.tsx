@@ -110,9 +110,9 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { icon: "📧", text: "durgapuja12@gmail.com" },
-                { icon: "📘", text: "facebook.com/durgapuja12" },
+                { icon: "📘", text: "facebook.com/KHDS3" },
                 { icon: "🌐", text: "durgapuja12.blogspot.com" },
-                { icon: "📍", text: "কলম, বাংলাদেশ" },
+                { icon: "📍", text: "কলম বাজার, সিংড়া, নাটোর, বাংলাদেশ" },
               ].map((c) => (
                 <li key={c.text} className="flex items-center gap-2 font-hind text-sm text-gray-400">
                   <span>{c.icon}</span> {c.text}
