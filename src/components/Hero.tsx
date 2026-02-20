@@ -39,6 +39,9 @@ export function Hero() {
                 <a href="#gallery" className="bg-white/20 hover:bg-white/30 text-white font-bold px-5 py-2.5 rounded-full font-hind border border-white/40 text-sm">
                   📷 ফটো গ্যালারি
                 </a>
+                 <a href="#gallery" className="bg-white/20 hover:bg-white/30 text-white font-bold px-5 py-2.5 rounded-full font-hind border border-white/40 text-sm">
+                  📝 পূজা ফর্দি
+                </a>
               </div>
             </div>
 
@@ -49,8 +52,8 @@ export function Hero() {
                   { emoji: "🙏", title: "দুর্গাপূজা", sub: "শারদীয় উৎসব", color: "from-red-600/80 to-orange-600/80" },
                   { emoji: "🌑", title: "শ্যামাপূজা", sub: "কালীপূজা", color: "from-indigo-700/80 to-purple-700/80" },
                   { emoji: "🎵", title: "সরস্বতী পূজা", sub: "বিদ্যার দেবী", color: "from-yellow-600/80 to-orange-500/80" },
-                  { emoji: "📷", title: "ফটো গ্যালারি", sub: "প্রতি বছরের ছবি", color: "from-pink-600/80 to-red-600/80" },
-                ].map((card) => (
+                  { emoji: "📷", title: "ফটো গ্যালারি", sub: "প্রতি বছরের ছবি",href: "#gallery", color: "from-pink-600/80 to-red-600/80" },
+                 ].map((card) => (
                   <div
                     key={card.title}
                     className={`bg-gradient-to-br ${card.color} backdrop-blur rounded-2xl p-4 text-center border border-white/20 float-anim cursor-pointer hover:scale-105 transition-transform`}
@@ -81,6 +84,7 @@ export function Hero() {
             { emoji: "🌑", title: "শ্যামাপূজা", sub: "কালীপূজার বিধান", href: "#shyama" },
             { emoji: "🎵", title: "সরস্বতী পূজা", sub: "বিদ্যার আরাধনা", href: "#saraswati" },
             { emoji: "📷", title: "ফটো গ্যালারি", sub: "২০১৮–২০২৫ সালের ছবি", href: "#gallery" },
+            { emoji: "📝", title: "পূজা ফর্দি", sub: "বিভিন্ন পূজা উপকরণ সমূহ", href: "#pdf" },
           ].map((item) => (
             <a
               key={item.title}
