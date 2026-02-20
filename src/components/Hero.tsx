@@ -53,7 +53,7 @@ export function Hero() {
                   { emoji: "🌑", title: "শ্যামাপূজা", sub: "কালীপূজা", color: "from-indigo-700/80 to-purple-700/80" },
                   { emoji: "🎵", title: "সরস্বতী পূজা", sub: "বিদ্যার দেবী", color: "from-yellow-600/80 to-orange-500/80" },
                   { emoji: "📷", title: "ফটো গ্যালারি", sub: "প্রতি বছরের ছবি", color: "from-pink-600/80 to-red-600/80", href: "#gallery",},
-                 ].map((card) => (
+                 ].map((item) => (
                   <div
                     key={card.title}
                     className={`bg-gradient-to-br ${card.color} backdrop-blur rounded-2xl p-4 text-center border border-white/20 float-anim cursor-pointer hover:scale-105 transition-transform`}
