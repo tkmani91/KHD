@@ -52,7 +52,7 @@ export function Hero() {
                   { emoji: "🙏", title: "দুর্গাপূজা", sub: "শারদীয় উৎসব", color: "from-red-600/80 to-orange-600/80" },
                   { emoji: "🌑", title: "শ্যামাপূজা", sub: "কালীপূজা", color: "from-indigo-700/80 to-purple-700/80" },
                   { emoji: "🎵", title: "সরস্বতী পূজা", sub: "বিদ্যার দেবী", color: "from-yellow-600/80 to-orange-500/80" },
-                  { emoji: "📷", title: "ফটো গ্যালারি", sub: "প্রতি বছরের ছবি",href: "#gallery", color: "from-pink-600/80 to-red-600/80" },
+                  { emoji: "📷", title: "ফটো গ্যালারি", sub: "প্রতি বছরের ছবি", href: "#gallery", color: "from-pink-600/80 to-red-600/80" },
                  ].map((card) => (
                   <div
                     key={card.title}
@@ -78,7 +78,7 @@ export function Hero() {
 
       {/* Quick Links Bar */}
       <div className="bg-white shadow-sm border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
             { emoji: "🪔", title: "দুর্গাপূজা", sub: "মন্ত্র ও মাহাত্ম্য", href: "#mahatmya" },
             { emoji: "🌑", title: "শ্যামাপূজা", sub: "কালীপূজার বিধান", href: "#shyama" },
