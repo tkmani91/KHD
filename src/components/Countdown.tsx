@@ -94,7 +94,7 @@ export function Countdown() {
             {isPujaTime ? (
               <>🎉 <span className="text-yellow-300">দুর্গাপূজা শুরু হয়ে গেছে!</span> 🎉</>
             ) : (
-              <>দুর্গাপূজা <span className="text-yellow-300">২০২৬</span> আসতে বাকি</>
+              <>দুর্গাপূজা <span className="text-yellow-300">২০২৬</span> মায়ের আসতে আর কতদিন?</>
             )}
           </h2>
           <p className="font-hind text-base text-orange-200">
