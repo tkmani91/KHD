@@ -13,7 +13,7 @@ import {
 // GitHub Raw URL অথবা সরাসরি JSON ডেটা ব্যবহার করতে পারেন
 const LOGIN_CONFIG = {
   // অপশন ১: GitHub JSON URL (আপনার GitHub URL দিন)
-  // উদাহরণ: 'https://raw.githubusercontent.com/username/repo/main/members-login.json'
+  // উদাহরণ: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json'
   githubUrl: '', // এখানে আপনার GitHub URL দিন অথবা খালি রাখুন
   
   // অপশন ২: সরাসরি ডেমো ডেটা (প্রথমে এটি দিয়ে টেস্ট করুন)
