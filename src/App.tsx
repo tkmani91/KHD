@@ -104,10 +104,10 @@ const pujaData: PujaInfo[] = [
   {
     id: 'durga',
     name: 'দূর্গাপূজা',
-    date: '2025-10-01',
+    date: '2026-10-17',
     description: 'দূর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - শক্তির আরাধনা',
-    image: 'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=800',
-    facebookLink: 'https://facebook.com/kolomdurga'
+    image: 'https://i.ibb.co.com/KxpCdPVr/MA-DURGA.png',
+    facebookLink: 'https://facebook.com/KHDS3/'
   },
   {
     id: 'shyama',
@@ -115,7 +115,7 @@ const pujaData: PujaInfo[] = [
     date: '2025-11-12',
     description: 'শ্যামা মা কালীর অন্য রূপ, কৃষ্ণবর্ণা - কালীপূজা',
     image: 'https://images.unsplash.com/photo-1572949645841-094f3a9c9468?w=800',
-    facebookLink: 'https://facebook.com/kolomshyama'
+    facebookLink: 'https://facebook.com/KHDS3/'
   },
   {
     id: 'saraswati',
@@ -123,7 +123,7 @@ const pujaData: PujaInfo[] = [
     date: '2025-02-02',
     description: 'সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - জ্ঞানের আরাধনা',
     image: 'https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?w=800',
-    facebookLink: 'https://facebook.com/kolomsaraswati'
+    facebookLink: 'https://facebook.com/KHDS3/'
   },
   {
     id: 'rath',
@@ -131,7 +131,7 @@ const pujaData: PujaInfo[] = [
     date: '2025-06-27',
     description: 'জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - ভগবানের রথযাত্রা',
     image: 'https://images.unsplash.com/photo-1561361058-4e7e1c381c9e?w=800',
-    facebookLink: 'https://facebook.com/kolomrath'
+    facebookLink: 'https://facebook.com/KHDS3/'
   }
 ];
 
@@ -216,17 +216,17 @@ const liveChannels: LiveChannel[] = [
 const members: Member[] = [
   {
     id: '1',
-    name: 'রাম প্রসাদ শীল',
+    name: 'পিনাকী কুন্ডু',
     designation: 'সভাপতি',
-    photo: 'https://i.pravatar.cc/150?img=1',
+    photo: 'https://i.ibb.co.com/vxDGjFC6/pinaki.jpg150?img=1',
     birthDate: '1970-05-15',
-    address: 'হালদার পাড়া, কলম',
+    address: 'নজরপুর, কলম',
     permanentAddress: 'কলম, সিংড়া, নাটোর',
     mobile: '01712345678',
-    gotra: 'কাশ্যপ',
+    gotra: 'নাই',
     email: 'ram@example.com',
-    fatherName: 'গোপাল শীল',
-    motherName: 'সরস্বতী শীল',
+    fatherName: 'ভূপতী কুন্ডু',
+    motherName: '',
     occupation: 'ব্যবসায়ী',
     pdfUrl: '/pdfs/members-list-2025.pdf'  // সম্পূর্ণ মেম্বর লিস্ট PDF
   },
