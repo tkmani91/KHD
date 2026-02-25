@@ -120,7 +120,7 @@ const pujaData: PujaInfo[] = [
   {
     id: 'saraswati',
     name: 'সরস্বতী পূজা',
-    date: '2026-01-26',
+    date: '2027-02-11',
     description: 'সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - জ্ঞানের আরাধনা',
     image: 'https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?w=800',
     facebookLink: 'https://facebook.com/kolomsaraswati'
