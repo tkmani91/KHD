@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Home, Calendar, Users, Image, Music, FileText, 
   Tv, Phone, LogIn, Menu, X, Facebook, ChevronRight,
   Clock, Download, Play, Pause, SkipBack, SkipForward,
-  Volume2, User, Lock, Eye, EyeOff
+  Volume2, User, Lock, Eye, EyeOff, AlertCircle
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
@@ -206,21 +206,23 @@ const liveChannels: LiveChannel[] = [
   { id: '3', name: 'আরতী টিভি', logo: '🪔', streamUrl: 'https://example.com/stream3.m3u8' },
   { id: '4', name: 'ধর্ম টিভি', logo: '☸️', streamUrl: 'https://example.com/stream4.m3u8' },
 ];
-// ডেমো লগইন ডেটা - এখানে আপনার মেম্বর যোগ করুন
+
+// ============================================
+// ডেমো লগইন ডেটা
+// ============================================
 const DEMO_LOGIN_DATA = {
   normalMembers: [
     { mobile: "01712345678", email: "demo@member.com", password: "demo123", name: "ডেমো মেম্বর" },
-    // এখানে নতুন মেম্বর যোগ করুন
-    { mobile: "01733118313", email: "tanmoy4bd@gmail.com", password: "admin123", name: "তন্ময় কুমার মানী" },
+    { mobile: "01733118313", email: "tanmoy4bd@gmail.com", password: "admin123", name: "তন্ময় কুমার মানী" },
   ],
   accountsMembers: [
     { mobile: "01812345678", email: "demo@admin.com", password: "admin123", name: "ডেমো অ্যাডমিন" },
   ]
 };
-// GitHub থেকে লোড করতে চাইলে URL দিন (ঐচ্ছিক)
+
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+
 // মেম্বর ইনফরমেশন লিস্ট
-// প্রতিটি মেম্বরের জন্য একটি আইটেম
 const members: Member[] = [
   {
     id: '1',
@@ -236,7 +238,7 @@ const members: Member[] = [
     fatherName: 'গোপাল শীল',
     motherName: 'সরস্বতী শীল',
     occupation: 'ব্যবসায়ী',
-    pdfUrl: '/pdfs/members-list-2025.pdf'  // সম্পূর্ণ মেম্বর লিস্ট PDF
+    pdfUrl: '/pdfs/members-list-2025.pdf'
   },
   {
     id: '2',
@@ -252,95 +254,29 @@ const members: Member[] = [
     fatherName: 'নারায়ণ হালদার',
     motherName: 'লক্ষ্মী হালদার',
     occupation: 'শিক্ষক',
-    pdfUrl: '/pdfs/members-list-2025.pdf'  // একই PDF ফাইল
+    pdfUrl: '/pdfs/members-list-2025.pdf'
   },
 ];
 
 // প্রয়োজনীয় ফোন নম্বর লিস্ট
-// ঢাকওয়ালা, নৌকাওয়ালা, পুরহিত, প্রতিমা শিল্পি ইত্যাদি
 const contactPersons: ContactPerson[] = [
-  { 
-    id: '1', 
-    name: 'গোপাল ঢাকী', 
-    mobile: '01711111111', 
-    address: 'কলম বাজার', 
-    occupation: 'ঢাকওয়ালা', 
-    pdfUrl: '/pdfs/contact-persons-list.pdf'  // সম্পূর্ণ কন্টাক্ট লিস্ট PDF
-  },
-  { 
-    id: '2', 
-    name: 'বলরাম নাওয়া', 
-    mobile: '01722222222', 
-    address: 'কুমার পাড়া', 
-    occupation: 'নৌকাওয়ালা', 
-    pdfUrl: '/pdfs/contact-persons-list.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '3', 
-    name: 'পণ্ডিত রঘুনাথ', 
-    mobile: '01733333333', 
-    address: 'মধ্য পাড়া', 
-    occupation: 'পুরোহিত', 
-    pdfUrl: '/pdfs/contact-persons-list.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '4', 
-    name: 'মোহন শীল', 
-    mobile: '01744444444', 
-    address: 'শীল পাড়া', 
-    occupation: 'প্রতিমা শিল্পী', 
-    pdfUrl: '/pdfs/contact-persons-list.pdf'  // একই PDF ফাইল
-  },
+  { id: '1', name: 'গোপাল ঢাকী', mobile: '01711111111', address: 'কলম বাজার', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '2', name: 'বলরাম নাওয়া', mobile: '01722222222', address: 'কুমার পাড়া', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '3', name: 'পণ্ডিত রঘুনাথ', mobile: '01733333333', address: 'মধ্য পাড়া', occupation: 'পুরোহিত', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '4', name: 'মোহন শীল', mobile: '01744444444', address: 'শীল পাড়া', occupation: 'প্রতিমা শিল্পী', pdfUrl: '/pdfs/contact-persons-list.pdf' },
 ];
 
-// নিমন্ত্রণ লিস্ট - এলাকা ভিত্তিক
-// হালদার পাড়া, মধ্য পাড়া, ভাটোপাড়া, বাজার পাড়া, পুন্ডরী, কুমার পাড়া, শীল পাড়া, জগৎপুর/কামার পাড়া
+// নিমন্ত্রণ লিস্ট
 const invitationLists: InvitationList[] = [
-  { 
-    id: '1', 
-    area: 'হালদার পাড়া', 
-    personName: 'রামেশ্বর হালদার', 
-    familyCount: 5, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // সকল পাড়ার নিমন্ত্রণ লিস্ট একটি PDF এ
-  },
-  { 
-    id: '2', 
-    area: 'মধ্য পাড়া', 
-    personName: 'গোপাল চন্দ্র', 
-    familyCount: 4, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '3', 
-    area: 'ভাটোপাড়া', 
-    personName: 'নীলকণ্ঠ ভট্টাচার্য', 
-    familyCount: 6, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '4', 
-    area: 'বাজার পাড়া', 
-    personName: 'কালীপদ দাস', 
-    familyCount: 3, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '5', 
-    area: 'পুন্ডরী', 
-    personName: 'বিষ্ণু পুন্ডরিক', 
-    familyCount: 5, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // একই PDF ফাইল
-  },
-  { 
-    id: '6', 
-    area: 'কুমার পাড়া', 
-    personName: 'শ্যাম কুমার', 
-    familyCount: 4, 
-    pdfUrl: '/pdfs/invitation-list-all-areas.pdf'  // একই PDF ফাইল
-  },
+  { id: '1', area: 'হালদার পাড়া', personName: 'রামেশ্বর হালদার', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '2', area: 'মধ্য পাড়া', personName: 'গোপাল চন্দ্র', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '3', area: 'ভাটোপাড়া', personName: 'নীলকণ্ঠ ভট্টাচার্য', familyCount: 6, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '4', area: 'বাজার পাড়া', personName: 'কালীপদ দাস', familyCount: 3, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '5', area: 'পুন্ডরী', personName: 'বিষ্ণু পুন্ডরিক', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '6', area: 'কুমার পাড়া', personName: 'শ্যাম কুমার', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
 ];
 
-// হিসাব বিবরণী PDF URL - হিসাব দেখা লগইনের জন্য
+// হিসাব বিবরণী PDF URL
 const accountsPDFs = {
   durgaPuja: {
     title: 'দূর্গাপূজা হিসাব',
@@ -395,14 +331,15 @@ const notices = [
   '📱 আমাদের ফেসবুক পেজে লাইক দিন এবং সর্বশেষ খবর পেতে ফলো করুন!'
 ];
 
+// ============================================
 // Countdown Hook
+// ============================================
 function useCountdown(targetDate: string): CountdownTime {
   const [timeLeft, setTimeLeft] = useState<CountdownTime>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = new Date(targetDate).getTime() - new Date().getTime();
-      
       if (difference > 0) {
         return {
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -422,7 +359,9 @@ function useCountdown(targetDate: string): CountdownTime {
   return timeLeft;
 }
 
+// ============================================
 // Components
+// ============================================
 function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
   const time = useCountdown(targetDate);
   const isUpcoming = new Date(targetDate) > new Date();
@@ -592,8 +531,8 @@ function Footer() {
           <div>
             <h4 className="font-semibold mb-4">সোশ্যাল মিডিয়া</h4>
             <div className="flex gap-4">
-              <a href="https://facebook.com/kolomhindu" target="_blank" rel="noopener noreferrer" 
-                 className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+              <a href="https://facebook.com/kolomhindu" target="_blank" rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
                 <Facebook className="w-5 h-5" />
               </a>
             </div>
@@ -607,11 +546,12 @@ function Footer() {
   );
 }
 
+// ============================================
 // Pages
+// ============================================
 function HomePage() {
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
       <section className="relative overflow-hidden rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-red-500 to-orange-600"></div>
         <div className="absolute inset-0 sacred-pattern opacity-30"></div>
@@ -623,7 +563,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Countdowns */}
       <section>
         <h2 className="text-2xl font-bold text-center mb-6 gradient-text">আসন্ন পূজার কাউন্টডাউন</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -633,16 +572,11 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Puja Cards */}
       <section>
         <h2 className="text-2xl font-bold text-center mb-6 gradient-text">আমাদের পূজাসমূহ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pujaData.map((puja) => (
-            <Link
-              key={puja.id}
-              to={`/${puja.id}`}
-              className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg"
-            >
+            <Link key={puja.id} to={`/${puja.id}`} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
               <div className="h-48 overflow-hidden">
                 <img src={puja.image} alt={puja.name} className="w-full h-full object-cover" />
               </div>
@@ -661,7 +595,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Latest Updates */}
       <section className="bg-white rounded-2xl p-6 shadow-lg">
         <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center gap-2">
           <Clock className="w-6 h-6" />
@@ -692,7 +625,6 @@ function HomePage() {
 
 function DurgaPujaPage() {
   const puja = pujaData.find(p => p.id === 'durga')!;
-  
   const schedule = [
     { day: 'মহালয়া', date: '১৫ সেপ্টেম্বর', event: 'দেবীপক্ষের সূচনা' },
     { day: 'পঞ্চমী', date: '১ অক্টোবর', event: 'বিল্বপূজা, অঙ্কুরারোপণ' },
@@ -713,20 +645,17 @@ function DurgaPujaPage() {
           <p className="text-orange-200">{puja.description}</p>
         </div>
       </div>
-
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">
-              দূর্গাপূজা হলো হিন্দু ধর্মাবলম্বীদের সবচেয়ে বড় উৎসব। দুর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - 
+              দূর্গাপূজা হলো হিন্দু ধর্মাবলম্বীদের সবচেয়ে বড় উৎসব। দুর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী -
               শক্তির প্রতীক। এই পূজার মাধ্যমে ভক্তরা দেবীর কাছে সকলের মঙ্গল কামনা করেন।
               কলম হিন্দু ধর্মসভা প্রতি বছর এই পূজা উৎসব ধর্মীয় ভাবগাম্ভীর্যের সাথে পালন করে থাকে।
             </p>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
@@ -744,37 +673,22 @@ function DurgaPujaPage() {
             </div>
           </div>
         </div>
-
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
             <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
             <p className="text-sm text-orange-100 mb-4">আমাদের ফেসবুক পেজে লাইক দিন</p>
-            <a 
-              href={puja.facebookLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
               <Facebook className="w-5 h-5" />
               ফেসবুক পেজ দেখুন
             </a>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="font-bold mb-4">পূজা তথ্য</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex justify-between">
-                <span className="text-gray-600">পূজার তারিখ:</span>
-                <span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">স্থান:</span>
-                <span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">সময়:</span>
-                <span className="font-medium">সকাল ৮টা থেকে রাত ১০টা</span>
-              </li>
+              <li className="flex justify-between"><span className="text-gray-600">পূজার তারিখ:</span><span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">স্থান:</span><span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">সময়:</span><span className="font-medium">সকাল ৮টা থেকে রাত ১০টা</span></li>
             </ul>
           </div>
         </div>
@@ -785,7 +699,6 @@ function DurgaPujaPage() {
 
 function ShyamaPujaPage() {
   const puja = pujaData.find(p => p.id === 'shyama')!;
-  
   const schedule = [
     { day: 'ত্রয়োদশী', date: '১১ নভেম্বর', event: 'সন্ধ্যা ৭টা - ঢাক বাদন ও আরতি' },
     { day: 'চতুর্দশী', date: '১২ নভেম্বর', event: 'রাত ১০টা - শ্যামা পূজা শুরু, রাত ১২টা - প্রধান পূজা' },
@@ -802,68 +715,43 @@ function ShyamaPujaPage() {
           <p className="text-orange-200">{puja.description}</p>
         </div>
       </div>
-
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">
-              শ্যামা পূজা বা কালীপূজা কৃষ্ণ চতুর্দশী তিথিতে অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ, 
-              কৃষ্ণবর্ণা এই দেবীকে দীপাবলির রাত্রিতে পূজা করা হয়। এই পূজায় দেবীর কাছে মোক্ষ ও 
-              সকলের মঙ্গল কামনা করা হয়।
+              শ্যামা পূজা বা কালীপূজা কৃষ্ণ চতুর্দশী তিথিতে অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ,
+              কৃষ্ণবর্ণা এই দেবীকে দীপাবলির রাত্রিতে পূজা করা হয়।
             </p>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
                 <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-20 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
+                  <div className="w-20 text-center"><div className="text-sm font-bold text-orange-600">{item.day}</div></div>
+                  <div className="flex-1"><div className="font-medium">{item.event}</div><div className="text-sm text-gray-500">{item.date}</div></div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
             <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
             <p className="text-sm text-orange-100 mb-4">আমাদের ফেসবুক পেজে লাইক দিন</p>
-            <a 
-              href={puja.facebookLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Facebook className="w-5 h-5" />ফেসবুক পেজ দেখুন
             </a>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="font-bold mb-4">পূজা তথ্য</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex justify-between">
-                <span className="text-gray-600">তিথি:</span>
-                <span className="font-medium">কৃষ্ণ চতুর্দশী</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">পূজার তারিখ:</span>
-                <span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">স্থান:</span>
-                <span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span>
-              </li>
+              <li className="flex justify-between"><span className="text-gray-600">তিথি:</span><span className="font-medium">কৃষ্ণ চতুর্দশী</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">পূজার তারিখ:</span><span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">স্থান:</span><span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span></li>
             </ul>
           </div>
         </div>
@@ -874,7 +762,6 @@ function ShyamaPujaPage() {
 
 function SaraswatiPujaPage() {
   const puja = pujaData.find(p => p.id === 'saraswati')!;
-  
   const schedule = [
     { day: 'চতুর্থী', date: '১ ফেব্রুয়ারি', event: 'বিকাল ৪টা - মণ্ডপ সাজানো, সন্ধ্যা ৬টা - প্রতিমা স্থাপন' },
     { day: 'পঞ্চমী', date: '২ ফেব্রুয়ারি', event: 'সকাল ৮টা - পূজা শুরু, সকাল ১০টা - প্রধান পূজা, বেলা ১১টা - হাতে খড়ি' },
@@ -891,68 +778,43 @@ function SaraswatiPujaPage() {
           <p className="text-orange-200">{puja.description}</p>
         </div>
       </div>
-
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">
-              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - 
-              জ্ঞান, সঙ্গীত, কলা ও বিদ্যার দেবী। এই পূজায় বিদ্যার্থীরা দেবীর কাছে জ্ঞান লাভের 
-              প্রার্থনা করেন এবং হাতে খড়ি অনুষ্ঠান হয়।
+              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। সরস্বতী মা বিদ্যাদেবী, বাণীদেবী -
+              জ্ঞান, সঙ্গীত, কলা ও বিদ্যার দেবী।
             </p>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
                 <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
+                  <div className="w-16 text-center"><div className="text-sm font-bold text-orange-600">{item.day}</div></div>
+                  <div className="flex-1"><div className="font-medium">{item.event}</div><div className="text-sm text-gray-500">{item.date}</div></div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
             <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
             <p className="text-sm text-orange-100 mb-4">আমাদের ফেসবুক পেজে লাইক দিন</p>
-            <a 
-              href={puja.facebookLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Facebook className="w-5 h-5" />ফেসবুক পেজ দেখুন
             </a>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="font-bold mb-4">পূজা তথ্য</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex justify-between">
-                <span className="text-gray-600">তিথি:</span>
-                <span className="font-medium">মাঘ শুক্লা পঞ্চমী</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">পূজার তারিখ:</span>
-                <span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">স্থান:</span>
-                <span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span>
-              </li>
+              <li className="flex justify-between"><span className="text-gray-600">তিথি:</span><span className="font-medium">মাঘ শুক্লা পঞ্চমী</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">পূজার তারিখ:</span><span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">স্থান:</span><span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span></li>
             </ul>
           </div>
         </div>
@@ -963,7 +825,6 @@ function SaraswatiPujaPage() {
 
 function RathYatraPage() {
   const puja = pujaData.find(p => p.id === 'rath')!;
-  
   const schedule = [
     { day: 'প্রথম দিন', date: '২৭ জুন', event: 'রথযাত্রা - সকাল ৮টা, জগন্নাথ দেবের রথ তৈরি' },
     { day: 'দ্বিতীয় দিন', date: '২৮ জুন', event: 'রথ টানা অভিযাত্রা - বিকাল ৪টা' },
@@ -984,68 +845,42 @@ function RathYatraPage() {
           <p className="text-orange-200">{puja.description}</p>
         </div>
       </div>
-
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">
-              রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব। জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - বিষ্ণুর এক রূপ। 
-              এই উৎসবে জগন্নাথ, বলরাম ও সুভদ্রার বিশাল রথ তৈরি করে শোভাযাত্রা করা হয়। 
-              উল্টো রথযাত্রায় দেবতারা আবার মূল মন্দিরে ফিরে যান।
+              রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব। জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - বিষ্ণুর এক রূপ।
             </p>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
                 <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-24 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
+                  <div className="w-24 text-center"><div className="text-sm font-bold text-orange-600">{item.day}</div></div>
+                  <div className="flex-1"><div className="font-medium">{item.event}</div><div className="text-sm text-gray-500">{item.date}</div></div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
             <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
             <p className="text-sm text-orange-100 mb-4">আমাদের ফেসবুক পেজে লাইক দিন</p>
-            <a 
-              href={puja.facebookLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Facebook className="w-5 h-5" />ফেসবুক পেজ দেখুন
             </a>
           </div>
-
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="font-bold mb-4">পূজা তথ্য</h3>
             <ul className="space-y-3 text-sm">
-              <li className="flex justify-between">
-                <span className="text-gray-600">পূজার তারিখ:</span>
-                <span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">উল্টো রথ:</span>
-                <span className="font-medium">৫ জুলাই ২০২৫</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">স্থান:</span>
-                <span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span>
-              </li>
+              <li className="flex justify-between"><span className="text-gray-600">পূজার তারিখ:</span><span className="font-medium">{new Date(puja.date).toLocaleDateString('bn-BD')}</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">উল্টো রথ:</span><span className="font-medium">৫ জুলাই ২০২৫</span></li>
+              <li className="flex justify-between"><span className="text-gray-600">স্থান:</span><span className="font-medium">কলম হিন্দু ধর্মসভা প্রাঙ্গণ</span></li>
             </ul>
           </div>
         </div>
@@ -1061,7 +896,6 @@ function DeitiesPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">দেব-দেবী</h1>
         <p className="text-gray-600">আমাদের পূজিত দেবতাদের পরিচিতি</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {deities.map((deity) => (
           <div key={deity.id} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
@@ -1083,10 +917,8 @@ function DeitiesPage() {
 function GalleryPage() {
   const [selectedYear, setSelectedYear] = useState<number>(2024);
   const [selectedPuja, setSelectedPuja] = useState<string>('all');
-
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
-
   const filteredImages = galleryImages.filter(img => {
     const yearMatch = img.year === selectedYear;
     const pujaMatch = selectedPuja === 'all' || selectedPuja === 'সব' || img.pujaType === selectedPuja;
@@ -1099,36 +931,24 @@ function GalleryPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">ফটো গ্যালারি</h1>
         <p className="text-gray-600">২০১৭ থেকে ২০২৬ সাল পর্যন্ত পূজার ছবি</p>
       </div>
-
       <div className="bg-white rounded-2xl p-4 shadow-lg">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">সাল নির্বাচন করুন</label>
-            <select 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
-            >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
+            <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none">
+              {years.map(year => (<option key={year} value={year}>{year}</option>))}
             </select>
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 mb-2">পূজার ধরন</label>
-            <select 
-              value={selectedPuja} 
-              onChange={(e) => setSelectedPuja(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
-            >
-              {pujaTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
+            <select value={selectedPuja} onChange={(e) => setSelectedPuja(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none">
+              {pujaTypes.map(type => (<option key={type} value={type}>{type}</option>))}
             </select>
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredImages.map((img) => (
           <div key={img.id} className="card-hover relative group rounded-xl overflow-hidden shadow-lg">
@@ -1149,16 +969,147 @@ function GalleryPage() {
   );
 }
 
+// ============================================
+// ফিক্সড মিউজিক পেজ - স্কিপ + অডিও প্লেয়ার
+// ============================================
 function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const categories = ['সব', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
 
-  const filteredSongs = selectedCategory === 'all' || selectedCategory === 'সব' 
-    ? songs 
+  const filteredSongs = selectedCategory === 'all' || selectedCategory === 'সব'
+    ? songs
     : songs.filter(s => s.category === selectedCategory);
+
+  // অডিও এলিমেন্ট সেটআপ
+  useEffect(() => {
+    const audio = new Audio();
+    audioRef.current = audio;
+    audio.volume = volume;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    const handleEnded = () => {
+      // গান শেষ হলে পরের গানে
+      setCurrentIndex(prev => {
+        const nextIndex = prev + 1 >= filteredSongs.length ? 0 : prev + 1;
+        const nextSong = filteredSongs[nextIndex];
+        if (nextSong && audioRef.current) {
+          setCurrentSong(nextSong);
+          audioRef.current.src = nextSong.url;
+          audioRef.current.load();
+          audioRef.current.play().catch(() => setIsPlaying(false));
+        }
+        return nextIndex;
+      });
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // গান বাজানো
+  const playSong = (song: Song, index: number) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = song.url;
+      audioRef.current.load();
+      setCurrentSong(song);
+      setCurrentIndex(index);
+      setIsPlaying(true);
+      setProgress(0);
+      setCurrentTime(0);
+      audioRef.current.play().catch(() => setIsPlaying(false));
+    }
+  };
+
+  // প্লে/পজ টগল
+  const togglePlayPause = () => {
+    if (!audioRef.current || !currentSong) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+
+  // ⏮️ স্কিপ ব্যাক - আগের গান
+  const handleSkipBack = () => {
+    if (filteredSongs.length === 0) return;
+    // ৩ সেকেন্ডের বেশি চললে শুরুতে ফেরত
+    if (audioRef.current && audioRef.current.currentTime > 3) {
+      audioRef.current.currentTime = 0;
+      setProgress(0);
+      setCurrentTime(0);
+      return;
+    }
+    let newIndex = currentIndex - 1;
+    if (newIndex < 0) newIndex = filteredSongs.length - 1;
+    playSong(filteredSongs[newIndex], newIndex);
+  };
+
+  // ⏭️ স্কিপ ফরোয়ার্ড - পরের গান
+  const handleSkipForward = () => {
+    if (filteredSongs.length === 0) return;
+    let newIndex = currentIndex + 1;
+    if (newIndex >= filteredSongs.length) newIndex = 0;
+    playSong(filteredSongs[newIndex], newIndex);
+  };
+
+  // প্রগ্রেস বার ক্লিক
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration) return;
+    const bar = e.currentTarget;
+    const clickX = e.clientX - bar.getBoundingClientRect().left;
+    const barWidth = bar.clientWidth;
+    const newTime = (clickX / barWidth) * duration;
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+    setProgress((newTime / duration) * 100);
+  };
+
+  // সময় ফরম্যাট
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -1167,86 +1118,119 @@ function MusicPage() {
         <p className="text-gray-600">পবিত্র ভজন ও আরতী সংগীত শুনুন</p>
       </div>
 
-      {/* Audio Player */}
+      {/* অডিও প্লেয়ার */}
       {currentSong && (
-        <div className="audio-player rounded-2xl p-6 text-white sticky top-20 z-40">
+        <div className="audio-player rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              <Music className="w-8 h-8" />
+              {isPlaying ? (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-1 h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '450ms' }} />
+                </div>
+              ) : (
+                <Music className="w-8 h-8" />
+              )}
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg">{currentSong.title}</h3>
-              <p className="text-orange-100">{currentSong.artist}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
+              <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
             </div>
             <div className="flex items-center gap-3">
-              <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+              <button onClick={handleSkipBack} title="আগের গান"
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition active:scale-95">
                 <SkipBack className="w-5 h-5" />
               </button>
-              <button 
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition"
-              >
+              <button onClick={togglePlayPause} title={isPlaying ? 'পজ' : 'প্লে'}
+                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition active:scale-95">
                 {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
               </button>
-              <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+              <button onClick={handleSkipForward} title="পরের গান"
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition active:scale-95">
                 <SkipForward className="w-5 h-5" />
               </button>
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
-              <div className="w-24 h-1 bg-white/30 rounded-full">
-                <div className="w-2/3 h-full bg-white rounded-full"></div>
+              <input type="range" min="0" max="1" step="0.01" value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3
+                  [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white
+                  [&::-webkit-slider-thumb]:rounded-full" />
+            </div>
+          </div>
+          {/* প্রগ্রেস বার */}
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
+            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer group" onClick={handleProgressClick}>
+              <div className="h-full bg-white rounded-full relative transition-all duration-100" style={{ width: `${progress}%` }}>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition" />
               </div>
             </div>
+            <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
+          </div>
+          <div className="mt-2 text-center text-xs text-orange-200">
+            গান {currentIndex + 1} / {filteredSongs.length}
           </div>
         </div>
       )}
 
-      {/* Category Filter */}
+      {/* ক্যাটাগরি ফিল্টার */}
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition",
-              selectedCategory === cat
-                ? "bg-orange-500 text-white"
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition",
+              selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Song List */}
+      {/* গানের লিস্ট */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredSongs.map((song) => (
-          <div 
-            key={song.id}
-            onClick={() => { setCurrentSong(song); setIsPlaying(true); }}
-            className={cn(
-              "card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer",
-              currentSong?.id === song.id && "ring-2 ring-orange-500"
-            )}
-          >
-            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
-              <Music className="w-6 h-6 text-orange-600" />
+        {filteredSongs.map((song, index) => (
+          <div key={song.id} onClick={() => playSong(song, index)}
+            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all",
+              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all",
+              currentSong?.id === song.id && isPlaying
+                ? "bg-gradient-to-br from-orange-500 to-red-500"
+                : "bg-gradient-to-br from-orange-100 to-orange-200")}>
+              {currentSong?.id === song.id && isPlaying ? (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-1 h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '450ms' }} />
+                </div>
+              ) : (
+                <Music className="w-6 h-6 text-orange-600" />
+              )}
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold">{song.title}</h4>
-              <p className="text-sm text-gray-500">{song.artist} • {song.category}</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold truncate">{song.title}</h4>
+              <p className="text-sm text-gray-500 truncate">{song.artist} • {song.category}</p>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 hover:bg-orange-200 transition">
+              <button onClick={(e) => { e.stopPropagation(); }}
+                className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 hover:bg-orange-200 transition">
                 <Download className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {filteredSongs.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <Music className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">এই ক্যাটাগরিতে কোনো গান পাওয়া যায়নি</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -1254,10 +1238,8 @@ function MusicPage() {
 function PDFPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
-
   const filteredFiles = selectedCategory === 'all' || selectedCategory === 'সব'
-    ? pdfFiles
-    : pdfFiles.filter(f => f.category === selectedCategory);
+    ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
 
   return (
     <div className="space-y-6">
@@ -1265,24 +1247,15 @@ function PDFPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">PDF ডাউনলোড</h1>
         <p className="text-gray-600">প্রয়োজনীয় সকল ফাইল ডাউনলোড করুন</p>
       </div>
-
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition",
-              selectedCategory === cat
-                ? "bg-orange-500 text-white"
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition",
+              selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
             {cat}
           </button>
         ))}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredFiles.map((file) => (
           <div key={file.id} className="card-hover bg-white rounded-xl p-6 shadow-lg">
@@ -1291,13 +1264,9 @@ function PDFPage() {
             </div>
             <h4 className="font-semibold mb-1">{file.title}</h4>
             <p className="text-sm text-gray-500 mb-4">{file.category} • {file.size}</p>
-            <a 
-              href={file.url}
-              download
-              className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-            >
-              <Download className="w-4 h-4" />
-              ডাউনলোড
+            <a href={file.url} download
+              className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+              <Download className="w-4 h-4" />ডাউনলোড
             </a>
           </div>
         ))}
@@ -1315,30 +1284,20 @@ function LiveTVPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
         <p className="text-gray-600">ধর্মীয় চ্যানেল ও লাইভ সম্প্রচার</p>
       </div>
-
       <div className="bg-black rounded-2xl overflow-hidden aspect-video relative">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
             <Tv className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg">{activeChannel.name}</p>
             <p className="text-sm text-gray-400 mt-2">ভিডিও প্লেয়ার এখানে প্রদর্শিত হবে</p>
-            <p className="text-xs text-gray-500 mt-1">m3u8/m3u স্ট্রিমিং URL সাপোর্টেড</p>
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {liveChannels.map((channel) => (
-          <button
-            key={channel.id}
-            onClick={() => setActiveChannel(channel)}
-            className={cn(
-              "card-hover p-4 rounded-xl text-center transition",
-              activeChannel.id === channel.id
-                ? "bg-orange-500 text-white"
-                : "bg-white hover:bg-orange-50"
-            )}
-          >
+          <button key={channel.id} onClick={() => setActiveChannel(channel)}
+            className={cn("card-hover p-4 rounded-xl text-center transition",
+              activeChannel.id === channel.id ? "bg-orange-500 text-white" : "bg-white hover:bg-orange-50")}>
             <div className="text-4xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
@@ -1355,67 +1314,41 @@ function ContactPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">যোগাযোগ</h1>
         <p className="text-gray-600">আমাদের সাথে যোগাযোগ করুন</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">যোগাযোগের ঠিকানা</h3>
           <div className="space-y-4">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
-                📍
-              </div>
-              <div>
-                <p className="font-medium">ঠিকানা</p>
-                <p className="text-gray-600 text-sm">কলম, সিংড়া, নাটোর, রাজশাহী, বাংলাদেশ</p>
-              </div>
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">📍</div>
+              <div><p className="font-medium">ঠিকানা</p><p className="text-gray-600 text-sm">কলম, সিংড়া, নাটোর, রাজশাহী, বাংলাদেশ</p></div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
-                📞
-              </div>
-              <div>
-                <p className="font-medium">ফোন</p>
-                <p className="text-gray-600 text-sm">০১৭১২৩৪৫৬৭৮</p>
-              </div>
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">📞</div>
+              <div><p className="font-medium">ফোন</p><p className="text-gray-600 text-sm">০১৭১২৩৪৫৬৭৮</p></div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
-                ✉️
-              </div>
-              <div>
-                <p className="font-medium">ইমেইল</p>
-                <p className="text-gray-600 text-sm">info@kolomhindu.org</p>
-              </div>
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">✉️</div>
+              <div><p className="font-medium">ইমেইল</p><p className="text-gray-600 text-sm">info@kolomhindu.org</p></div>
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">সোশ্যাল মিডিয়া</h3>
           <div className="space-y-4">
             <a href="https://facebook.com/kolomhindu" target="_blank" rel="noopener noreferrer"
-               className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition">
+              className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition">
               <Facebook className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="font-medium">ফেসবুক পেজ</p>
-                <p className="text-sm text-gray-600">@kolomhindu</p>
-              </div>
+              <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@kolomhindu</p></div>
             </a>
             <a href="https://facebook.com/kolomdurga" target="_blank" rel="noopener noreferrer"
-               className="flex items-center gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
+              className="flex items-center gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
               <Facebook className="w-8 h-8 text-orange-600" />
-              <div>
-                <p className="font-medium">দূর্গাপূজা পেজ</p>
-                <p className="text-sm text-gray-600">@kolomdurga</p>
-              </div>
+              <div><p className="font-medium">দূর্গাপূজা পেজ</p><p className="text-sm text-gray-600">@kolomdurga</p></div>
             </a>
             <a href="https://facebook.com/kolomshyama" target="_blank" rel="noopener noreferrer"
-               className="flex items-center gap-4 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition">
+              className="flex items-center gap-4 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition">
               <Facebook className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="font-medium">শ্যামাপূজা পেজ</p>
-                <p className="text-sm text-gray-600">@kolomshyama</p>
-              </div>
+              <div><p className="font-medium">শ্যামাপূজা পেজ</p><p className="text-sm text-gray-600">@kolomshyama</p></div>
             </a>
           </div>
         </div>
@@ -1425,24 +1358,126 @@ function ContactPage() {
 }
 
 // ============================================
-// মেম্বর লগইন পেজ কম্পোনেন্ট
+// ফিক্সড লগইন পেজ - ভ্যালিডেশন সহ
 // ============================================
 function LoginPage() {
   const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts'>('members');
-  
-  // সিলেক্টেড মেম্বর/কন্টাক্ট স্টেট
+
+  // ফর্ম ইনপুট স্টেট
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+
+  // এরর স্টেট
+  const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // সিলেক্টেড মেম্বর/কন্টাক্ট
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
 
+  // ============================================
+  // লগইন ভ্যালিডেশন ফাংশন
+  // ============================================
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoggedIn(true);
+
+    // এরর রিসেট
+    setLoginError('');
+
+    // ১. খালি ফিল্ড চেক
+    if (!usernameInput.trim()) {
+      setLoginError('মোবাইল নম্বর বা ইমেইল দিন');
+      return;
+    }
+
+    if (!passwordInput.trim()) {
+      setLoginError('পাসওয়ার্ড দিন');
+      return;
+    }
+
+    // ২. মোবাইল নম্বর ভ্যালিডেশন (যদি নম্বর দেয়)
+    const isMobile = /^[0-9]+$/.test(usernameInput.trim());
+    if (isMobile && usernameInput.trim().length !== 11) {
+      setLoginError('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন');
+      return;
+    }
+
+    // ৩. ইমেইল ভ্যালিডেশন (যদি ইমেইল দেয়)
+    const isEmail = usernameInput.includes('@');
+    if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usernameInput.trim())) {
+      setLoginError('সঠিক ইমেইল ঠিকানা দিন');
+      return;
+    }
+
+    // ৪. পাসওয়ার্ড দৈর্ঘ্য চেক
+    if (passwordInput.trim().length < 4) {
+      setLoginError('পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের হতে হবে');
+      return;
+    }
+
+    // ৫. লগইন ডেটা থেকে মিলান
+    setIsLoading(true);
+
+    // সামান্য ডিলে - লোডিং দেখাতে
+    setTimeout(() => {
+      const trimmedUsername = usernameInput.trim().toLowerCase();
+      const trimmedPassword = passwordInput.trim();
+
+      let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
+
+      if (loginType === 'general') {
+        // সাধারণ সদস্য চেক
+        foundUser = DEMO_LOGIN_DATA.normalMembers.find(
+          member =>
+            (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
+            member.password === trimmedPassword
+        );
+      } else {
+        // হিসাব দেখা চেক
+        foundUser = DEMO_LOGIN_DATA.accountsMembers.find(
+          member =>
+            (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
+            member.password === trimmedPassword
+        );
+
+        // হিসাব দেখায় না পেলে সাধারণ সদস্যেও চেক (না পাওয়া গেলে এরর)
+        if (!foundUser) {
+          foundUser = DEMO_LOGIN_DATA.normalMembers.find(
+            member =>
+              (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
+              member.password === trimmedPassword
+          );
+          if (foundUser) {
+            setLoginError('আপনার হিসাব দেখার অনুমোদন নেই। সাধারণ সদস্য হিসেবে লগইন করুন।');
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+
+      if (foundUser) {
+        // লগইন সফল
+        setIsLoggedIn(true);
+        setLoggedInUser(foundUser.name);
+        setLoginError('');
+        setUsernameInput('');
+        setPasswordInput('');
+      } else {
+        // লগইন ব্যর্থ
+        setLoginError('ভুল মোবাইল/ইমেইল অথবা পাসওয়ার্ড। আবার চেষ্টা করুন।');
+      }
+
+      setIsLoading(false);
+    }, 800);
   };
 
-  // লগইন পেজ
+  // ============================================
+  // লগইন ফর্ম - লগইন না থাকলে
+  // ============================================
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -1455,124 +1490,167 @@ function LoginPage() {
           {/* লগইন টাইপ সিলেক্টর */}
           <div className="flex gap-2 mb-6">
             <button
-              onClick={() => setLoginType('general')}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-sm font-medium transition",
-                loginType === 'general'
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
+              onClick={() => { setLoginType('general'); setLoginError(''); }}
+              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
+                loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-700")}>
               সাধারণ সদস্য
             </button>
             <button
-              onClick={() => setLoginType('accounts')}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-sm font-medium transition",
-                loginType === 'accounts'
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
+              onClick={() => { setLoginType('accounts'); setLoginError(''); }}
+              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
+                loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-700")}>
               হিসাব দেখুন
             </button>
           </div>
 
+          {/* এরর মেসেজ */}
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-600">{loginError}</p>
+            </div>
+          )}
+
           {/* লগইন ফর্ম */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর / ইমেইল</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                মোবাইল নম্বর / ইমেইল <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
+                <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                  value={usernameInput}
+                  onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }}
+                  className={cn(
+                    "w-full pl-10 pr-4 py-3 rounded-xl border outline-none transition",
+                    loginError && !usernameInput.trim()
+                      ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                      : "border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                  )}
                   placeholder="মোবাইল নম্বর বা ইমেইল দিন"
                 />
               </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                পাসওয়ার্ড <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
+                <input
                   type={showPassword ? 'text' : 'password'}
-                  className="w-full pl-10 pr-10 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                  value={passwordInput}
+                  onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }}
+                  className={cn(
+                    "w-full pl-10 pr-10 py-3 rounded-xl border outline-none transition",
+                    loginError && !passwordInput.trim()
+                      ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                      : "border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                  )}
                   placeholder="পাসওয়ার্ড দিন"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            <button 
-              type="submit"
-              className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:opacity-90 transition"
-            >
-              লগইন
+
+            <button type="submit" disabled={isLoading}
+              className={cn(
+                "w-full py-3 rounded-xl font-medium transition flex items-center justify-center gap-2",
+                isLoading
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90"
+              )}>
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  যাচাই করা হচ্ছে...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  লগইন
+                </>
+              )}
             </button>
           </form>
 
-          {/* লগইন টাইপ অনুযায়ী নোট */}
+          {/* লগইন তথ্য */}
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-center text-sm text-blue-700">
-              {loginType === 'general' 
-                ? '✓ সকল বিভাগ দেখতে পারবেন ✗ হিসাব বিবরণ দেখতে পারবেন না'
-                : '✓ সকল বিভাগ দেখতে পারবেন ✓ হিসাব বিবরণ দেখতে পারবেন'}
+              {loginType === 'general'
+                ? '✓ সকল বিভাগ দেখতে পারবেন  ✗ হিসাব বিবরণ দেখতে পারবেন না'
+                : '✓ সকল বিভাগ দেখতে পারবেন  ✓ হিসাব বিবরণ দেখতে পারবেন'}
             </p>
+          </div>
+
+          {/* ডেমো লগইন তথ্য */}
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs font-bold text-yellow-700 mb-2">🔑 ডেমো লগইন তথ্য:</p>
+            {loginType === 'general' ? (
+              <div className="text-xs text-yellow-600 space-y-1">
+                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01712345678</span></p>
+                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">demo123</span></p>
+                <p className="text-yellow-500 mt-1">অথবা</p>
+                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01733118313</span></p>
+                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">admin123</span></p>
+              </div>
+            ) : (
+              <div className="text-xs text-yellow-600 space-y-1">
+                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01812345678</span></p>
+                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">admin123</span></p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* ব্যবহার বিধি */}
         <div className="mt-6 bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-orange-600" />
-            ব্যবহার বিধি
+            <FileText className="w-5 h-5 text-orange-600" />ব্যবহার বিধি
           </h3>
           <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">১.</span>
-              <span>মোবাইল নম্বর বা ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন করুন</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">২.</span>
-              <span>মেম্বর ইনফরমেশন, প্রয়োজনীয় ফোন নম্বর, নিমন্ত্রণ লিস্ট দেখুন</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">৩.</span>
-              <span>প্রতিটি লিস্টের জন্য একটি PDF ডাউনলোড করতে পারবেন</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500">৪.</span>
-              <span>হিসাব বিবরণ শুধু "হিসাব দেখুন" লগইনে দেখা যাবে</span>
-            </li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">১.</span><span>মোবাইল নম্বর বা ইমেইল এবং পাসওয়ার্ড দিয়ে লগইন করুন</span></li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">২.</span><span>মেম্বর ইনফরমেশন, প্রয়োজনীয় ফোন নম্বর, নিমন্ত্রণ লিস্ট দেখুন</span></li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">৩.</span><span>প্রতিটি লিস্টের জন্য একটি PDF ডাউনলোড করতে পারবেন</span></li>
+            <li className="flex items-start gap-2"><span className="text-orange-500">৪.</span><span>হিসাব বিবরণ শুধু "হিসাব দেখুন" লগইনে দেখা যাবে</span></li>
           </ul>
         </div>
       </div>
     );
   }
 
+  // ============================================
   // লগইনের পর ড্যাশবোর্ড
+  // ============================================
   return (
     <div className="space-y-6">
-      {/* হেডার */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1>
           <p className="text-sm text-gray-500">
-            {loginType === 'general' ? 'সাধারণ সদস্য' : 'হিসাব দেখা অনুমোদিত'} - কলম হিন্দু ধর্মসভা
+            স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span> •
+            {loginType === 'general' ? ' সাধারণ সদস্য' : ' হিসাব দেখা অনুমোদিত'}
           </p>
         </div>
-        <button 
-          onClick={() => setIsLoggedIn(false)}
-          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition"
-        >
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setUsernameInput(''); setPasswordInput(''); }}
+          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition">
           লগআউট
         </button>
+      </div>
+
+      {/* সফল লগইন মেসেজ */}
+      <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-lg">✓</div>
+        <div>
+          <p className="font-medium text-green-700">সফলভাবে লগইন হয়েছে!</p>
+          <p className="text-sm text-green-600">আপনি এখন সকল তথ্য দেখতে পারবেন।</p>
+        </div>
       </div>
 
       {/* ট্যাব নেভিগেশন */}
@@ -1583,22 +1661,11 @@ function LoginPage() {
           { id: 'invitation', label: 'নিমন্ত্রণ লিস্ট', icon: FileText },
           ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব বিবরণী', icon: FileText }] : []),
         ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id as typeof activeTab);
-              setSelectedMember(null);
-              setSelectedContact(null);
-            }}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition flex items-center gap-2",
-              activeTab === tab.id
-                ? "bg-orange-500 text-white"
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
+          <button key={tab.id}
+            onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedMember(null); setSelectedContact(null); }}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition flex items-center gap-2",
+              activeTab === tab.id ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+            <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
@@ -1606,33 +1673,19 @@ function LoginPage() {
       {/* মেম্বর ইনফরমেশন ট্যাব */}
       {activeTab === 'members' && (
         <div className="space-y-4">
-          {/* PDF ডাউনলোড বাটন - সবার উপরে */}
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white flex items-center justify-between">
-            <div>
-              <h3 className="font-bold">সম্পূর্ণ মেম্বর লিস্ট</h3>
-              <p className="text-sm text-orange-100">সকল সদস্যের তথ্য একটি PDF এ</p>
-            </div>
-            <a 
-              href="/pdfs/members-list-2025.pdf"
-              download
-              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Download className="w-4 h-4" />
-              PDF ডাউনলোড
+            <div><h3 className="font-bold">সম্পূর্ণ মেম্বর লিস্ট</h3><p className="text-sm text-orange-100">সকল সদস্যের তথ্য একটি PDF এ</p></div>
+            <a href="/pdfs/members-list-2025.pdf" download
+              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Download className="w-4 h-4" />PDF ডাউনলোড
             </a>
           </div>
-
-          {/* মেম্বর লিস্ট */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {members.map((member) => (
-              <div 
-                key={member.id} 
+              <div key={member.id}
                 onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
-                className={cn(
-                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
-                  selectedMember?.id === member.id ? "ring-2 ring-orange-500" : "hover:shadow-xl"
-                )}
-              >
+                className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
+                  selectedMember?.id === member.id ? "ring-2 ring-orange-500" : "hover:shadow-xl")}>
                 <div className="flex items-center gap-4">
                   <img src={member.photo} alt={member.name} className="w-16 h-16 rounded-xl object-cover" />
                   <div className="flex-1">
@@ -1640,15 +1693,11 @@ function LoginPage() {
                     <p className="text-orange-600 text-sm">{member.designation}</p>
                     <p className="text-gray-500 text-sm">{member.mobile}</p>
                   </div>
-                  <ChevronRight className={cn(
-                    "w-5 h-5 text-gray-400 transition-transform",
-                    selectedMember?.id === member.id && "rotate-90"
-                  )} />
+                  <ChevronRight className={cn("w-5 h-5 text-gray-400 transition-transform",
+                    selectedMember?.id === member.id && "rotate-90")} />
                 </div>
-                
-                {/* বিস্তারিত তথ্য - সিলেক্ট করলে দেখাবে */}
                 {selectedMember?.id === member.id && (
-                  <div className="mt-4 pt-4 border-t space-y-2 text-sm animate-fadeIn">
+                  <div className="mt-4 pt-4 border-t space-y-2 text-sm">
                     <div className="grid grid-cols-2 gap-2">
                       <p><span className="text-gray-500">পিতা:</span> {member.fatherName}</p>
                       <p><span className="text-gray-500">মাতা:</span> {member.motherName}</p>
@@ -1670,33 +1719,19 @@ function LoginPage() {
       {/* প্রয়োজনীয় ফোন নম্বর ট্যাব */}
       {activeTab === 'contacts' && (
         <div className="space-y-4">
-          {/* PDF ডাউনলোড বাটন */}
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white flex items-center justify-between">
-            <div>
-              <h3 className="font-bold">সম্পূর্ণ কন্টাক্ট লিস্ট</h3>
-              <p className="text-sm text-orange-100">ঢাকওয়ালা, নৌকাওয়ালা, পুরহিত, প্রতিমা শিল্পি সহ সকলের তথ্য</p>
-            </div>
-            <a 
-              href="/pdfs/contact-persons-list.pdf"
-              download
-              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Download className="w-4 h-4" />
-              PDF ডাউনলোড
+            <div><h3 className="font-bold">সম্পূর্ণ কন্টাক্ট লিস্ট</h3><p className="text-sm text-orange-100">সকলের তথ্য</p></div>
+            <a href="/pdfs/contact-persons-list.pdf" download
+              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Download className="w-4 h-4" />PDF ডাউনলোড
             </a>
           </div>
-
-          {/* কন্টাক্ট লিস্ট */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactPersons.map((person) => (
-              <div 
-                key={person.id} 
+              <div key={person.id}
                 onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)}
-                className={cn(
-                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
-                  selectedContact?.id === person.id ? "ring-2 ring-orange-500" : "hover:shadow-xl"
-                )}
-              >
+                className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
+                  selectedContact?.id === person.id ? "ring-2 ring-orange-500" : "hover:shadow-xl")}>
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
                     <User className="w-7 h-7 text-orange-600" />
@@ -1705,15 +1740,11 @@ function LoginPage() {
                     <h3 className="font-bold">{person.name}</h3>
                     <p className="text-orange-600 text-sm">{person.occupation}</p>
                   </div>
-                  <ChevronRight className={cn(
-                    "w-5 h-5 text-gray-400 transition-transform",
-                    selectedContact?.id === person.id && "rotate-90"
-                  )} />
+                  <ChevronRight className={cn("w-5 h-5 text-gray-400 transition-transform",
+                    selectedContact?.id === person.id && "rotate-90")} />
                 </div>
-                
-                {/* বিস্তারিত তথ্য */}
                 {selectedContact?.id === person.id && (
-                  <div className="mt-4 pt-4 border-t space-y-2 text-sm animate-fadeIn">
+                  <div className="mt-4 pt-4 border-t space-y-2 text-sm">
                     <p><span className="text-gray-500">মোবাইল:</span> {person.mobile}</p>
                     <p><span className="text-gray-500">ঠিকানা:</span> {person.address}</p>
                     <p><span className="text-gray-500">পেশা:</span> {person.occupation}</p>
@@ -1728,23 +1759,13 @@ function LoginPage() {
       {/* নিমন্ত্রণ লিস্ট ট্যাব */}
       {activeTab === 'invitation' && (
         <div className="space-y-4">
-          {/* PDF ডাউনলোড বাটন */}
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white flex items-center justify-between">
-            <div>
-              <h3 className="font-bold">সম্পূর্ণ নিমন্ত্রণ লিস্ট</h3>
-              <p className="text-sm text-orange-100">সকল পাড়ার নিমন্ত্রণ তালিকা একটি PDF এ</p>
-            </div>
-            <a 
-              href="/pdfs/invitation-list-all-areas.pdf"
-              download
-              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-            >
-              <Download className="w-4 h-4" />
-              PDF ডাউনলোড
+            <div><h3 className="font-bold">সম্পূর্ণ নিমন্ত্রণ লিস্ট</h3><p className="text-sm text-orange-100">সকল পাড়ার তালিকা</p></div>
+            <a href="/pdfs/invitation-list-all-areas.pdf" download
+              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition">
+              <Download className="w-4 h-4" />PDF ডাউনলোড
             </a>
           </div>
-
-          {/* পাড়া অনুযায়ী নিমন্ত্রণ লিস্ট */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { area: 'হালদার পাড়া', count: 12 },
@@ -1758,32 +1779,16 @@ function LoginPage() {
             ].map((area) => (
               <div key={area.area} className="bg-white rounded-xl p-4 shadow-lg">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold">{area.area}</h3>
-                    <p className="text-sm text-gray-500">{area.count}টি পরিবার</p>
-                  </div>
-                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
-                    {area.count}
-                  </div>
+                  <div><h3 className="font-bold">{area.area}</h3><p className="text-sm text-gray-500">{area.count}টি পরিবার</p></div>
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">{area.count}</div>
                 </div>
-                {/* এলাকার নিমন্ত্রণ তালিকা */}
                 <div className="mt-3 pt-3 border-t">
                   <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-gray-500 text-xs">
-                        <th className="text-left py-1">নাম</th>
-                        <th className="text-right py-1">সদস্য</th>
-                      </tr>
-                    </thead>
+                    <thead><tr className="text-gray-500 text-xs"><th className="text-left py-1">নাম</th><th className="text-right py-1">সদস্য</th></tr></thead>
                     <tbody>
-                      {invitationLists
-                        .filter(i => i.area === area.area)
-                        .map((item) => (
-                          <tr key={item.id} className="border-t">
-                            <td className="py-2">{item.personName}</td>
-                            <td className="text-right py-2">{item.familyCount} জন</td>
-                          </tr>
-                        ))}
+                      {invitationLists.filter(i => i.area === area.area).map((item) => (
+                        <tr key={item.id} className="border-t"><td className="py-2">{item.personName}</td><td className="text-right py-2">{item.familyCount} জন</td></tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -1793,29 +1798,21 @@ function LoginPage() {
         </div>
       )}
 
-      {/* হিসাব বিবরণী ট্যাব - শুধু হিসাব দেখা লগইনে */}
+      {/* হিসাব বিবরণী ট্যাব */}
       {activeTab === 'accounts' && loginType === 'accounts' && (
         <div className="space-y-4">
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-            <p className="text-green-700 text-sm">
-              ✓ আপনি হিসাব বিবরণী দেখার অনুমোদন পেয়েছেন। নিচে বিভিন্ন পূজার হিসাব পাবেন।
-            </p>
+            <p className="text-green-700 text-sm">✓ আপনি হিসাব বিবরণী দেখার অনুমোদন পেয়েছেন।</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(accountsPDFs).map(([key, data]) => (
               <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
                 <h3 className="font-bold text-lg mb-4">{data.title}</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(data.years).map(([year, url]) => (
-                    <a
-                      key={year}
-                      href={url}
-                      download
-                      className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                    >
-                      <FileText className="w-4 h-4 text-orange-600" />
-                      <span className="text-sm font-medium">{year}</span>
+                    <a key={year} href={url} download
+                      className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                      <FileText className="w-4 h-4 text-orange-600" /><span className="text-sm font-medium">{year}</span>
                     </a>
                   ))}
                 </div>
@@ -1828,7 +1825,9 @@ function LoginPage() {
   );
 }
 
+// ============================================
 // Main App
+// ============================================
 function App() {
   return (
     <Router>
