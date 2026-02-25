@@ -1324,31 +1324,31 @@ function ContactPage() {
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">📞</div>
-              <div><p className="font-medium">ফোন</p><p className="text-gray-600 text-sm">০১৭১২৩৪৫৬৭৮</p></div>
+              <div><p className="font-medium">ফোন</p><p className="text-gray-600 text-sm">০১৭৩৩১১৮৩১৩</p></div>
             </div>
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">✉️</div>
-              <div><p className="font-medium">ইমেইল</p><p className="text-gray-600 text-sm">info@kolomhindu.org</p></div>
+              <div><p className="font-medium">ইমেইল</p><p className="text-gray-600 text-sm">durgapuja12@gmail.com</p></div>
             </div>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">সোশ্যাল মিডিয়া</h3>
           <div className="space-y-4">
-            <a href="https://facebook.com/kolomhindu" target="_blank" rel="noopener noreferrer"
+            <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition">
               <Facebook className="w-8 h-8 text-blue-600" />
-              <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@kolomhindu</p></div>
+              <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
             </a>
             <a href="https://facebook.com/kolomdurga" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
               <Facebook className="w-8 h-8 text-orange-600" />
-              <div><p className="font-medium">দূর্গাপূজা পেজ</p><p className="text-sm text-gray-600">@kolomdurga</p></div>
+              <div><p className="font-medium">দূর্গাপূজা পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
             </a>
             <a href="https://facebook.com/kolomshyama" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-4 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition">
               <Facebook className="w-8 h-8 text-purple-600" />
-              <div><p className="font-medium">শ্যামাপূজা পেজ</p><p className="text-sm text-gray-600">@kolomshyama</p></div>
+              <div><p className="font-medium">শ্যামাপূজা পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
             </a>
           </div>
         </div>
