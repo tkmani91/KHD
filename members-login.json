@@ -2,17 +2,29 @@
   "normalMembers": [
     {
       "mobile": "01712345678",
-      "email": "member@email.com", 
-      "password": "password123",
-      "name": "মেম্বর নাম"
-    }
-  ],
-  "accountsMembers": [
+      "email": "demo@member.com",
+      "password": "demo123",
+      "name": "ডেমো মেম্বর"
+    },
     {
       "mobile": "01733118313",
       "email": "tanmoy4bd@gmail.com",
       "password": "admin123",
-      "name": "তন্ময় কুমার মানী"
+      "name": "তন্ময় কুমার মানী"
+    },
+    {
+      "mobile": "01755555555",
+      "email": "newmember@gmail.com",
+      "password": "pass456",
+      "name": "নতুন সদস্য"
+    }
+  ],
+  "accountsMembers": [
+    {
+      "mobile": "01812345678",
+      "email": "demo@admin.com",
+      "password": "admin123",
+      "name": "ডেমো অ্যাডমিন"
     }
   ]
 }
