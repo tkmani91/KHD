@@ -211,6 +211,18 @@ const liveChannels: LiveChannel[] = [
 // মেম্বর লগইন ডেটা - এখানে কাস্টমাইজ করুন
 // ============================================
 
+// ডেমো লগইন ডেটা - এখানে আপনার মেম্বর যোগ করুন
+const DEMO_LOGIN_DATA = {
+  normalMembers: [
+    { mobile: "01733118313", email: "tanmoy4bd@gmail.com", password: "admin123", name: "প্রচার সম্পাদক" },
+  ],
+  accountsMembers: [
+    { mobile: "01812345678", email: "demo@admin.com", password: "admin123", name: "ডেমো অ্যাডমিন" },
+  ]
+};
+
+// GitHub থেকে লোড করতে চাইলে URL দিন (ঐচ্ছিক)
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 // মেম্বর ইনফরমেশন লিস্ট
 // প্রতিটি মেম্বরের জন্য একটি আইটেম
 const members: Member[] = [
