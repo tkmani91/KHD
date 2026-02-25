@@ -1371,21 +1371,60 @@ function LoginPage() {
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
 
-  // এরর স্টেট
+  // এরর ও লোডিং স্টেট
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // GitHub থেকে লোড করা লগইন ডেটা
+  const [loginData, setLoginData] = useState(DEMO_LOGIN_DATA);
+  const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
 
   // সিলেক্টেড মেম্বর/কন্টাক্ট
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
 
   // ============================================
+  // GitHub থেকে লগইন ডেটা লোড করা
+  // ============================================
+  useEffect(() => {
+    const fetchLoginData = async () => {
+      try {
+        const response = await fetch(GITHUB_LOGIN_URL, {
+          cache: 'no-cache', // সবসময় নতুন ডেটা আনবে
+        });
+
+        if (!response.ok) {
+          throw new Error('GitHub থেকে ডেটা লোড করতে ব্যর্থ');
+        }
+
+        const data = await response.json();
+
+        // ডেটা ভ্যালিডেশন
+        if (data.normalMembers && Array.isArray(data.normalMembers) &&
+            data.accountsMembers && Array.isArray(data.accountsMembers)) {
+          setLoginData(data);
+          setDataSource('github');
+          console.log('✅ GitHub থেকে লগইন ডেটা লোড হয়েছে');
+          console.log(`📊 সাধারণ সদস্য: ${data.normalMembers.length} জন`);
+          console.log(`📊 হিসাব সদস্য: ${data.accountsMembers.length} জন`);
+        } else {
+          throw new Error('ডেটা ফরম্যাট সঠিক নয়');
+        }
+      } catch (error) {
+        console.log('⚠️ GitHub থেকে লোড ব্যর্থ, লোকাল ডেটা ব্যবহার হচ্ছে:', error);
+        setLoginData(DEMO_LOGIN_DATA);
+        setDataSource('local');
+      }
+    };
+
+    fetchLoginData();
+  }, []);
+
+  // ============================================
   // লগইন ভ্যালিডেশন ফাংশন
   // ============================================
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // এরর রিসেট
     setLoginError('');
 
     // ১. খালি ফিল্ড চেক
@@ -1393,20 +1432,19 @@ function LoginPage() {
       setLoginError('মোবাইল নম্বর বা ইমেইল দিন');
       return;
     }
-
     if (!passwordInput.trim()) {
       setLoginError('পাসওয়ার্ড দিন');
       return;
     }
 
-    // ২. মোবাইল নম্বর ভ্যালিডেশন (যদি নম্বর দেয়)
+    // ২. মোবাইল নম্বর ভ্যালিডেশন
     const isMobile = /^[0-9]+$/.test(usernameInput.trim());
     if (isMobile && usernameInput.trim().length !== 11) {
       setLoginError('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন');
       return;
     }
 
-    // ৩. ইমেইল ভ্যালিডেশন (যদি ইমেইল দেয়)
+    // ৩. ইমেইল ভ্যালিডেশন
     const isEmail = usernameInput.includes('@');
     if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usernameInput.trim())) {
       setLoginError('সঠিক ইমেইল ঠিকানা দিন');
@@ -1422,7 +1460,6 @@ function LoginPage() {
     // ৫. লগইন ডেটা থেকে মিলান
     setIsLoading(true);
 
-    // সামান্য ডিলে - লোডিং দেখাতে
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
@@ -1431,22 +1468,22 @@ function LoginPage() {
 
       if (loginType === 'general') {
         // সাধারণ সদস্য চেক
-        foundUser = DEMO_LOGIN_DATA.normalMembers.find(
+        foundUser = loginData.normalMembers.find(
           member =>
             (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
             member.password === trimmedPassword
         );
       } else {
         // হিসাব দেখা চেক
-        foundUser = DEMO_LOGIN_DATA.accountsMembers.find(
+        foundUser = loginData.accountsMembers.find(
           member =>
             (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
             member.password === trimmedPassword
         );
 
-        // হিসাব দেখায় না পেলে সাধারণ সদস্যেও চেক (না পাওয়া গেলে এরর)
+        // হিসাব দেখায় না পেলে সাধারণ সদস্যেও চেক
         if (!foundUser) {
-          foundUser = DEMO_LOGIN_DATA.normalMembers.find(
+          foundUser = loginData.normalMembers.find(
             member =>
               (member.mobile === trimmedUsername || member.email.toLowerCase() === trimmedUsername) &&
               member.password === trimmedPassword
@@ -1460,14 +1497,12 @@ function LoginPage() {
       }
 
       if (foundUser) {
-        // লগইন সফল
         setIsLoggedIn(true);
         setLoggedInUser(foundUser.name);
         setLoginError('');
         setUsernameInput('');
         setPasswordInput('');
       } else {
-        // লগইন ব্যর্থ
         setLoginError('ভুল মোবাইল/ইমেইল অথবা পাসওয়ার্ড। আবার চেষ্টা করুন।');
       }
 
@@ -1476,7 +1511,7 @@ function LoginPage() {
   };
 
   // ============================================
-  // লগইন ফর্ম - লগইন না থাকলে
+  // লগইন ফর্ম
   // ============================================
   if (!isLoggedIn) {
     return (
@@ -1487,6 +1522,22 @@ function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-lg">
+          {/* ডেটা সোর্স ইন্ডিকেটর */}
+          <div className={cn(
+            "mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2",
+            dataSource === 'github' 
+              ? "bg-green-50 text-green-600" 
+              : "bg-yellow-50 text-yellow-600"
+          )}>
+            <div className={cn(
+              "w-2 h-2 rounded-full",
+              dataSource === 'github' ? "bg-green-500" : "bg-yellow-500"
+            )} />
+            {dataSource === 'github' 
+              ? `✓ GitHub থেকে ${loginData.normalMembers.length + loginData.accountsMembers.length} জন সদস্যের ডেটা লোড হয়েছে` 
+              : '⚠ লোকাল ডেটা ব্যবহার হচ্ছে (GitHub কানেক্ট হয়নি)'}
+          </div>
+
           {/* লগইন টাইপ সিলেক্টর */}
           <div className="flex gap-2 mb-6">
             <button
@@ -1596,9 +1647,6 @@ function LoginPage() {
               <div className="text-xs text-yellow-600 space-y-1">
                 <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01712345678</span></p>
                 <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">demo123</span></p>
-                <p className="text-yellow-500 mt-1">অথবা</p>
-                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01733118313</span></p>
-                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">admin123</span></p>
               </div>
             ) : (
               <div className="text-xs text-yellow-600 space-y-1">
@@ -1626,7 +1674,7 @@ function LoginPage() {
   }
 
   // ============================================
-  // লগইনের পর ড্যাশবোর্ড
+  // লগইনের পর ড্যাশবোর্ড (আগের মতোই)
   // ============================================
   return (
     <div className="space-y-6">
@@ -1644,12 +1692,13 @@ function LoginPage() {
         </button>
       </div>
 
-      {/* সফল লগইন মেসেজ */}
       <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-lg">✓</div>
         <div>
           <p className="font-medium text-green-700">সফলভাবে লগইন হয়েছে!</p>
-          <p className="text-sm text-green-600">আপনি এখন সকল তথ্য দেখতে পারবেন।</p>
+          <p className="text-sm text-green-600">
+            ডেটা সোর্স: {dataSource === 'github' ? '🌐 GitHub (অনলাইন)' : '💾 লোকাল (অফলাইন)'}
+          </p>
         </div>
       </div>
 
