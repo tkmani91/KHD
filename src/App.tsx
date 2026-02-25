@@ -1,64 +1,12 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Calendar, Users, Image, Music, FileText, Tv, Phone, LogIn, LogOut, 
-  ChevronRight, MapPin, Facebook, Download, Play, Pause, SkipBack, SkipForward,
-  User, BookOpen, Calculator, Menu, X
+  Home, Calendar, Users, Image, Music, FileText, 
+  Tv, Phone, LogIn, Menu, X, Facebook, ChevronRight,
+  Clock, Download, Play, Pause, SkipBack, SkipForward,
+  Volume2, User, Lock, Eye, EyeOff
 } from 'lucide-react';
-
-// ============================================
-// 🔧 CONFIGURATION - এখানে সব পরিবর্তন করুন
-// ============================================
-
-// 📱 লগইন সিস্টেম কনফিগারেশন
-// GitHub Raw URL অথবা সরাসরি JSON ডেটা ব্যবহার করতে পারেন
-const LOGIN_CONFIG = {
-  // অপশন ১: GitHub JSON URL (আপনার GitHub URL দিন)
-  // উদাহরণ: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json'
-  githubUrl: '', // এখানে আপনার GitHub URL দিন অথবা খালি রাখুন
-  
-  // অপশন ২: সরাসরি ডেমো ডেটা (প্রথমে এটি দিয়ে টেস্ট করুন)
-  useDemoData: true, // true দিলে নিচের DEMO_LOGIN_DATA ব্যবহার হবে
-};
-
-// 👤 ডেমো লগইন ডেটা - এখানে মেম্বর যোগ করুন
-const DEMO_LOGIN_DATA = {
-  // সাধারণ মেম্বর - হিসাব বিবরণ দেখতে পারবে না
-  normalMembers: [
-    {
-      mobile: "01712345678",
-      email: "member1@gmail.com",
-      password: "member123",
-      name: "রাম প্রসাদ শীল"
-    },
-    {
-      mobile: "01712345679",
-      email: "member2@gmail.com",
-      password: "member456",
-      name: "শ্যাম কুমার হালদার"
-    },
-    {
-      mobile: "01712345680",
-      email: "member3@gmail.com",
-      password: "member789",
-      name: "গোপাল চন্দ্র ভাট"
-    }
-  ],
-  // হিসাব দেখা মেম্বর - সব দেখতে পারবে
-  accountsMembers: [
-    {
-      mobile: "01733118313",
-      email: "tanmoy4bd@gmail.com",
-      password: "admin123",
-      name: "প্রচার সম্পাদক"
-    },
-    {
-      mobile: "01812345679",
-      email: "secretary@gmail.com",
-      password: "secretary123",
-      name: "সম্পাদক"
-    }
-  ]
-};
+import { cn } from './utils/cn';
 
 // Types
 interface CountdownTime {
