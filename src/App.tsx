@@ -226,44 +226,43 @@ const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/me
 const members: Member[] = [
   {
     id: '1',
-    name: 'রাম প্রসাদ শীল',
+    name: 'পিনাকী কুন্ডু',
     designation: 'সভাপতি',
-    photo: 'https://i.pravatar.cc/150?img=1',
+    photo: 'https://ibb.co.com/4nbKNHKN/150?img=1',
     birthDate: '1970-05-15',
-    address: 'হালদার পাড়া, কলম',
+    address: 'নজরপুর, কলম',
     permanentAddress: 'কলম, সিংড়া, নাটোর',
     mobile: '01712345678',
-    gotra: 'কাশ্যপ',
+    gotra: '',
     email: 'ram@example.com',
-    fatherName: 'গোপাল শীল',
-    motherName: 'সরস্বতী শীল',
+    fatherName: 'ভূপতী কুন্ডু',
+    motherName: '',
     occupation: 'ব্যবসায়ী',
     pdfUrl: '/pdfs/members-list-2025.pdf'
   },
   {
     id: '2',
-    name: 'কৃষ্ণ চন্দ্র হালদার',
+    name: 'শুভ্র জ্যোতি পোদ্দার',
     designation: 'সাধারণ সম্পাদক',
-    photo: 'https://i.pravatar.cc/150?img=2',
+    photo: 'https://ibb.co.com/VYKdQkLN/150?img=2',
     birthDate: '1975-08-20',
-    address: 'ভাটোপাড়া, কলম',
+    address: 'নজরপুর, কলম',
     permanentAddress: 'কলম, সিংড়া, নাটোর',
-    mobile: '01712345679',
-    gotra: 'ভরদ্বাজ',
-    email: 'krishna@example.com',
-    fatherName: 'নারায়ণ হালদার',
-    motherName: 'লক্ষ্মী হালদার',
-    occupation: 'শিক্ষক',
+    mobile: '01576693413',
+    gotra: '',
+    email: '',
+    fatherName: 'আনান্দ পোদ্দার',
+    motherName: 'কনা রানী পোদ্দার',
+    occupation: 'সরকারী চাকুরী',
     pdfUrl: '/pdfs/members-list-2025.pdf'
   },
 ];
 
 // প্রয়োজনীয় ফোন নম্বর লিস্ট
 const contactPersons: ContactPerson[] = [
-  { id: '1', name: 'গোপাল ঢাকী', mobile: '01711111111', address: 'কলম বাজার', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-  { id: '2', name: 'বলরাম নাওয়া', mobile: '01722222222', address: 'কুমার পাড়া', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-  { id: '3', name: 'পণ্ডিত রঘুনাথ', mobile: '01733333333', address: 'মধ্য পাড়া', occupation: 'পুরোহিত', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-  { id: '4', name: 'মোহন শীল', mobile: '01744444444', address: 'শীল পাড়া', occupation: 'প্রতিমা শিল্পী', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '1', name: 'গৌর', mobile: '01753838412', address: 'রাখালগাছা সিংড়া', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '2', name: 'আনোয়ার সরদার', mobile: '01757909116', address: 'বড় সাঐল বুদা বাজার', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '3', name: 'সমর চক্রবর্তি', mobile: '01724982790', address: 'কুমার পাড়া', occupation: 'পুরোহিত', pdfUrl: '/pdfs/contact-persons-list.pdf' },
 ];
 
 // নিমন্ত্রণ লিস্ট
