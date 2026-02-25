@@ -201,10 +201,10 @@ const pdfFiles: PDFFile[] = [
 ];
 
 const liveChannels: LiveChannel[] = [
-  { id: '1', name: 'সনাতন টিভি', logo: '📺', streamUrl: 'https://example.com/stream1.m3u8' },
-  { id: '2', name: 'ভক্তি টিভি', logo: '🙏', streamUrl: 'https://example.com/stream2.m3u8' },
-  { id: '3', name: 'আরতী টিভি', logo: '🪔', streamUrl: 'https://example.com/stream3.m3u8' },
-  { id: '4', name: 'ধর্ম টিভি', logo: '☸️', streamUrl: 'https://example.com/stream4.m3u8' },
+  { id: '1', name: 'Sanskar TV', logo: '📺', streamUrl: 'https://d26idhjf0y1p2g.cloudfront.net/out/v1/cd66dd25b9774cb29943bab54bbf3e2f/index.m3u8' },
+  { id: '2', name: 'Shubh TV', logo: '🙏', streamUrl: 'https://d2g1vdc6ozl2o8.cloudfront.net/out/v1/0a0dc7d7911b4fddbb4dfc963fdd4b9e/index.m3u8' },
+  { id: '3', name: 'Satsang TV', logo: '🪔', streamUrl: 'https://d2vfwvjxwtwq1t.cloudfront.net/out/v1/6b24239d5517495b986e7705490c6e65/index.m3u8' },
+  { id: '4', name: 'SVBC 4', logo: '☸️', streamUrl: 'https://d1msejlow1t3l4.cloudfront.net/fta/svbchindi4/chunks.m3u8' },
 ];
 
 // ============================================
@@ -1642,19 +1642,8 @@ function LoginPage() {
 
           {/* ডেমো লগইন তথ্য */}
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs font-bold text-yellow-700 mb-2">🔑 ডেমো লগইন তথ্য:</p>
-            {loginType === 'general' ? (
-              <div className="text-xs text-yellow-600 space-y-1">
-                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01712345678</span></p>
-                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">demo123</span></p>
-              </div>
-            ) : (
-              <div className="text-xs text-yellow-600 space-y-1">
-                <p>মোবাইল: <span className="font-mono bg-yellow-100 px-1 rounded">01812345678</span></p>
-                <p>পাসওয়ার্ড: <span className="font-mono bg-yellow-100 px-1 rounded">admin123</span></p>
-              </div>
-            )}
-          </div>
+            <p className="text-xs font-bold text-yellow-700 mb-2">🔑 নিবন্ধন এর জন্য যোগাযোগ করুন 01733118313 tanmoy4bd@gmail.com:</p>
+           </div>
         </div>
 
         {/* ব্যবহার বিধি */}
