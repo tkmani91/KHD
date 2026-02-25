@@ -106,32 +106,32 @@ const pujaData: PujaInfo[] = [
     name: 'দূর্গাপূজা',
     date: '2026-10-17',
     description: 'দূর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - শক্তির আরাধনা',
-    image: 'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=800',
-    facebookLink: 'https://facebook.com/kolomdurga'
+    image: 'https://i.ibb.co.com/G3dkhLZq/Durga.png',
+    facebookLink: 'https://facebook.com/KHDS3'
   },
   {
     id: 'shyama',
     name: 'শ্যামাপূজা',
     date: '2026-11-08',
     description: 'শ্যামা মা কালীর অন্য রূপ, কৃষ্ণবর্ণা - কালীপূজা',
-    image: 'https://images.unsplash.com/photo-1572949645841-094f3a9c9468?w=800',
-    facebookLink: 'https://facebook.com/kolomshyama'
+    image: 'https://i.ibb.co.com/0TXrT0n/Kali-Ma.png',
+    facebookLink: 'https://facebook.com/KHDS3'
   },
   {
     id: 'saraswati',
     name: 'সরস্বতী পূজা',
     date: '2027-02-11',
     description: 'সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - জ্ঞানের আরাধনা',
-    image: 'https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?w=800',
-    facebookLink: 'https://facebook.com/kolomsaraswati'
+    image: 'https://i.ibb.co.com/1Jw49LtJ/Saraswati.png',
+    facebookLink: 'https://facebook.com/KHDS3'
   },
   {
     id: 'rath',
     name: 'রথযাত্রা',
     date: '2026-05-16',
     description: 'জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - ভগবানের রথযাত্রা',
-    image: 'https://images.unsplash.com/photo-1561361058-4e7e1c381c9e?w=800',
-    facebookLink: 'https://facebook.com/kolomrath'
+    image: 'https://i.ibb.co.com/Xf79K9JZ/jagannath.png',
+    facebookLink: 'https://facebook.com/KHDS3'
   }
 ];
 
@@ -141,35 +141,35 @@ const deities: Deity[] = [
     name: 'দুর্গা মা',
     title: 'অসুরদমনী, মহিষাসুরমর্দিনী',
     description: 'দুর্গা মা হলেন শক্তির দেবী। তিনি অসুর রাজা মহিষাসুরকে বধ করেছিলেন। দশভুজা এই দেবী সিংহবাহিনী, ত্রিনয়নী।',
-    image: 'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=600'
+    image: 'https://i.ibb.co.com/G3dkhLZq/Durga.png'
   },
   {
     id: 'kali',
     name: 'কালী মা',
     title: 'মহাকালী, কালিকা',
     description: 'কালী মা হলেন সময়ের দেবী, মহাশক্তির এক রূপ। কৃষ্ণবর্ণা এই দেবী মা পার্বতীর তান্ত্রিক রূপ।',
-    image: 'https://images.unsplash.com/photo-1572949645841-094f3a9c9468?w=600'
+    image: 'https://i.ibb.co.com/YBWdd4wK/Moha-Kali.jpg'
   },
   {
     id: 'shyama',
     name: 'শ্যামা মা',
     title: 'কালীর অন্য রূপ, কৃষ্ণবর্ণা',
     description: 'শ্যামা মা হলেন কালীর আরেক রূপ। কৃষ্ণবর্ণা এই দেবীকে দীপাবলির রাত্রিতে পূজা করা হয়।',
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600'
+    image: 'https://i.ibb.co.com/0TXrT0n/Kali-Ma.png'
   },
   {
     id: 'saraswati',
     name: 'সরস্বতী মা',
     title: 'বিদ্যাদেবী, বাণীদেবী',
     description: 'সরস্বতী মা হলেন জ্ঞান, সঙ্গীত, কলা ও বিদ্যার দেবী। স্বয়ং ব্রহ্মার সঙ্গিনী এই দেবী।',
-    image: 'https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?w=600'
+    image: 'https://i.ibb.co.com/1Jw49LtJ/Saraswati.png'
   },
   {
     id: 'jagannath',
     name: 'জগন্নাথ দেব',
     title: 'বিশ্বনাথ, পুরীধাম',
     description: 'জগন্নাথ দেব হলেন বিষ্ণুর এক রূপ। পুরীধামে এই দেবতার বিশাল রথযাত্রা হয়।',
-    image: 'https://images.unsplash.com/photo-1561361058-4e7e1c381c9e?w=600'
+    image: 'https://i.ibb.co.com/Xf79K9JZ/jagannath.png'
   }
 ];
 
