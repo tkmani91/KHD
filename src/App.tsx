@@ -104,7 +104,7 @@ const pujaData: PujaInfo[] = [
   {
     id: 'durga',
     name: 'দূর্গাপূজা',
-    date: '2025-10-01',
+    date: '2026-10-17',
     description: 'দূর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - শক্তির আরাধনা',
     image: 'https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=800',
     facebookLink: 'https://facebook.com/kolomdurga'
@@ -112,7 +112,7 @@ const pujaData: PujaInfo[] = [
   {
     id: 'shyama',
     name: 'শ্যামাপূজা',
-    date: '2025-11-12',
+    date: '2026-11-08',
     description: 'শ্যামা মা কালীর অন্য রূপ, কৃষ্ণবর্ণা - কালীপূজা',
     image: 'https://images.unsplash.com/photo-1572949645841-094f3a9c9468?w=800',
     facebookLink: 'https://facebook.com/kolomshyama'
@@ -120,7 +120,7 @@ const pujaData: PujaInfo[] = [
   {
     id: 'saraswati',
     name: 'সরস্বতী পূজা',
-    date: '2025-02-02',
+    date: '2026-01-26',
     description: 'সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - জ্ঞানের আরাধনা',
     image: 'https://images.unsplash.com/photo-1582120042072-d01e2fc8f3ea?w=800',
     facebookLink: 'https://facebook.com/kolomsaraswati'
@@ -128,7 +128,7 @@ const pujaData: PujaInfo[] = [
   {
     id: 'rath',
     name: 'রথযাত্রা',
-    date: '2025-06-27',
+    date: '2026-05-16',
     description: 'জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - ভগবানের রথযাত্রা',
     image: 'https://images.unsplash.com/photo-1561361058-4e7e1c381c9e?w=800',
     facebookLink: 'https://facebook.com/kolomrath'
