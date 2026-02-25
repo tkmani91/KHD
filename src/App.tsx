@@ -210,7 +210,7 @@ const liveChannels: LiveChannel[] = [
 // ============================================
 // মেম্বর লগইন ডেটা - এখানে কাস্টমাইজ করুন
 // ============================================
-
+const response = await fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json');
 // মেম্বর ইনফরমেশন লিস্ট
 // প্রতিটি মেম্বরের জন্য একটি আইটেম
 const members: Member[] = [
