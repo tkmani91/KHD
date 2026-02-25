@@ -46,10 +46,10 @@ const DEMO_LOGIN_DATA = {
   // হিসাব দেখা মেম্বর - সব দেখতে পারবে
   accountsMembers: [
     {
-      mobile: "01812345678",
-      email: "admin@gmail.com",
+      mobile: "01733118313",
+      email: "tanmoy4bd@gmail.com",
       password: "admin123",
-      name: "কমিটি সভাপতি"
+      name: "প্রচার সম্পাদক"
     },
     {
       mobile: "01812345679",
