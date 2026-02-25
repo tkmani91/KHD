@@ -1,0 +1,19 @@
+# আপনার GitHub রিপোজিটরিতে members-login.json ফাইল তৈরি করুন
+{
+  "normalMembers": [
+    {
+      "mobile": "01712345678",
+      "email": "member@email.com", 
+      "password": "password123",
+      "name": "মেম্বর নাম"
+    }
+  ],
+  "accountsMembers": [
+    {
+      "mobile": "01812345678",
+      "email": "admin@email.com",
+      "password": "adminpass",
+      "name": "অ্যাডমিন নাম"
+    }
+  ]
+}
