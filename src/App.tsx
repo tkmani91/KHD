@@ -1642,7 +1642,7 @@ function LoginPage() {
 
           {/* ডেমো লগইন তথ্য */}
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs font-bold text-yellow-700 mb-2">🔑 নিবন্ধন এর জন্য যোগাযোগ করুন 01733118313 tanmoy4bd@gmail.com:</p>
+            <p className="text-xs font-bold text-yellow-700 mb-2">🔑 নিবন্ধন এর জন্য যোগাযোগ করুন: +88 01733118313 </p>
            </div>
         </div>
 
