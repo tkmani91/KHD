@@ -187,11 +187,32 @@ const songs: Song[] = [
   { id: '3', title: 'ওম আয়ুর্দেহি যশোদেহি', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Ayurdehi%20Jashodehi.webm', duration: '7:16' },
   { id: '4', title: 'ওম জয়তাং দেবী চামুন্ডে', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Jayatang%20Devi%20Chamunde.webm', duration: '8:20' },
   { id: '5', title: 'সাভারণী সূর্যো তমায়ো', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Savarni%20Suryo%20Tanayo.mp3', duration: '6:04' },
-  { id: '6', title: 'জয় মা কালী', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: '#', duration: '4:45' },
-  { id: '3', title: 'সরস্বতী বন্দনা', artist: 'লতা মঙ্গেশকর', category: 'আরতী', url: '#', duration: '3:20' },
-  { id: '4', title: 'জগন্নাথ স্বামী', artist: 'হরিহরন', category: 'ভজন', url: '#', duration: '6:15' },
-  { id: '5', title: 'দুর্গা আরতী', artist: 'সমবেত', category: 'আরতী', url: '#', duration: '4:00' },
-  { id: '6', title: 'কালী আরতী', artist: 'সমবেত', category: 'আরতী', url: '#', duration: '3:45' },
+  { id: '6', title: 'আমার সাধ না মিটিল', artist: 'শুভঙ্কর', category: 'শ্যামা সংগীত', url: '#', duration: '4:01' },
+  { id: '7', title: 'আমার আর কোনও গুন নেই মা', artist: 'মধুপূর্ণা গাঙ্গুলি', category: 'শ্যামা সংগীত', url: '#', duration: '5:45' },
+  { id: '8', title: 'আমার চেতনা চৈতন্য', artist: 'মেখলা দাশগুপ্ত', category: 'শ্যামা সংগীত', url: '#', duration: '3:32' },
+  { id: '9', title: 'আমার সাধ না মিটিল', artist: 'সোমচন্দ ভট্টাচার্য', category: 'শ্যামা সংগীত', url: '#', duration: '4:48' },
+  { id: '10', title: 'আমি সকল কাজের', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: '#', duration: '3:41' },
+  { id: '11', title: 'ভেবে দেখ মন', artist: 'অরিজিৎ চক্রবর্তী', category: 'শ্যামা সংগীত', url: '#', duration: '5:37' },
+  { id: '12', title: 'বল মা আমি দাঁড়াই কোথা', artist: 'গুরুজিৎ সিং', category: 'শ্যামা সংগীত', url: '#', duration: '4:48' },
+  { id: '13', title: 'ডাক দেখি মন', artist: 'অর্পণা চক্রবর্তী', category: 'শ্যামা সংগীত', url: '#', duration: '3:16' },
+  { id: '14', title: 'দোষ কারো নয় গো', artist: 'সৃজন চ্যাটার্জী', category: 'শ্যামা সংগীত', url: '#', duration: '4:45' },
+  { id: '15', title: 'ডুব দে রে মন কালী বলে', artist: 'অর্পিতা দে', category: 'শ্যামা সংগীত', url: '#', duration: '5:58' },
+  { id: '16', title: 'একবার নাচো মা', artist: 'কালিকাপ্রসাদ', category: 'শ্যামা সংগীত', url: '#', duration: '5:39' },
+  { id: '17', title: 'কালী কালী বল রসনা', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: '#', duration: '4:46' },
+  { id: '18', title: 'কালো মেয়ের পায়ের তলায়', artist: 'শুভঙ্কর', category: 'শ্যামা সংগীত', url: '#', duration: '4:31' },
+  { id: '19', title: 'মা গো তোর কৃপা', artist: 'সৌরভ মুখার্জি', category: 'শ্যামা সংগীত', url: '#', duration: '5:06' },
+  { id: '20', title: 'মায়ের মূর্তি গড়াতে চাই', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: '#', duration: '3:41' },
+  { id: '21', title: 'মায়ের পায়ের জবা', artist: 'অভিক মুখার্জি', category: 'শ্যামা সংগীত', url: '#', duration: '3:31' },
+  { id: '22', title: 'মন রে কৃষিকাজ', artist: 'অরিজিৎ চক্রবর্তী', category: 'শ্যামা সংগীত', url: '#', duration: '4:03' },
+  { id: '23', title: 'মন তোরে তাই বলি বলি', artist: 'বিভবেন্দু ভট্টাচার্য', category: 'শ্যামা সংগীত', url: '#', duration: '5:33' },
+  { id: '24', title: 'সদানন্দময়ী কালী', artist: 'অমৃতা দত্ত', category: 'শ্যামা সংগীত', url: '#', duration: '4:20' },
+  { id: '25', title: 'সকলই তোমারই ইচ্ছা', artist: 'শুভঙ্কর - রামদুলাল নন্দী', category: 'শ্যামা সংগীত', url: '#', duration: '3:00' },
+  { id: '26', title: 'শ্যামা মা কি আমার', artist: 'অমৃতা', category: 'শ্যামা সংগীত', url: '#', duration: '4:09' },
+  { id: '27', title: 'সুরের প্রেমাঞ্জলী', artist: 'অপরাজিতা চক্রবর্তী', category: 'শ্যামা সংগীত', url: '#', duration: '3:59' },
+  { id: '28', title: 'সরস্বতী বন্দনা', artist: 'লতা মঙ্গেশকর', category: 'আরতী', url: '#', duration: '3:20' },
+  { id: '29', title: 'জগন্নাথ স্বামী', artist: 'হরিহরন', category: 'ভজন', url: '#', duration: '6:15' },
+  { id: '30', title: 'দুর্গা আরতী', artist: 'সমবেত', category: 'আরতী', url: '#', duration: '4:00' },
+  { id: '31', title: 'কালী আরতী', artist: 'সমবেত', category: 'আরতী', url: '#', duration: '3:45' },
 ];
 
 const pdfFiles: PDFFile[] = [
@@ -984,16 +1005,17 @@ function MusicPage() {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
+  const categories = ['সব', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
 
   const filteredSongs = selectedCategory === 'all' || selectedCategory === 'সব'
     ? songs
     : songs.filter(s => s.category === selectedCategory);
 
-  // অডিও এলিমেন্ট সেটআপ
+  // অডিও সেটআপ
   useEffect(() => {
     const audio = new Audio();
     audioRef.current = audio;
@@ -1005,13 +1027,8 @@ function MusicPage() {
         setProgress((audio.currentTime / audio.duration) * 100);
       }
     };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
-
+    const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => {
-      // গান শেষ হলে পরের গানে
       setCurrentIndex(prev => {
         const nextIndex = prev + 1 >= filteredSongs.length ? 0 : prev + 1;
         const nextSong = filteredSongs[nextIndex];
@@ -1039,12 +1056,9 @@ function MusicPage() {
   }, []);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
+    if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // গান বাজানো
   const playSong = (song: Song, index: number) => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -1059,7 +1073,6 @@ function MusicPage() {
     }
   };
 
-  // প্লে/পজ টগল
   const togglePlayPause = () => {
     if (!audioRef.current || !currentSong) return;
     if (isPlaying) {
@@ -1071,10 +1084,8 @@ function MusicPage() {
     }
   };
 
-  // ⏮️ স্কিপ ব্যাক - আগের গান
   const handleSkipBack = () => {
     if (filteredSongs.length === 0) return;
-    // ৩ সেকেন্ডের বেশি চললে শুরুতে ফেরত
     if (audioRef.current && audioRef.current.currentTime > 3) {
       audioRef.current.currentTime = 0;
       setProgress(0);
@@ -1086,7 +1097,6 @@ function MusicPage() {
     playSong(filteredSongs[newIndex], newIndex);
   };
 
-  // ⏭️ স্কিপ ফরোয়ার্ড - পরের গান
   const handleSkipForward = () => {
     if (filteredSongs.length === 0) return;
     let newIndex = currentIndex + 1;
@@ -1094,7 +1104,6 @@ function MusicPage() {
     playSong(filteredSongs[newIndex], newIndex);
   };
 
-  // প্রগ্রেস বার ক্লিক
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current || !duration) return;
     const bar = e.currentTarget;
@@ -1106,12 +1115,74 @@ function MusicPage() {
     setProgress((newTime / duration) * 100);
   };
 
-  // সময় ফরম্যাট
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // ============================================
+  // ✅ ফিক্সড ডাউনলোড ফাংশন
+  // ============================================
+  const handleDownload = async (e: React.MouseEvent, song: Song) => {
+    // গান বাজানো থেকে আলাদা রাখা
+    e.stopPropagation();
+
+    // URL চেক - '#' বা খালি হলে
+    if (!song.url || song.url === '#') {
+      alert(`"${song.title}" এর ডাউনলোড লিংক এখনো যোগ করা হয়নি।`);
+      return;
+    }
+
+    // ডাউনলোডিং স্টেট সেট
+    setDownloadingId(song.id);
+
+    try {
+      // ফাইল ফেচ করো
+      const response = await fetch(song.url);
+      
+      if (!response.ok) {
+        throw new Error('ডাউনলোড করতে সমস্যা হয়েছে');
+      }
+
+      // ব্লব তৈরি
+      const blob = await response.blob();
+      
+      // ডাউনলোড লিংক তৈরি
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      
+      // ফাইলের নাম সেট করো
+      const fileName = `${song.title} - ${song.artist}.mp3`;
+      link.download = fileName;
+      
+      // ক্লিক করে ডাউনলোড শুরু
+      document.body.appendChild(link);
+      link.click();
+      
+      // ক্লিনআপ
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+    } catch (error) {
+      // ফেচ ব্যর্থ হলে সরাসরি লিংক দিয়ে চেষ্টা
+      try {
+        const link = document.createElement('a');
+        link.href = song.url;
+        link.download = `${song.title} - ${song.artist}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch {
+        alert('ডাউনলোড করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।');
+      }
+    } finally {
+      // ডাউনলোডিং স্টেট রিসেট
+      setTimeout(() => setDownloadingId(null), 1000);
+    }
   };
 
   return (
@@ -1123,7 +1194,7 @@ function MusicPage() {
 
       {/* অডিও প্লেয়ার */}
       {currentSong && (
-        <div className="audio-player rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600">
+        <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
               {isPlaying ? (
@@ -1155,7 +1226,21 @@ function MusicPage() {
                 <SkipForward className="w-5 h-5" />
               </button>
             </div>
-            <div className="hidden sm:flex items-center gap-2">
+
+            {/* প্লেয়ারে ডাউনলোড বাটন */}
+            <button 
+              onClick={(e) => handleDownload(e, currentSong)} 
+              title="এই গান ডাউনলোড করুন"
+              className="hidden sm:flex w-10 h-10 bg-white/20 rounded-full items-center justify-center hover:bg-white/30 transition active:scale-95"
+            >
+              {downloadingId === currentSong.id ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Download className="w-5 h-5" />
+              )}
+            </button>
+
+            <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
               <input type="range" min="0" max="1" step="0.01" value={volume}
                 onChange={(e) => setVolume(parseFloat(e.target.value))}
@@ -1165,6 +1250,7 @@ function MusicPage() {
                   [&::-webkit-slider-thumb]:rounded-full" />
             </div>
           </div>
+
           {/* প্রগ্রেস বার */}
           <div className="mt-4 flex items-center gap-3">
             <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
@@ -1198,6 +1284,8 @@ function MusicPage() {
           <div key={song.id} onClick={() => playSong(song, index)}
             className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all",
               currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+            
+            {/* গানের আইকন */}
             <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all",
               currentSong?.id === song.id && isPlaying
                 ? "bg-gradient-to-br from-orange-500 to-red-500"
@@ -1213,15 +1301,34 @@ function MusicPage() {
                 <Music className="w-6 h-6 text-orange-600" />
               )}
             </div>
+
+            {/* গানের তথ্য */}
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{song.title}</h4>
               <p className="text-sm text-gray-500 truncate">{song.artist} • {song.category}</p>
             </div>
+
+            {/* ডিউরেশন ও ডাউনলোড */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button onClick={(e) => { e.stopPropagation(); }}
-                className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 hover:bg-orange-200 transition">
-                <Download className="w-4 h-4" />
+              
+              {/* ✅ ফিক্সড ডাউনলোড বাটন */}
+              <button 
+                onClick={(e) => handleDownload(e, song)}
+                disabled={downloadingId === song.id}
+                title={`"${song.title}" ডাউনলোড করুন`}
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center transition",
+                  downloadingId === song.id
+                    ? "bg-green-100 text-green-600 cursor-wait"
+                    : "bg-orange-100 text-orange-600 hover:bg-orange-200 active:scale-95"
+                )}
+              >
+                {downloadingId === song.id ? (
+                  <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -1237,7 +1344,6 @@ function MusicPage() {
     </div>
   );
 }
-
 function PDFPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
