@@ -1449,16 +1449,6 @@ function ContactPage() {
               <Facebook className="w-8 h-8 text-blue-600" />
               <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
             </a>
-            <a href="https://facebook.com/kolomdurga" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
-              <Facebook className="w-8 h-8 text-orange-600" />
-              <div><p className="font-medium">দূর্গাপূজা পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
-            </a>
-            <a href="https://facebook.com/kolomshyama" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-4 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition">
-              <Facebook className="w-8 h-8 text-purple-600" />
-              <div><p className="font-medium">শ্যামাপূজা পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
-            </a>
           </div>
         </div>
       </div>
