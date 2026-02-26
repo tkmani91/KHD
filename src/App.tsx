@@ -183,7 +183,11 @@ const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => ({
 
 const songs: Song[] = [
   { id: '1', title: 'নমোঃ দেবযাই মহা দেবযাই', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Namoh%20Devyai%20Maha%20Devyai.webm', duration: '9:27' },
-  { id: '2', title: 'জয় মা কালী', artist: 'সোনু নিগম', category: 'ভজন', url: '#', duration: '4:45' },
+  { id: '2', title: 'মধুকৈটভ বিধবংশী', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Madhukaitava%20Vidhwangsi.webm', duration: '9:48' },
+  { id: '3', title: 'ওম আয়ুর্দেহি যশোদেহি', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Ayurdehi%20Jashodehi.webm', duration: '7:16' },
+  { id: '4', title: 'ওম জয়তাং দেবী চামুন্ডে', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Jayatang%20Devi%20Chamunde.webm', duration: '8:20' },
+  { id: '5', title: 'সাভারণী সূর্যো তমায়ো', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Savarni%20Suryo%20Tanayo.mp3', duration: '6:04' },
+  { id: '6', title: 'জয় মা কালী', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: '#', duration: '4:45' },
   { id: '3', title: 'সরস্বতী বন্দনা', artist: 'লতা মঙ্গেশকর', category: 'আরতী', url: '#', duration: '3:20' },
   { id: '4', title: 'জগন্নাথ স্বামী', artist: 'হরিহরন', category: 'ভজন', url: '#', duration: '6:15' },
   { id: '5', title: 'দুর্গা আরতী', artist: 'সমবেত', category: 'আরতী', url: '#', duration: '4:00' },
@@ -983,7 +987,7 @@ function MusicPage() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const categories = ['সব', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
+  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
 
   const filteredSongs = selectedCategory === 'all' || selectedCategory === 'সব'
     ? songs
