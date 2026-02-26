@@ -190,7 +190,7 @@ const songs: Song[] = [
   { id: '6', title: 'আমার সাধ না মিটিল', artist: 'শুভঙ্কর', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/glpacs.webm', duration: '4:01' },
   { id: '7', title: 'আমার আর কোনও গুন নেই মা', artist: 'মধুপূর্ণা গাঙ্গুলি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/gpra90.webm', duration: '5:45' },
   { id: '8', title: 'আমার চেতনা চৈতন্য', artist: 'মেখলা দাশগুপ্ত', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/1wl9oi.webm', duration: '3:32' },
-  { id: '9', title: 'আমার সাধ না মিটিল', artist: 'সোমচন্দ ভট্টাচার্য', category: 'শ্যামা সংগীত', https://files.catbox.moe/7f4a2l.webm: '#', duration: '4:48' },
+  { id: '9', title: 'আমার সাধ না মিটিল', artist: 'সোমচন্দ ভট্টাচার্য', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/7f4a2l.webm', duration: '4:48' },
   { id: '10', title: 'আমি সকল কাজের', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/k76bty.webm', duration: '3:41' },
   { id: '11', title: 'ভেবে দেখ মন', artist: 'অরিজিৎ চক্রবর্তী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/1tn51j.webm', duration: '5:37' },
   { id: '12', title: 'বল মা আমি দাঁড়াই কোথা', artist: 'গুরুজিৎ সিং', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/q9of4f.webm', duration: '4:48' },
