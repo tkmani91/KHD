@@ -1386,36 +1386,420 @@ function PDFPage() {
 
 function LiveTVPage() {
   const [activeChannel, setActiveChannel] = useState<LiveChannel>(liveChannels[0]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [volume, setVolume] = useState(0.8);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // ============================================
+  // HLS স্ট্রিম লোড করা
+  // ============================================
+  useEffect(() => {
+    const loadStream = async () => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      // আগের স্ট্রিম বন্ধ করো
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      setIsLoading(true);
+      setHasError(false);
+      setErrorMessage('');
+
+      const streamUrl = activeChannel.streamUrl;
+
+      // চেক করো URL আছে কিনা
+      if (!streamUrl || streamUrl === '#') {
+        setHasError(true);
+        setErrorMessage('এই চ্যানেলের স্ট্রিম URL পাওয়া যায়নি');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // HLS.js ডায়নামিক ইম্পোর্ট
+        const Hls = (await import('hls.js')).default;
+
+        if (Hls.isSupported()) {
+          // HLS.js সাপোর্ট করলে
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+            startLevel: -1, // অটো কোয়ালিটি
+            debug: false,
+          });
+
+          hlsRef.current = hls;
+
+          hls.loadSource(streamUrl);
+          hls.attachMedia(video);
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setIsLoading(false);
+            setHasError(false);
+            video.play().catch(() => {
+              // অটোপ্লে ব্লক হলে মিউটেড প্লে
+              video.muted = true;
+              setIsMuted(true);
+              video.play().catch(() => {});
+            });
+          });
+
+          hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  setErrorMessage('নেটওয়ার্ক সমস্যা। আবার চেষ্টা করা হচ্ছে...');
+                  hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  setErrorMessage('মিডিয়া এরর। রিকভার করা হচ্ছে...');
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  setHasError(true);
+                  setErrorMessage('এই চ্যানেলটি এখন চলছে না। অন্য চ্যানেল ট্রাই করুন।');
+                  setIsLoading(false);
+                  hls.destroy();
+                  break;
+              }
+            }
+          });
+
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari/iOS - নেটিভ HLS সাপোর্ট
+          video.src = streamUrl;
+          video.addEventListener('loadedmetadata', () => {
+            setIsLoading(false);
+            video.play().catch(() => {
+              video.muted = true;
+              setIsMuted(true);
+              video.play().catch(() => {});
+            });
+          });
+          video.addEventListener('error', () => {
+            setHasError(true);
+            setErrorMessage('চ্যানেল লোড করতে সমস্যা হয়েছে।');
+            setIsLoading(false);
+          });
+        } else {
+          setHasError(true);
+          setErrorMessage('আপনার ব্রাউজার HLS স্ট্রিমিং সাপোর্ট করে না।');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        setHasError(true);
+        setErrorMessage('প্লেয়ার লোড করতে সমস্যা হয়েছে।');
+        setIsLoading(false);
+      }
+    };
+
+    loadStream();
+
+    // ক্লিনআপ
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [activeChannel]);
+
+  // ভলিউম আপডেট
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+      videoRef.current.muted = isMuted;
+    }
+  }, [volume, isMuted]);
+
+  // ============================================
+  // কন্ট্রোল ফাংশন
+  // ============================================
+  const handleRetry = () => {
+    // রিলোড করো
+    const currentChannel = activeChannel;
+    setActiveChannel({ ...currentChannel });
+  };
+
+  const handleFullscreen = () => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(() => {});
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      }).catch(() => {});
+    }
+  };
+
+  const handleMuteToggle = () => {
+    setIsMuted(!isMuted);
+  };
+
+  const handleChannelChange = (channel: LiveChannel) => {
+    if (channel.id === activeChannel.id) return;
+    setActiveChannel(channel);
+  };
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
-        <p className="text-gray-600">ধর্মীয় চ্যানেল ও লাইভ সম্প্রচার</p>
+        <p className="text-gray-600">ধর্মীয় চ্যানেল লাইভ দেখুন</p>
       </div>
-      <div className="bg-black rounded-2xl overflow-hidden aspect-video relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white">
-            <Tv className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">{activeChannel.name}</p>
-            <p className="text-sm text-gray-400 mt-2">ভিডিও প্লেয়ার এখানে প্রদর্শিত হবে</p>
-          </div>
+
+      {/* ভিডিও প্লেয়ার */}
+      <div 
+        ref={containerRef}
+        className="bg-black rounded-2xl overflow-hidden relative group"
+      >
+        {/* ভিডিও এলিমেন্ট */}
+        <div className="aspect-video relative">
+          <video
+            ref={videoRef}
+            className="w-full h-full object-contain bg-black"
+            playsInline
+            autoPlay
+          />
+
+          {/* লোডিং স্পিনার */}
+          {isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="text-center text-white">
+                <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-lg font-medium">{activeChannel.name}</p>
+                <p className="text-sm text-gray-400 mt-2">লোড হচ্ছে, অপেক্ষা করুন...</p>
+              </div>
+            </div>
+          )}
+
+          {/* এরর মেসেজ */}
+          {hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90">
+              <div className="text-center text-white max-w-md px-6">
+                <div className="text-5xl mb-4">📡</div>
+                <p className="text-lg font-medium mb-2">চ্যানেল পাওয়া যাচ্ছে না</p>
+                <p className="text-sm text-gray-400 mb-6">{errorMessage}</p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={handleRetry}
+                    className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition active:scale-95"
+                  >
+                    🔄 আবার চেষ্টা করুন
+                  </button>
+                  <button
+                    onClick={() => {
+                      const nextIndex = liveChannels.findIndex(c => c.id === activeChannel.id) + 1;
+                      if (nextIndex < liveChannels.length) {
+                        handleChannelChange(liveChannels[nextIndex]);
+                      } else {
+                        handleChannelChange(liveChannels[0]);
+                      }
+                    }}
+                    className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition active:scale-95"
+                  >
+                    ⏭️ পরের চ্যানেল
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* চ্যানেল নাম ওভারলে */}
+          {!isLoading && !hasError && (
+            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg text-white text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              LIVE • {activeChannel.name}
+            </div>
+          )}
+
+          {/* কন্ট্রোল বার */}
+          {!isLoading && !hasError && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* মিউট/আনমিউট */}
+                  <button
+                    onClick={handleMuteToggle}
+                    className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition"
+                    title={isMuted ? 'আনমিউট' : 'মিউট'}
+                  >
+                    {isMuted ? (
+                      <span className="text-lg">🔇</span>
+                    ) : (
+                      <Volume2 className="w-5 h-5" />
+                    )}
+                  </button>
+
+                  {/* ভলিউম স্লাইডার */}
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setVolume(val);
+                      if (val > 0) setIsMuted(false);
+                    }}
+                    className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3
+                      [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white
+                      [&::-webkit-slider-thumb]:rounded-full"
+                  />
+
+                  {/* চ্যানেল নাম */}
+                  <span className="text-white text-sm ml-2">
+                    {activeChannel.logo} {activeChannel.name}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* রিফ্রেশ */}
+                  <button
+                    onClick={handleRetry}
+                    className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition"
+                    title="রিফ্রেশ"
+                  >
+                    🔄
+                  </button>
+
+                  {/* ফুলস্ক্রিন */}
+                  <button
+                    onClick={handleFullscreen}
+                    className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition"
+                    title="ফুলস্ক্রিন"
+                  >
+                    {isFullscreen ? '⬜' : '⛶'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {liveChannels.map((channel) => (
-          <button key={channel.id} onClick={() => setActiveChannel(channel)}
-            className={cn("card-hover p-4 rounded-xl text-center transition",
-              activeChannel.id === channel.id ? "bg-orange-500 text-white" : "bg-white hover:bg-orange-50")}>
-            <div className="text-4xl mb-2">{channel.logo}</div>
-            <p className="font-medium text-sm">{channel.name}</p>
+
+      {/* চ্যানেল সিলেক্টর */}
+      <div>
+        <h3 className="text-lg font-bold mb-4">চ্যানেল সিলেক্ট করুন</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {liveChannels.map((channel) => (
+            <button
+              key={channel.id}
+              onClick={() => handleChannelChange(channel)}
+              className={cn(
+                "relative p-4 rounded-xl text-center transition-all active:scale-95",
+                activeChannel.id === channel.id
+                  ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
+                  : "bg-white hover:bg-orange-50 hover:shadow-md"
+              )}
+            >
+              {/* লাইভ ইন্ডিকেটর */}
+              {activeChannel.id === channel.id && (
+                <div className="absolute top-2 right-2 flex items-center gap-1">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  <span className="text-xs font-bold">LIVE</span>
+                </div>
+              )}
+              <div className="text-3xl mb-2">{channel.logo}</div>
+              <p className="font-medium text-sm">{channel.name}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* কাস্টম চ্যানেল URL */}
+      <div className="bg-white rounded-2xl p-6 shadow-lg">
+        <h3 className="text-lg font-bold mb-4 gradient-text">কাস্টম চ্যানেল যোগ করুন</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          m3u8 বা m3u স্ট্রিমিং URL দিয়ে যেকোনো চ্যানেল দেখুন
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="m3u8 URL পেস্ট করুন..."
+            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none text-sm"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const input = e.target as HTMLInputElement;
+                const url = input.value.trim();
+                if (url) {
+                  setActiveChannel({
+                    id: 'custom',
+                    name: 'কাস্টম চ্যানেল',
+                    logo: '📡',
+                    streamUrl: url
+                  });
+                  input.value = '';
+                }
+              }
+            }}
+          />
+          <button
+            onClick={() => {
+              const input = document.querySelector('input[placeholder*="m3u8"]') as HTMLInputElement;
+              if (input && input.value.trim()) {
+                setActiveChannel({
+                  id: 'custom',
+                  name: 'কাস্টম চ্যানেল',
+                  logo: '📡',
+                  streamUrl: input.value.trim()
+                });
+                input.value = '';
+              }
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:opacity-90 transition active:scale-95"
+          >
+            ▶ চালান
           </button>
-        ))}
+        </div>
+      </div>
+
+      {/* সাহায্য */}
+      <div className="bg-orange-50 rounded-2xl p-6">
+        <h3 className="font-bold mb-3">❓ চ্যানেল না চললে কী করবেন?</h3>
+        <ul className="space-y-2 text-sm text-gray-600">
+          <li className="flex items-start gap-2">
+            <span className="text-orange-500 font-bold">১.</span>
+            <span>"আবার চেষ্টা করুন" বাটনে ক্লিক করুন</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-orange-500 font-bold">২.</span>
+            <span>অন্য চ্যানেল সিলেক্ট করে দেখুন</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-orange-500 font-bold">৩.</span>
+            <span>ইন্টারনেট সংযোগ চেক করুন</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-orange-500 font-bold">৪.</span>
+            <span>VPN চালু থাকলে বন্ধ করে দেখুন</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-orange-500 font-bold">৫.</span>
+            <span>Chrome বা Firefox ব্রাউজার ব্যবহার করুন</span>
+          </li>
+        </ul>
       </div>
     </div>
   );
 }
-
 function ContactPage() {
   return (
     <div className="space-y-8">
