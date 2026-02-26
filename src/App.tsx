@@ -182,7 +182,7 @@ const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 const songs: Song[] = [
-  { id: '1', title: 'অমর মা দুর্গা', artist: 'অনুপ জলোটা', category: 'ভজন', url: '#', duration: '5:30' },
+  { id: '1', title: 'নমোঃ দেবযাই মহা দেবযাই', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Namoh%20Devyai%20Maha%20Devyai.webm', duration: '9:27' },
   { id: '2', title: 'জয় মা কালী', artist: 'সোনু নিগম', category: 'ভজন', url: '#', duration: '4:45' },
   { id: '3', title: 'সরস্বতী বন্দনা', artist: 'লতা মঙ্গেশকর', category: 'আরতী', url: '#', duration: '3:20' },
   { id: '4', title: 'জগন্নাথ স্বামী', artist: 'হরিহরন', category: 'ভজন', url: '#', duration: '6:15' },
