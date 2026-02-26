@@ -1009,7 +1009,7 @@ function MusicPage() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const categories = ['সব', ,দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
+  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'আরতী', 'কীর্তন', 'মন্ত্র'];
 
   const filteredSongs = selectedCategory === 'all' || selectedCategory === 'সব'
     ? songs
