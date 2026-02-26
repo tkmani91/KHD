@@ -583,7 +583,7 @@ function HomePage() {
           <div className="text-6xl mb-4">🕉️</div>
           <h1 className="text-3xl md:text-5xl font-bold mb-4">কলম হিন্দু ধর্মসভা</h1>
           <p className="text-lg md:text-xl text-orange-100 mb-2">কলম, সিংড়া, নাটোর, রাজশাহী, বাংলাদেশ</p>
-          <p className="text-sm text-orange-200">স্থাপিত: 2017 সাল</p>
+          <p className="text-sm text-orange-200">স্থাপিত: ২০১৭ সাল</p>
         </div>
       </section>
 
