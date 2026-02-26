@@ -540,7 +540,7 @@ function Footer() {
             </h3>
             <p className="text-orange-200 text-sm leading-relaxed">
               কলম, সিংড়া, নাটোর, রাজশাহী, বাংলাদেশ<br />
-              স্থাপিত: 2017 সাল
+              স্থাপিত: ২০১৭ সাল
             </p>
           </div>
           <div>
