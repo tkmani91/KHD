@@ -241,7 +241,7 @@ const DEMO_LOGIN_DATA = {
     { mobile: "01733118313", email: "tanmoy4bd@gmail.com", password: "admin123", name: "তন্ময় কুমার মানী" },
   ],
   accountsMembers: [
-    { mobile: "01812345678", email: "demo@admin.com", password: "admin123", name: "ডেমো অ্যাডমিন" },
+    { mobile: "01812345678", email: "demo@member.com", password: "demo123", name: "ডেমো অ্যাডমিন" },
   ]
 };
 
