@@ -1866,9 +1866,9 @@ function LoginPage() {
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
         {[
-          { id: 'members', label: 'মেম্বর ইনফো', icon: Users },
-          { id: 'contacts', label: 'ফোন নম্বর', icon: Phone },
-          { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
+          { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+          { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone },
+          { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
           ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : []),
         ].map((tab) => (
           <button 
@@ -2051,7 +2051,7 @@ function LoginPage() {
                 <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
               </h3>
               <p className="text-sm text-green-100">
-                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} টি পরিবার
+                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
               </p>
             </div>
             <button 
@@ -2137,6 +2137,33 @@ function LoginPage() {
         />
       )}
     </div>
+  );
+}
+// Main App
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen sacred-pattern">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/durga" element={<DurgaPujaPage />} />
+            <Route path="/shyama" element={<ShyamaPujaPage />} />
+            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+            <Route path="/rath" element={<RathYatraPage />} />
+            <Route path="/deities" element={<DeitiesPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/music" element={<MusicPage />} />
+            <Route path="/pdf" element={<PDFPage />} />
+            <Route path="/live" element={<LiveTVPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
