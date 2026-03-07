@@ -1462,6 +1462,9 @@ function ContactPage() {
   );
 }
 
+// GitHub JSON URL
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+
 function LoginPage() {
   const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
@@ -1474,9 +1477,23 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState(DEMO_LOGIN_DATA);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
+  
+  // JSON থেকে আসা ডেটা
+  const [membersData, setMembersData] = useState<Member[]>(members);
+  const [contactsData, setContactsData] = useState<ContactPerson[]>(contactPersons);
+  const [invitationData, setInvitationData] = useState<InvitationList[]>(invitationLists);
+  const [pdfLinks, setPdfLinks] = useState({
+    membersList: '',
+    contactsList: '',
+    invitationList: ''
+  });
+  
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
+  // Login data fetch
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -1494,6 +1511,32 @@ function LoginPage() {
     };
     fetchLoginData();
   }, []);
+
+  // Members/Contacts/Invitations data fetch (login হলে)
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    
+    const fetchAllData = async () => {
+      setIsDataLoading(true);
+      try {
+        const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        
+        if (data.members) setMembersData(data.members);
+        if (data.contacts) setContactsData(data.contacts);
+        if (data.invitations) setInvitationData(data.invitations);
+        if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+        
+      } catch (error) {
+        console.log('Using local data:', error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+    
+    fetchAllData();
+  }, [isLoggedIn]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1538,6 +1581,191 @@ function LoginPage() {
     }, 800);
   };
 
+  // PDF Download Function
+  const handlePdfDownload = (url: string, filename: string) => {
+    if (!url || url === '') {
+      alert('PDF লিংক এখনো যুক্ত হয়নি');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Member ID Card Component
+  const MemberIDCard = ({ member, isFlipped, onFlip, onClose }: { 
+    member: Member; 
+    isFlipped: boolean; 
+    onFlip: () => void;
+    onClose: () => void;
+  }) => (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:text-orange-400 flex items-center gap-1"
+        >
+          <X className="w-5 h-5" /> বন্ধ করুন
+        </button>
+
+        {/* Flip Instructions */}
+        <p className="text-center text-white/80 mb-3 text-sm">
+          👆 কার্ডে ট্যাপ করে {isFlipped ? 'সামনের' : 'পেছনের'} পিঠ দেখুন
+        </p>
+
+        {/* Card Container */}
+        <div 
+          className="w-[340px] sm:w-[380px] h-[220px] cursor-pointer"
+          style={{ perspective: '1000px' }}
+          onClick={onFlip}
+        >
+          <div 
+            className="relative w-full h-full transition-transform duration-700"
+            style={{ 
+              transformStyle: 'preserve-3d',
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+            }}
+          >
+            {/* ===== Front Side ===== */}
+            <div 
+              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
+              <div className="h-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 p-4 relative">
+                {/* Decorative Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-2 left-2 text-6xl">🕉️</div>
+                  <div className="absolute bottom-2 right-2 text-6xl">🪷</div>
+                </div>
+                
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3 relative">
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-3xl">🕉️</span>
+                    </div>
+                    <div className="text-white">
+                      <h3 className="font-bold text-sm leading-tight">কলম হিন্দু ধর্মসভা</h3>
+                      <p className="text-[10px] text-orange-100">সিংড়া, নাটোর, রাজশাহী</p>
+                    </div>
+                  </div>
+                  <div className="text-right text-white bg-white/20 px-3 py-1 rounded-lg">
+                    <p className="text-[9px] text-orange-100">সদস্য নং</p>
+                    <p className="font-bold text-lg">#{member.id.padStart(3, '0')}</p>
+                  </div>
+                </div>
+
+                {/* Member Info */}
+                <div className="flex gap-3 relative">
+                  <div className="w-20 h-24 bg-white rounded-lg overflow-hidden border-3 border-white shadow-xl">
+                    <img 
+                      src={member.photo} 
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x96?text=👤';
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 text-white">
+                    <h2 className="font-bold text-lg leading-tight drop-shadow">{member.name}</h2>
+                    <p className="text-orange-100 text-sm font-semibold bg-white/20 inline-block px-2 rounded mt-1">
+                      {member.designation}
+                    </p>
+                    <div className="mt-2 space-y-1 text-[11px]">
+                      <p className="flex items-center gap-1.5">
+                        <Phone className="w-3 h-3" /> {member.mobile}
+                      </p>
+                      <p className="flex items-center gap-1.5">
+                        <Home className="w-3 h-3" /> {member.address}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-[9px] text-orange-200">
+                  <span>স্থাপিত: ২০১৭</span>
+                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded">
+                    🔄 ফ্লিপ করুন
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ===== Back Side ===== */}
+            <div 
+              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
+              style={{ 
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)'
+              }}
+            >
+              <div className="h-full bg-gradient-to-br from-orange-50 via-white to-orange-100 p-4 relative">
+                {/* Watermark */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-5">
+                  <span className="text-[150px]">🕉️</span>
+                </div>
+                
+                {/* Back Header */}
+                <div className="flex items-center justify-center gap-2 mb-3 pb-2 border-b-2 border-orange-200 relative">
+                  <span className="text-xl">🙏</span>
+                  <h3 className="font-bold text-orange-700">বিস্তারিত তথ্য</h3>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] relative">
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px]">পিতার নাম</p>
+                    <p className="text-gray-800 font-semibold">{member.fatherName || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px]">মাতার নাম</p>
+                    <p className="text-gray-800 font-semibold">{member.motherName || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px]">গোত্র</p>
+                    <p className="text-gray-800 font-semibold">{member.gotra || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px]">পেশা</p>
+                    <p className="text-gray-800 font-semibold">{member.occupation || '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-orange-500 font-medium text-[10px]">স্থায়ী ঠিকানা</p>
+                    <p className="text-gray-800 font-semibold">{member.permanentAddress || '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-orange-500 font-medium text-[10px]">ইমেইল</p>
+                    <p className="text-gray-800 font-semibold">{member.email || '—'}</p>
+                  </div>
+                </div>
+
+                {/* Back Footer */}
+                <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center">
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">🪷</span>
+                    <span className="text-[9px] text-orange-600 font-medium">শুভম্ভবতু</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Facebook className="w-3 h-3 text-blue-500" />
+                    <span className="text-[9px] text-gray-500">KHDS3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ========== Login Form (Not Logged In) ==========
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -1549,18 +1777,18 @@ function LoginPage() {
           <div className={cn("mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2",
             dataSource === 'github' ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600")}>
             <div className={cn("w-2 h-2 rounded-full", dataSource === 'github' ? "bg-green-500" : "bg-yellow-500")} />
-            {dataSource === 'github' ? '✓ GitHub থেকে ডেটা লোড হয়েছে' : '⚠ লোকাল ডেটা'}
+            {dataSource === 'github' ? '✓ সার্ভার থেকে ডেটা লোড হয়েছে' : '⚠ লোকাল ডেটা ব্যবহৃত হচ্ছে'}
           </div>
 
           <div className="flex gap-2 mb-6">
             <button onClick={() => { setLoginType('general'); setLoginError(''); }}
-              className={cn("flex-1 py-2 rounded-lg text-sm font-medium",
-                loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100")}>
+              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
+                loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>
               সাধারণ সদস্য
             </button>
             <button onClick={() => { setLoginType('accounts'); setLoginError(''); }}
-              className={cn("flex-1 py-2 rounded-lg text-sm font-medium",
-                loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100")}>
+              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
+                loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>
               হিসাব দেখুন
             </button>
           </div>
@@ -1593,15 +1821,15 @@ function LoginPage() {
                   className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
                   placeholder="পাসওয়ার্ড" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             <button type="submit" disabled={isLoading}
-              className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2",
-                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white")}>
+              className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition",
+                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
               {isLoading ? (
                 <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>
               ) : (
@@ -1618,20 +1846,26 @@ function LoginPage() {
     );
   }
 
-  // Logged in view
+  // ========== Logged In Dashboard ==========
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1>
-          <p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p>
+          <p className="text-sm text-gray-500">
+            স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span>
+          </p>
         </div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); }}
-          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium">
-          লগআউট
+        <button 
+          onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setSelectedMember(null); }}
+          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+        >
+          <LogIn className="w-4 h-4" /> লগআউট
         </button>
       </div>
 
+      {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
         {[
           { id: 'members', label: 'মেম্বর ইনফো', icon: Users },
@@ -1639,97 +1873,254 @@ function LoginPage() {
           { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
           ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : []),
         ].map((tab) => (
-          <button key={tab.id}
-            onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedMember(null); setSelectedContact(null); }}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2",
-              activeTab === tab.id ? "bg-orange-500 text-white" : "bg-white text-gray-700")}>
+          <button 
+            key={tab.id}
+            onClick={() => { 
+              setActiveTab(tab.id as typeof activeTab); 
+              setSelectedMember(null); 
+              setSelectedContact(null); 
+            }}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition",
+              activeTab === tab.id 
+                ? "bg-orange-500 text-white shadow-lg" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
 
-      {activeTab === 'members' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {members.map((member) => (
-            <div key={member.id} onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
-              className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer",
-                selectedMember?.id === member.id && "ring-2 ring-orange-500")}>
-              <div className="flex items-center gap-4">
-                <img src={member.photo} alt={member.name} className="w-16 h-16 rounded-xl object-cover" />
-                <div className="flex-1">
-                  <h3 className="font-bold">{member.name}</h3>
-                  <p className="text-orange-600 text-sm">{member.designation}</p>
-                  <p className="text-gray-500 text-sm">{member.mobile}</p>
-                </div>
-                <ChevronRight className={cn("w-5 h-5 text-gray-400", selectedMember?.id === member.id && "rotate-90")} />
-              </div>
-              {selectedMember?.id === member.id && (
-                <div className="mt-4 pt-4 border-t text-sm space-y-2">
-                  <p><span className="text-gray-500">পিতা:</span> {member.fatherName}</p>
-                  <p><span className="text-gray-500">ঠিকানা:</span> {member.address}</p>
-                  <p><span className="text-gray-500">পেশা:</span> {member.occupation}</p>
-                </div>
-              )}
-            </div>
-          ))}
+      {/* Loading State */}
+      {isDataLoading && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
         </div>
       )}
 
-      {activeTab === 'contacts' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {contactPersons.map((person) => (
-            <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)}
-              className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer",
-                selectedContact?.id === person.id && "ring-2 ring-orange-500")}>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <User className="w-7 h-7 text-orange-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold">{person.name}</h3>
-                  <p className="text-orange-600 text-sm">{person.occupation}</p>
-                </div>
-                <ChevronRight className={cn("w-5 h-5 text-gray-400", selectedContact?.id === person.id && "rotate-90")} />
-              </div>
-              {selectedContact?.id === person.id && (
-                <div className="mt-4 pt-4 border-t text-sm space-y-2">
-                  <p><span className="text-gray-500">মোবাইল:</span> {person.mobile}</p>
-                  <p><span className="text-gray-500">ঠিকানা:</span> {person.address}</p>
-                </div>
-              )}
+      {/* ========== Members Tab ========== */}
+      {activeTab === 'members' && !isDataLoading && (
+        <div className="space-y-4">
+          {/* PDF Download Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা
+              </h3>
+              <p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p>
             </div>
-          ))}
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')}
+              className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />
+              PDF ডাউনলোড
+            </button>
+          </div>
+
+          {/* Members Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {membersData.map((member) => (
+              <div 
+                key={member.id} 
+                onClick={() => { setSelectedMember(member); setIsCardFlipped(false); }}
+                className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow">
+                    <img 
+                      src={member.photo} 
+                      alt={member.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=👤';
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 truncate">{member.name}</h3>
+                    <p className="text-orange-600 text-sm font-medium">{member.designation}</p>
+                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {member.mobile}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                    ID: #{member.id.padStart(3, '0')}
+                  </span>
+                  <span className="text-xs text-orange-500 font-medium">
+                    আইডি কার্ড দেখুন →
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {membersData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
-      {activeTab === 'invitation' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {invitationLists.map((item) => (
-            <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold">{item.area}</h3>
-                  <p className="text-sm text-gray-500">{item.personName}</p>
-                </div>
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
-                  {item.familyCount}
-                </div>
-              </div>
+      {/* ========== Contacts Tab ========== */}
+      {activeTab === 'contacts' && !isDataLoading && (
+        <div className="space-y-4">
+          {/* PDF Download Header */}
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Phone className="w-5 h-5" /> যোগাযোগ তালিকা
+              </h3>
+              <p className="text-sm text-blue-100">মোট {contactsData.length} জন</p>
             </div>
-          ))}
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')}
+              className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />
+              PDF ডাউনলোড
+            </button>
+          </div>
+
+          {/* Contacts List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {contactsData.map((person) => (
+              <div 
+                key={person.id} 
+                onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)}
+                className={cn(
+                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
+                  selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50"
+                )}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                    <User className="w-7 h-7 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold">{person.name}</h3>
+                    <p className="text-blue-600 text-sm">{person.occupation}</p>
+                  </div>
+                  <ChevronRight className={cn(
+                    "w-5 h-5 text-gray-400 transition-transform",
+                    selectedContact?.id === person.id && "rotate-90"
+                  )} />
+                </div>
+                
+                {selectedContact?.id === person.id && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
+                    <p className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-blue-400" />
+                      <a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">
+                        {person.mobile}
+                      </a>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <Home className="w-4 h-4 text-gray-400" />
+                      <span>{person.address}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {contactsData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
-      {activeTab === 'accounts' && loginType === 'accounts' && (
+      {/* ========== Invitation Tab ========== */}
+      {activeTab === 'invitation' && !isDataLoading && (
+        <div className="space-y-4">
+          {/* PDF Download Header */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
+              </h3>
+              <p className="text-sm text-green-100">
+                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} টি পরিবার
+              </p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')}
+              className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />
+              PDF ডাউনলোড
+            </button>
+          </div>
+
+          {/* Invitation Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {invitationData.map((item) => (
+              <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                    <Home className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <span className="text-orange-600 font-bold text-lg">{item.familyCount}</span>
+                  </div>
+                </div>
+                <h3 className="font-bold text-gray-800">{item.area}</h3>
+                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                  <User className="w-3 h-3" /> {item.personName}
+                </p>
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <span className="text-xs text-green-600 font-medium">
+                    {item.familyCount} টি পরিবার
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {invitationData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========== Accounts Tab ========== */}
+      {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-              <h3 className="font-bold text-lg mb-4">{data.title}</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg">{data.title}</h3>
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
-                  <a key={year} href={url} download
-                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100">
-                    <FileText className="w-4 h-4 text-orange-600" /><span className="text-sm">{year}</span>
+                  <a 
+                    key={year} 
+                    href={url} 
+                    download
+                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+                  >
+                    <Download className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">{year}</span>
                   </a>
                 ))}
               </div>
@@ -1737,35 +2128,17 @@ function LoginPage() {
           ))}
         </div>
       )}
-    </div>
-  );
-}
 
-// Main App
-function App() {
-  return (
-    <Router>
-      <div className="min-h-screen sacred-pattern">
-        <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/durga" element={<DurgaPujaPage />} />
-            <Route path="/shyama" element={<ShyamaPujaPage />} />
-            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
-            <Route path="/rath" element={<RathYatraPage />} />
-            <Route path="/deities" element={<DeitiesPage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/music" element={<MusicPage />} />
-            <Route path="/pdf" element={<PDFPage />} />
-            <Route path="/live" element={<LiveTVPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+      {/* Member ID Card Modal */}
+      {selectedMember && (
+        <MemberIDCard 
+          member={selectedMember}
+          isFlipped={isCardFlipped}
+          onFlip={() => setIsCardFlipped(!isCardFlipped)}
+          onClose={() => { setSelectedMember(null); setIsCardFlipped(false); }}
+        />
+      )}
+    </div>
   );
 }
 
