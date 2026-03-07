@@ -1,10 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Calendar, Users, Image, Music, FileText, 
-  Tv, Phone, LogIn, Menu, X, Facebook, ChevronRight,
-  Clock, Download, Play, Pause, SkipBack, SkipForward,
-  Volume2, User, Lock, Eye, EyeOff, AlertCircle
+  Home as HomeIcon,
+  Calendar, 
+  Users, 
+  Image, 
+  Music, 
+  FileText, 
+  Tv, 
+  Phone, 
+  LogIn, 
+  Menu, 
+  X, 
+  Facebook, 
+  ChevronRight,
+  Clock, 
+  Download, 
+  Play, 
+  Pause, 
+  SkipBack, 
+  SkipForward,
+  Volume2, 
+  User, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  AlertCircle,
+  MapPin
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
@@ -223,7 +245,10 @@ const liveChannels: LiveChannel[] = [
   { id: '3', name: 'Satsang TV', logo: '🪔', streamUrl: 'https://d2vfwvjxwtwq1t.cloudfront.net/out/v1/6b24239d5517495b986e7705490c6e65/index.m3u8' },
   { id: '4', name: 'SVBC 4', logo: '☸️', streamUrl: 'https://d1msejlow1t3l4.cloudfront.net/fta/svbchindi4/chunks.m3u8' },
 ];
+
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+
 const DEMO_LOGIN_DATA = {
   normalMembers: [
     { mobile: "01712345678", email: "demo@member.com", password: "demo123", name: "ডেমো মেম্বর" },
@@ -233,8 +258,6 @@ const DEMO_LOGIN_DATA = {
     { mobile: "01812345678", email: "demo@member.com", password: "demo123", name: "ডেমো অ্যাডমিন" },
   ]
 };
-
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
 const members: Member[] = [
   {
@@ -411,7 +434,7 @@ function Header() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'হোম', icon: Home },
+    { path: '/', label: 'হোম', icon: HomeIcon },
     { path: '/durga', label: 'দূর্গাপূজা', icon: Calendar },
     { path: '/shyama', label: 'শ্যামাপূজা', icon: Calendar },
     { path: '/saraswati', label: 'সরস্বতী পূজা', icon: Calendar },
@@ -761,7 +784,7 @@ function DeitiesPage() {
     </div>
   );
 }
-// GalleryPage - শুধু একটি ভার্সন
+
 function GalleryPage() {
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedPuja, setSelectedPuja] = useState<string>('সব');
@@ -770,7 +793,7 @@ function GalleryPage() {
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
-  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017,2016,2015,2014,2013,2011,2010,2009,2008];
+  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
   useEffect(() => {
@@ -925,7 +948,7 @@ function GalleryPage() {
   );
 }
 
-// MusicPage - Fixed useEffect
+// MusicPage - Fixed Version
 function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -939,6 +962,7 @@ function MusicPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentIndexRef = useRef<number>(-1);
 
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
 
@@ -946,7 +970,12 @@ function MusicPage() {
     ? songs
     : songs.filter(s => s.category === selectedCategory);
 
-  // Audio Element একবারই তৈরি হবে
+  // Update ref when currentIndex changes
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  // Audio setup - only once
   useEffect(() => {
     const audio = new Audio();
     audio.volume = volume;
@@ -966,11 +995,28 @@ function MusicPage() {
     };
 
     const handleEnded = () => {
-      const currentIdx = currentIndex;
-      const nextIndex = currentIdx + 1 >= filteredSongs.length ? 0 : currentIdx + 1;
-      const nextSong = filteredSongs[nextIndex];
-      if (nextSong) {
-        playSong(nextSong, nextIndex);
+      // Use ref for current index to avoid stale closure
+      const idx = currentIndexRef.current;
+      const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
+      const nextSong = songs[nextIndex];
+      if (nextSong && audioRef.current) {
+        setCurrentSong(nextSong);
+        setCurrentIndex(nextIndex);
+        setProgress(0);
+        setCurrentTime(0);
+        setDuration(0);
+        setIsLoading(true);
+        audioRef.current.src = nextSong.url;
+        audioRef.current.load();
+        audioRef.current.play()
+          .then(() => {
+            setIsPlaying(true);
+            setIsLoading(false);
+          })
+          .catch(() => {
+            setIsPlaying(false);
+            setIsLoading(false);
+          });
       }
     };
 
@@ -994,14 +1040,14 @@ function MusicPage() {
     };
   }, []);
 
+  // Volume change
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // মূল playSong function
-  const playSong = (song: Song, index: number) => {
+  const playSong = useCallback((song: Song, index: number) => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -1030,7 +1076,7 @@ function MusicPage() {
           setIsLoading(false);
         });
     }
-  };
+  }, []);
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
@@ -1268,6 +1314,7 @@ function MusicPage() {
     </div>
   );
 }
+// পার্ট ১ এর পরে এই কোড যোগ করুন
 
 function PDFPage() {
   const [selectedCategory, setSelectedCategory] = useState('সব');
@@ -1462,7 +1509,6 @@ function ContactPage() {
   );
 }
 
-// GitHub JSON URL
 function LoginPage() {
   const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
@@ -1476,7 +1522,6 @@ function LoginPage() {
   const [loginData, setLoginData] = useState(DEMO_LOGIN_DATA);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
   
-  // JSON থেকে আসা ডেটা
   const [membersData, setMembersData] = useState<Member[]>(members);
   const [contactsData, setContactsData] = useState<ContactPerson[]>(contactPersons);
   const [invitationData, setInvitationData] = useState<InvitationList[]>(invitationLists);
@@ -1510,7 +1555,7 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Members/Contacts/Invitations data fetch (login হলে)
+  // Members/Contacts/Invitations data fetch
   useEffect(() => {
     if (!isLoggedIn) return;
     
@@ -1579,7 +1624,6 @@ function LoginPage() {
     }, 800);
   };
 
-  // PDF Download Function
   const handlePdfDownload = (url: string, filename: string) => {
     if (!url || url === '') {
       alert('PDF লিংক এখনো যুক্ত হয়নি');
@@ -1603,7 +1647,6 @@ function LoginPage() {
   }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="relative" onClick={(e) => e.stopPropagation()}>
-        {/* Close Button */}
         <button 
           onClick={onClose}
           className="absolute -top-10 right-0 text-white hover:text-orange-400 flex items-center gap-1"
@@ -1611,12 +1654,10 @@ function LoginPage() {
           <X className="w-5 h-5" /> বন্ধ করুন
         </button>
 
-        {/* Flip Instructions */}
         <p className="text-center text-white/80 mb-3 text-sm">
           👆 কার্ডে ট্যাপ করে {isFlipped ? 'সামনের' : 'পেছনের'} পিঠ দেখুন
         </p>
 
-        {/* Card Container */}
         <div 
           className="w-[340px] sm:w-[380px] h-[220px] cursor-pointer"
           style={{ perspective: '1000px' }}
@@ -1629,19 +1670,17 @@ function LoginPage() {
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
             }}
           >
-            {/* ===== Front Side ===== */}
+            {/* Front Side */}
             <div 
               className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
               style={{ backfaceVisibility: 'hidden' }}
             >
               <div className="h-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 p-4 relative">
-                {/* Decorative Pattern */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute top-2 left-2 text-6xl">🕉️</div>
                   <div className="absolute bottom-2 right-2 text-6xl">🪷</div>
                 </div>
                 
-                {/* Header */}
                 <div className="flex items-center justify-between mb-3 relative">
                   <div className="flex items-center gap-2">
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
@@ -1658,7 +1697,6 @@ function LoginPage() {
                   </div>
                 </div>
 
-                {/* Member Info */}
                 <div className="flex gap-3 relative">
                   <div className="w-20 h-24 bg-white rounded-lg overflow-hidden border-3 border-white shadow-xl">
                     <img 
@@ -1680,13 +1718,12 @@ function LoginPage() {
                         <Phone className="w-3 h-3" /> {member.mobile}
                       </p>
                       <p className="flex items-center gap-1.5">
-                        <Home className="w-3 h-3" /> {member.address}
+                        <MapPin className="w-3 h-3" /> {member.address}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-[9px] text-orange-200">
                   <span>স্থাপিত: ২০১৭</span>
                   <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded">
@@ -1696,7 +1733,7 @@ function LoginPage() {
               </div>
             </div>
 
-            {/* ===== Back Side ===== */}
+            {/* Back Side */}
             <div 
               className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
               style={{ 
@@ -1705,18 +1742,15 @@ function LoginPage() {
               }}
             >
               <div className="h-full bg-gradient-to-br from-orange-50 via-white to-orange-100 p-4 relative">
-                {/* Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-5">
                   <span className="text-[150px]">🕉️</span>
                 </div>
                 
-                {/* Back Header */}
                 <div className="flex items-center justify-center gap-2 mb-3 pb-2 border-b-2 border-orange-200 relative">
                   <span className="text-xl">🙏</span>
                   <h3 className="font-bold text-orange-700">বিস্তারিত তথ্য</h3>
                 </div>
 
-                {/* Details Grid */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] relative">
                   <div>
                     <p className="text-orange-500 font-medium text-[10px]">পিতার নাম</p>
@@ -1744,7 +1778,6 @@ function LoginPage() {
                   </div>
                 </div>
 
-                {/* Back Footer */}
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center">
                   <div className="flex items-center gap-1">
                     <span className="text-lg">🪷</span>
@@ -1763,7 +1796,7 @@ function LoginPage() {
     </div>
   );
 
-  // ========== Login Form (Not Logged In) ==========
+  // Login Form (Not Logged In)
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -1844,7 +1877,7 @@ function LoginPage() {
     );
   }
 
-  // ========== Logged In Dashboard ==========
+  // Logged In Dashboard
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1898,10 +1931,9 @@ function LoginPage() {
         </div>
       )}
 
-      {/* ========== Members Tab ========== */}
+      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
-          {/* PDF Download Header */}
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left">
               <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -1918,7 +1950,6 @@ function LoginPage() {
             </button>
           </div>
 
-          {/* Members Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {membersData.map((member) => (
               <div 
@@ -1958,7 +1989,6 @@ function LoginPage() {
             ))}
           </div>
 
-          {/* Empty State */}
           {membersData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -1968,10 +1998,9 @@ function LoginPage() {
         </div>
       )}
 
-      {/* ========== Contacts Tab ========== */}
+      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
-          {/* PDF Download Header */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left">
               <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -1988,7 +2017,6 @@ function LoginPage() {
             </button>
           </div>
 
-          {/* Contacts List */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactsData.map((person) => (
               <div 
@@ -2022,7 +2050,7 @@ function LoginPage() {
                       </a>
                     </p>
                     <p className="flex items-center gap-2">
-                      <Home className="w-4 h-4 text-gray-400" />
+                      <MapPin className="w-4 h-4 text-gray-400" />
                       <span>{person.address}</span>
                     </p>
                   </div>
@@ -2031,7 +2059,6 @@ function LoginPage() {
             ))}
           </div>
 
-          {/* Empty State */}
           {contactsData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -2041,10 +2068,9 @@ function LoginPage() {
         </div>
       )}
 
-      {/* ========== Invitation Tab ========== */}
+      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
-          {/* PDF Download Header */}
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left">
               <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -2063,13 +2089,12 @@ function LoginPage() {
             </button>
           </div>
 
-          {/* Invitation Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {invitationData.map((item) => (
               <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
-                    <Home className="w-6 h-6 text-green-600" />
+                    <MapPin className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                     <span className="text-orange-600 font-bold text-lg">{item.familyCount}</span>
@@ -2088,7 +2113,6 @@ function LoginPage() {
             ))}
           </div>
 
-          {/* Empty State */}
           {invitationData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -2098,7 +2122,7 @@ function LoginPage() {
         </div>
       )}
 
-      {/* ========== Accounts Tab ========== */}
+      {/* Accounts Tab */}
       {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
@@ -2139,6 +2163,7 @@ function LoginPage() {
     </div>
   );
 }
+
 // Main App
 function App() {
   return (
