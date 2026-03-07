@@ -936,6 +936,7 @@ function MusicPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -945,33 +946,43 @@ function MusicPage() {
     ? songs
     : songs.filter(s => s.category === selectedCategory);
 
+  // Audio Element একবারই তৈরি হবে
   useEffect(() => {
     const audio = new Audio();
-    audioRef.current = audio;
     audio.volume = volume;
+    audio.preload = 'metadata';
+    audioRef.current = audio;
 
     const handleTimeUpdate = () => {
-      if (audio.duration) {
+      if (audio.duration && !isNaN(audio.duration)) {
         setCurrentTime(audio.currentTime);
         setProgress((audio.currentTime / audio.duration) * 100);
       }
     };
-    const handleLoadedMetadata = () => setDuration(audio.duration);
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
     const handleEnded = () => {
-      const nextIndex = currentIndex + 1 >= filteredSongs.length ? 0 : currentIndex + 1;
+      const currentIdx = currentIndex;
+      const nextIndex = currentIdx + 1 >= filteredSongs.length ? 0 : currentIdx + 1;
       const nextSong = filteredSongs[nextIndex];
-      if (nextSong && audioRef.current) {
-        setCurrentSong(nextSong);
-        setCurrentIndex(nextIndex);
-        audioRef.current.src = nextSong.url;
-        audioRef.current.load();
-        audioRef.current.play().catch(() => setIsPlaying(false));
+      if (nextSong) {
+        playSong(nextSong, nextIndex);
       }
+    };
+
+    const handleError = () => {
+      setIsLoading(false);
+      setIsPlaying(false);
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.pause();
@@ -979,44 +990,71 @@ function MusicPage() {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
     };
-  }, [filteredSongs, currentIndex]);
+  }, []);
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
   }, [volume]);
 
+  // মূল playSong function
   const playSong = (song: Song, index: number) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = song.url;
-      audioRef.current.load();
-      setCurrentSong(song);
-      setCurrentIndex(index);
-      setIsPlaying(true);
-      setProgress(0);
-      setCurrentTime(0);
-      audioRef.current.play().catch(() => setIsPlaying(false));
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    
+    setCurrentSong(song);
+    setCurrentIndex(index);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsLoading(true);
+
+    audio.src = song.url;
+    audio.load();
+
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setIsLoading(false);
+        });
     }
   };
 
   const togglePlayPause = () => {
-    if (!audioRef.current || !currentSong) return;
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(() => {});
-      setIsPlaying(true);
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
   };
 
   const handleSkipBack = () => {
     if (filteredSongs.length === 0) return;
-    if (audioRef.current && audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
+    
+    const audio = audioRef.current;
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
       return;
     }
+    
     let newIndex = currentIndex - 1;
     if (newIndex < 0) newIndex = filteredSongs.length - 1;
     playSong(filteredSongs[newIndex], newIndex);
@@ -1030,41 +1068,42 @@ function MusicPage() {
   };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return;
+    const audio = audioRef.current;
+    if (!audio || !duration || isNaN(duration)) return;
+    
     const bar = e.currentTarget;
-    const clickX = e.clientX - bar.getBoundingClientRect().left;
-    const barWidth = bar.clientWidth;
+    const rect = bar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const barWidth = rect.width;
     const newTime = (clickX / barWidth) * duration;
-    audioRef.current.currentTime = newTime;
+    
+    audio.currentTime = newTime;
   };
 
   const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return '0:00';
+    if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleDownload = async (e: React.MouseEvent, song: Song) => {
+  const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
     if (!song.url || song.url === '#') {
       alert('ডাউনলোড লিংক নেই');
       return;
     }
     setDownloadingId(song.id);
-    try {
-      const link = document.createElement('a');
-      link.href = song.url;
-      link.download = `${song.title} - ${song.artist}.mp3`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch {
-      alert('ডাউনলোড করতে সমস্যা হয়েছে');
-    } finally {
-      setTimeout(() => setDownloadingId(null), 1000);
-    }
+    
+    const link = document.createElement('a');
+    link.href = song.url;
+    link.download = `${song.title} - ${song.artist}.mp3`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setTimeout(() => setDownloadingId(null), 1000);
   };
 
   return (
@@ -1078,7 +1117,9 @@ function MusicPage() {
         <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isPlaying ? (
+              {isLoading ? (
+                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
                 <div className="flex items-center gap-0.5">
                   <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1091,29 +1132,61 @@ function MusicPage() {
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
+              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
+            
             <div className="flex items-center gap-3">
-              <button onClick={handleSkipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30">
+              <button 
+                onClick={handleSkipBack} 
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+              >
                 <SkipBack className="w-5 h-5" />
               </button>
-              <button onClick={togglePlayPause} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600">
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+              <button 
+                onClick={togglePlayPause} 
+                disabled={isLoading}
+                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-1" />
+                )}
               </button>
-              <button onClick={handleSkipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30">
+              <button 
+                onClick={handleSkipForward} 
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+              >
                 <SkipForward className="w-5 h-5" />
               </button>
             </div>
+            
             <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
-              <input type="range" min="0" max="1" step="0.01" value={volume}
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value={volume}
                 onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
+                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
+              />
             </div>
           </div>
+          
           <div className="mt-4 flex items-center gap-3">
             <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
-            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
-              <div className="h-full bg-white rounded-full" style={{ width: `${progress}%` }} />
+            <div 
+              className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" 
+              onClick={handleProgressClick}
+            >
+              <div 
+                className="h-full bg-white rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
             </div>
             <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
           </div>
@@ -1122,9 +1195,16 @@ function MusicPage() {
 
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition",
-              selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+          <button 
+            key={cat} 
+            onClick={() => setSelectedCategory(cat)}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium transition",
+              selectedCategory === cat 
+                ? "bg-orange-500 text-white" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
             {cat}
           </button>
         ))}
@@ -1132,12 +1212,23 @@ function MusicPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSongs.map((song, index) => (
-          <div key={song.id} onClick={() => playSong(song, index)}
-            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer",
-              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
-            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center",
-              currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
-              {currentSong?.id === song.id && isPlaying ? (
+          <div 
+            key={song.id} 
+            onClick={() => playSong(song, index)}
+            className={cn(
+              "card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all",
+              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50"
+            )}
+          >
+            <div className={cn(
+              "w-14 h-14 rounded-xl flex items-center justify-center transition-all",
+              currentSong?.id === song.id && isPlaying 
+                ? "bg-gradient-to-br from-orange-500 to-red-500" 
+                : "bg-orange-100"
+            )}>
+              {currentSong?.id === song.id && isLoading ? (
+                <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+              ) : currentSong?.id === song.id && isPlaying ? (
                 <div className="flex items-center gap-0.5">
                   <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
                   <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1152,9 +1243,11 @@ function MusicPage() {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button onClick={(e) => handleDownload(e, song)}
+              <button 
+                onClick={(e) => handleDownload(e, song)}
                 disabled={downloadingId === song.id}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200"
+              >
                 {downloadingId === song.id ? (
                   <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
                 ) : (
