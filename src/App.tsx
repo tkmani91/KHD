@@ -173,13 +173,190 @@ const deities: Deity[] = [
   }
 ];
 
-const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => ({
-  id: `img-${i}`,
-  year: 2017 + Math.floor(i / 6),
-  pujaType: ['দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'][i % 4],
-  url: `https://picsum.photos/400/300?random=${i}`,
-  title: `পূজার ছবি ${i + 1}`
-}));
+function GalleryPage() {
+  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [selectedPuja, setSelectedPuja] = useState<string>('সব');
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+
+  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017,2016,2015,2014,2013,2012,2011,2010,2009,2008];
+  const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
+
+  // ✅ GitHub JSON থেকে ছবি লোড
+  useEffect(() => {
+    const fetchImages = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await fetch(
+          'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json',
+          { cache: 'no-cache' }
+        );
+        if (!response.ok) throw new Error('লোড ব্যর্থ');
+        const data = await response.json();
+        setGalleryImages(data);
+      } catch (err) {
+        setError('ছবি লোড করতে সমস্যা হয়েছে। ইন্টারনেট চেক করুন।');
+        setGalleryImages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const filteredImages = galleryImages.filter(img => {
+    const yearMatch = img.year === selectedYear;
+    const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
+    return yearMatch && pujaMatch;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">ফটো গ্যালারি</h1>
+        <p className="text-gray-600">২০১৭ থেকে ২০২৬ সাল পর্যন্ত পূজার ছবি</p>
+      </div>
+
+      {/* ফিল্টার */}
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              সাল নির্বাচন করুন
+            </label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              পূজার ধরন
+            </label>
+            <select
+              value={selectedPuja}
+              onChange={(e) => setSelectedPuja(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+            >
+              {pujaTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* লোডিং */}
+      {isLoading && (
+        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ছবি লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* এরর */}
+      {error && !isLoading && (
+        <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
+          <p className="text-red-500 text-lg mb-2">⚠️ {error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+          >
+            🔄 আবার চেষ্টা করুন
+          </button>
+        </div>
+      )}
+
+      {/* ছবির গ্রিড */}
+      {!isLoading && !error && (
+        <>
+          {/* কতটি ছবি পাওয়া গেছে */}
+          {filteredImages.length > 0 && (
+            <p className="text-sm text-gray-500 text-right">
+              মোট {filteredImages.length}টি ছবি পাওয়া গেছে
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredImages.map((img) => (
+              <div
+                key={img.id}
+                onClick={() => setSelectedImage(img)}
+                className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer"
+              >
+                <img
+                  src={img.url}
+                  alt={img.title}
+                  className="w-full h-48 object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://via.placeholder.com/400x300?text=ছবি+নেই';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                    <p className="text-sm font-medium">{img.title}</p>
+                    <p className="text-xs text-gray-300">{img.pujaType} • {img.year}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ছবি না থাকলে */}
+          {filteredImages.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <div className="text-5xl mb-4">🖼️</div>
+              <p className="text-gray-500 text-lg">
+                {selectedYear} সালের {selectedPuja !== 'সব' ? selectedPuja : ''} ছবি এখনো যুক্ত করা হয়নি
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                অন্য সাল বা পূজার ধরন সিলেক্ট করুন
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ✅ লাইটবক্স - ছবিতে ক্লিক করলে বড় দেখাবে */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400"
+            >
+              ✕
+            </button>
+            <img
+              src={selectedImage.url}
+              alt={selectedImage.title}
+              className="w-full rounded-xl max-h-[80vh] object-contain"
+            />
+            <div className="mt-3 text-center text-white">
+              <p className="font-bold text-lg">{selectedImage.title}</p>
+              <p className="text-gray-400 text-sm">
+                {selectedImage.pujaType} • {selectedImage.year}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const songs: Song[] = [
   { id: '1', title: 'নমোঃ দেবযাই মহা দেবযাই', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Namoh%20Devyai%20Maha%20Devyai.webm', duration: '9:27' },
