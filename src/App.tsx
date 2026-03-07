@@ -1486,15 +1486,10 @@ function LoginPage() {
     invitationList: ''
   });
   
-  // Modal states
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
-  const [showMemberDetails, setShowMemberDetails] = useState(false);
-  const [showIDCard, setShowIDCard] = useState(false);
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
-
-  const cardRef = useRef<HTMLDivElement>(null);
 
   // Login data fetch
   useEffect(() => {
@@ -1515,7 +1510,7 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Members/Contacts/Invitations data fetch
+  // Members/Contacts/Invitations data fetch (login হলে)
   useEffect(() => {
     if (!isLoggedIn) return;
     
@@ -1584,7 +1579,7 @@ function LoginPage() {
     }, 800);
   };
 
-  // PDF Download Function for lists
+  // PDF Download Function
   const handlePdfDownload = (url: string, filename: string) => {
     if (!url || url === '') {
       alert('PDF লিংক এখনো যুক্ত হয়নি');
@@ -1599,174 +1594,58 @@ function LoginPage() {
     document.body.removeChild(link);
   };
 
-  // ID Card PDF Download
-  const handleIDCardPDFDownload = async () => {
-    if (!cardRef.current || !selectedMember) return;
-    
-    setIsDownloadingPDF(true);
-    
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
+  // Member ID Card Component
+  const MemberIDCard = ({ member, isFlipped, onFlip, onClose }: { 
+    member: Member; 
+    isFlipped: boolean; 
+    onFlip: () => void;
+    onClose: () => void;
+  }) => (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:text-orange-400 flex items-center gap-1"
+        >
+          <X className="w-5 h-5" /> বন্ধ করুন
+        </button>
 
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
+        {/* Flip Instructions */}
+        <p className="text-center text-white/80 mb-3 text-sm">
+          👆 কার্ডে ট্যাপ করে {isFlipped ? 'সামনের' : 'পেছনের'} পিঠ দেখুন
+        </p>
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a5'
-      });
-
-      const imgWidth = 200;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const x = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
-      const y = (pdf.internal.pageSize.getHeight() - imgHeight) / 2;
-
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-      pdf.save(`${selectedMember.name}-ID-Card.pdf`);
-      
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      alert('PDF তৈরি করতে সমস্যা হয়েছে');
-    } finally {
-      setIsDownloadingPDF(false);
-    }
-  };
-
-  // ========== বিবরণ দেখুন Modal ==========
-  const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div 
-        className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-t-2xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl overflow-hidden border-4 border-white shadow-lg">
-                <img 
-                  src={member.photo} 
-                  alt={member.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80?text=👤';
-                  }}
-                />
-              </div>
-              <div className="text-white">
-                <h2 className="text-xl font-bold">{member.name}</h2>
-                <p className="text-orange-100">{member.designation}</p>
-                <p className="text-sm text-orange-200">ID: #{member.id.padStart(3, '0')}</p>
-              </div>
-            </div>
-            <button 
-              onClick={onClose}
-              className="text-white hover:bg-white/20 p-2 rounded-lg transition"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">📱 মোবাইল</p>
-              <p className="font-semibold text-gray-800">{member.mobile}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">💼 পেশা</p>
-              <p className="font-semibold text-gray-800">{member.occupation || '—'}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">👨 পিতার নাম</p>
-              <p className="font-semibold text-gray-800">{member.fatherName || '—'}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">👩 মাতার নাম</p>
-              <p className="font-semibold text-gray-800">{member.motherName || '—'}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">🪔 গোত্র</p>
-              <p className="font-semibold text-gray-800">{member.gotra || '—'}</p>
-            </div>
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium">🎂 জন্ম তারিখ</p>
-              <p className="font-semibold text-gray-800">{member.birthDate || '—'}</p>
-            </div>
-          </div>
-
-          <div className="bg-orange-50 p-3 rounded-xl">
-            <p className="text-xs text-orange-500 font-medium">🏠 বর্তমান ঠিকানা</p>
-            <p className="font-semibold text-gray-800">{member.address || '—'}</p>
-          </div>
-
-          <div className="bg-orange-50 p-3 rounded-xl">
-            <p className="text-xs text-orange-500 font-medium">🏡 স্থায়ী ঠিকানা</p>
-            <p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p>
-          </div>
-
-          <div className="bg-orange-50 p-3 rounded-xl">
-            <p className="text-xs text-orange-500 font-medium">✉️ ইমেইল</p>
-            <p className="font-semibold text-gray-800">{member.email || '—'}</p>
-          </div>
-
-          {/* Action Button */}
-          <button 
-            onClick={() => {
-              onClose();
-              setShowIDCard(true);
+        {/* Card Container */}
+        <div 
+          className="w-[340px] sm:w-[380px] h-[220px] cursor-pointer"
+          style={{ perspective: '1000px' }}
+          onClick={onFlip}
+        >
+          <div 
+            className="relative w-full h-full transition-transform duration-700"
+            style={{ 
+              transformStyle: 'preserve-3d',
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
             }}
-            className="w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:shadow-lg transition"
           >
-            🎴 আইডি কার্ড দেখুন
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ========== আইডি কার্ড Modal (দুই পাশ পাশাপাশি) ==========
-  const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="my-8" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white text-xl font-bold">🎴 আইডি কার্ড</h2>
-          <button 
-            onClick={onClose}
-            className="text-white hover:text-orange-400 flex items-center gap-1"
-          >
-            <X className="w-5 h-5" /> বন্ধ করুন
-          </button>
-        </div>
-
-        {/* ID Card - Both Sides */}
-        <div ref={cardRef} className="bg-white p-6 rounded-2xl">
-          <div className="flex flex-col lg:flex-row gap-6">
-            
             {/* ===== Front Side ===== */}
-            <div className="w-[350px] h-[220px] rounded-2xl overflow-hidden shadow-xl border-2 border-orange-300 flex-shrink-0">
+            <div 
+              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
               <div className="h-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 p-4 relative">
-                {/* Decorative */}
+                {/* Decorative Pattern */}
                 <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-2 left-2 text-5xl">🕉️</div>
-                  <div className="absolute bottom-2 right-2 text-5xl">🪷</div>
+                  <div className="absolute top-2 left-2 text-6xl">🕉️</div>
+                  <div className="absolute bottom-2 right-2 text-6xl">🪷</div>
                 </div>
                 
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3 relative">
                   <div className="flex items-center gap-2">
-                    <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-2xl">🕉️</span>
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-3xl">🕉️</span>
                     </div>
                     <div className="text-white">
                       <h3 className="font-bold text-sm leading-tight">কলম হিন্দু ধর্মসভা</h3>
@@ -1781,28 +1660,27 @@ function LoginPage() {
 
                 {/* Member Info */}
                 <div className="flex gap-3 relative">
-                  <div className="w-[70px] h-[85px] bg-white rounded-lg overflow-hidden border-2 border-white shadow-xl flex-shrink-0">
+                  <div className="w-20 h-24 bg-white rounded-lg overflow-hidden border-3 border-white shadow-xl">
                     <img 
                       src={member.photo} 
                       alt={member.name}
                       className="w-full h-full object-cover"
-                      crossOrigin="anonymous"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/70x85?text=👤';
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x96?text=👤';
                       }}
                     />
                   </div>
-                  <div className="flex-1 text-white min-w-0">
-                    <h2 className="font-bold text-base leading-tight truncate">{member.name}</h2>
-                    <p className="text-orange-100 text-xs font-semibold bg-white/20 inline-block px-2 rounded mt-1">
+                  <div className="flex-1 text-white">
+                    <h2 className="font-bold text-lg leading-tight drop-shadow">{member.name}</h2>
+                    <p className="text-orange-100 text-sm font-semibold bg-white/20 inline-block px-2 rounded mt-1">
                       {member.designation}
                     </p>
-                    <div className="mt-2 space-y-1 text-[10px]">
-                      <p className="flex items-center gap-1">
-                        <span>📱</span> {member.mobile}
+                    <div className="mt-2 space-y-1 text-[11px]">
+                      <p className="flex items-center gap-1.5">
+                        <Phone className="w-3 h-3" /> {member.mobile}
                       </p>
-                      <p className="flex items-center gap-1 truncate">
-                        <span>🏠</span> {member.address}
+                      <p className="flex items-center gap-1.5">
+                        <Home className="w-3 h-3" /> {member.address}
                       </p>
                     </div>
                   </div>
@@ -1811,91 +1689,81 @@ function LoginPage() {
                 {/* Footer */}
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-[9px] text-orange-200">
                   <span>স্থাপিত: ২০১৭</span>
-                  <span>সামনের পিঠ</span>
+                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded">
+                    🔄 ফ্লিপ করুন
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* ===== Back Side ===== */}
-            <div className="w-[350px] h-[220px] rounded-2xl overflow-hidden shadow-xl border-2 border-orange-300 flex-shrink-0">
+            <div 
+              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
+              style={{ 
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)'
+              }}
+            >
               <div className="h-full bg-gradient-to-br from-orange-50 via-white to-orange-100 p-4 relative">
                 {/* Watermark */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-                  <span className="text-[120px]">🕉️</span>
+                <div className="absolute inset-0 flex items-center justify-center opacity-5">
+                  <span className="text-[150px]">🕉️</span>
                 </div>
                 
-                {/* Header */}
+                {/* Back Header */}
                 <div className="flex items-center justify-center gap-2 mb-3 pb-2 border-b-2 border-orange-200 relative">
-                  <span className="text-lg">🙏</span>
-                  <h3 className="font-bold text-orange-700 text-sm">বিস্তারিত তথ্য</h3>
+                  <span className="text-xl">🙏</span>
+                  <h3 className="font-bold text-orange-700">বিস্তারিত তথ্য</h3>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[10px] relative">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] relative">
                   <div>
-                    <p className="text-orange-500 font-medium">পিতার নাম</p>
-                    <p className="text-gray-800 font-semibold truncate">{member.fatherName || '—'}</p>
+                    <p className="text-orange-500 font-medium text-[10px]">পিতার নাম</p>
+                    <p className="text-gray-800 font-semibold">{member.fatherName || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-orange-500 font-medium">মাতার নাম</p>
-                    <p className="text-gray-800 font-semibold truncate">{member.motherName || '—'}</p>
+                    <p className="text-orange-500 font-medium text-[10px]">মাতার নাম</p>
+                    <p className="text-gray-800 font-semibold">{member.motherName || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-orange-500 font-medium">গোত্র</p>
+                    <p className="text-orange-500 font-medium text-[10px]">গোত্র</p>
                     <p className="text-gray-800 font-semibold">{member.gotra || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-orange-500 font-medium">পেশা</p>
-                    <p className="text-gray-800 font-semibold truncate">{member.occupation || '—'}</p>
+                    <p className="text-orange-500 font-medium text-[10px]">পেশা</p>
+                    <p className="text-gray-800 font-semibold">{member.occupation || '—'}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-orange-500 font-medium">স্থায়ী ঠিকানা</p>
-                    <p className="text-gray-800 font-semibold truncate">{member.permanentAddress || '—'}</p>
+                    <p className="text-orange-500 font-medium text-[10px]">স্থায়ী ঠিকানা</p>
+                    <p className="text-gray-800 font-semibold">{member.permanentAddress || '—'}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-orange-500 font-medium">ইমেইল</p>
-                    <p className="text-gray-800 font-semibold truncate">{member.email || '—'}</p>
+                    <p className="text-orange-500 font-medium text-[10px]">ইমেইল</p>
+                    <p className="text-gray-800 font-semibold">{member.email || '—'}</p>
                   </div>
                 </div>
 
-                {/* Footer */}
+                {/* Back Footer */}
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center">
                   <div className="flex items-center gap-1">
-                    <span className="text-base">🪷</span>
+                    <span className="text-lg">🪷</span>
                     <span className="text-[9px] text-orange-600 font-medium">শুভম্ভবতু</span>
                   </div>
-                  <span className="text-[9px] text-gray-400">পেছনের পিঠ</span>
+                  <div className="flex items-center gap-1">
+                    <Facebook className="w-3 h-3 text-blue-500" />
+                    <span className="text-[9px] text-gray-500">KHDS3</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Download Button */}
-        <div className="mt-4 flex justify-center">
-          <button 
-            onClick={handleIDCardPDFDownload}
-            disabled={isDownloadingPDF}
-            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium flex items-center gap-2 hover:shadow-lg transition disabled:opacity-50"
-          >
-            {isDownloadingPDF ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                PDF তৈরি হচ্ছে...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" />
-                PDF ডাউনলোড করুন
-              </>
-            )}
-          </button>
-        </div>
       </div>
     </div>
   );
 
-  // ========== Login Form ==========
+  // ========== Login Form (Not Logged In) ==========
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -2055,9 +1923,10 @@ function LoginPage() {
             {membersData.map((member) => (
               <div 
                 key={member.id} 
-                className="bg-white rounded-xl p-4 shadow-lg border border-gray-100"
+                onClick={() => { setSelectedMember(member); setIsCardFlipped(false); }}
+                className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100"
               >
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow">
                     <img 
                       src={member.photo} 
@@ -2071,32 +1940,25 @@ function LoginPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-800 truncate">{member.name}</h3>
                     <p className="text-orange-600 text-sm font-medium">{member.designation}</p>
-                    <p className="text-gray-500 text-xs mt-1">
-                      ID: #{member.id.padStart(3, '0')}
+                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {member.mobile}
                     </p>
                   </div>
+                  <ChevronRight className="w-5 h-5 text-orange-400 flex-shrink-0" />
                 </div>
-
-                {/* Two Buttons */}
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => { setSelectedMember(member); setShowMemberDetails(true); }}
-                    className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition flex items-center justify-center gap-1"
-                  >
-                    <FileText className="w-4 h-4" />
-                    বিবরণ দেখুন
-                  </button>
-                  <button 
-                    onClick={() => { setSelectedMember(member); setShowIDCard(true); }}
-                    className="flex-1 py-2 px-3 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition flex items-center justify-center gap-1"
-                  >
-                    🎴 আইডি কার্ড
-                  </button>
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                    ID: #{member.id.padStart(3, '0')}
+                  </span>
+                  <span className="text-xs text-orange-500 font-medium">
+                    আইডি কার্ড দেখুন →
+                  </span>
                 </div>
               </div>
             ))}
           </div>
 
+          {/* Empty State */}
           {membersData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -2109,6 +1971,7 @@ function LoginPage() {
       {/* ========== Contacts Tab ========== */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
+          {/* PDF Download Header */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left">
               <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -2125,6 +1988,7 @@ function LoginPage() {
             </button>
           </div>
 
+          {/* Contacts List */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactsData.map((person) => (
               <div 
@@ -2167,6 +2031,7 @@ function LoginPage() {
             ))}
           </div>
 
+          {/* Empty State */}
           {contactsData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -2179,6 +2044,7 @@ function LoginPage() {
       {/* ========== Invitation Tab ========== */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
+          {/* PDF Download Header */}
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-white text-center sm:text-left">
               <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -2197,6 +2063,7 @@ function LoginPage() {
             </button>
           </div>
 
+          {/* Invitation Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {invitationData.map((item) => (
               <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition">
@@ -2221,6 +2088,7 @@ function LoginPage() {
             ))}
           </div>
 
+          {/* Empty State */}
           {invitationData.length === 0 && (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
               <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
@@ -2259,48 +2127,16 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Modals */}
-      {selectedMember && showMemberDetails && (
-        <MemberDetailsModal 
+      {/* Member ID Card Modal */}
+      {selectedMember && (
+        <MemberIDCard 
           member={selectedMember}
-          onClose={() => { setShowMemberDetails(false); setSelectedMember(null); }}
-        />
-      )}
-
-      {selectedMember && showIDCard && (
-        <IDCardModal 
-          member={selectedMember}
-          onClose={() => { setShowIDCard(false); setSelectedMember(null); }}
+          isFlipped={isCardFlipped}
+          onFlip={() => setIsCardFlipped(!isCardFlipped)}
+          onClose={() => { setSelectedMember(null); setIsCardFlipped(false); }}
         />
       )}
     </div>
-  );
-}
-// Main App
-function App() {
-  return (
-    <Router>
-      <div className="min-h-screen sacred-pattern">
-        <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/durga" element={<DurgaPujaPage />} />
-            <Route path="/shyama" element={<ShyamaPujaPage />} />
-            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
-            <Route path="/rath" element={<RathYatraPage />} />
-            <Route path="/deities" element={<DeitiesPage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/music" element={<MusicPage />} />
-            <Route path="/pdf" element={<PDFPage />} />
-            <Route path="/live" element={<LiveTVPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
   );
 }
 
