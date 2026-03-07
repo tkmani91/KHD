@@ -1866,9 +1866,9 @@ function LoginPage() {
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
         {[
-          { id: 'members', label: 'মেম্বর ইনফো', icon: Users },
-          { id: 'contacts', label: 'ফোন নম্বর', icon: Phone },
-          { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
+          { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+          { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone },
+          { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
           ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : []),
         ].map((tab) => (
           <button 
@@ -2051,7 +2051,7 @@ function LoginPage() {
                 <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
               </h3>
               <p className="text-sm text-green-100">
-                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} টি পরিবার
+                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
               </p>
             </div>
             <button 
