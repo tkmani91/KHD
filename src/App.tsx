@@ -770,7 +770,7 @@ function GalleryPage() {
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
-  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017];
+  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017,2016,2015,2014,2013,2011,2010,2009,2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
   useEffect(() => {
