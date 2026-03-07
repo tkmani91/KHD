@@ -2106,7 +2106,7 @@ function LoginPage() {
                 </p>
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <span className="text-xs text-green-600 font-medium">
-                    {item.familyCount} টি পরিবার
+                    {item.familyCount} জন সদস্য
                   </span>
                 </div>
               </div>
