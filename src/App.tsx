@@ -1463,8 +1463,6 @@ function ContactPage() {
 }
 
 // GitHub JSON URL
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-
 function LoginPage() {
   const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
