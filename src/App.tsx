@@ -223,7 +223,7 @@ const liveChannels: LiveChannel[] = [
   { id: '3', name: 'Satsang TV', logo: '🪔', streamUrl: 'https://d2vfwvjxwtwq1t.cloudfront.net/out/v1/6b24239d5517495b986e7705490c6e65/index.m3u8' },
   { id: '4', name: 'SVBC 4', logo: '☸️', streamUrl: 'https://d1msejlow1t3l4.cloudfront.net/fta/svbchindi4/chunks.m3u8' },
 ];
-
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const DEMO_LOGIN_DATA = {
   normalMembers: [
     { mobile: "01712345678", email: "demo@member.com", password: "demo123", name: "ডেমো মেম্বর" },
