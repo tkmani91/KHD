@@ -29,6 +29,21 @@
       "fatherName": "আনান্দ পোদ্দার",
       "motherName": "কনা রানী পোদ্দার",
       "occupation": "সরকারী চাকুরী"
+    },
+     {
+      "id": "3",
+      "name": "তন্ময় কুমার মানী",
+      "designation": "প্রচার সম্পাদক",
+      "photo": "https://i.ibb.co.com/r2WgcXQt/SUVROJOTI-PODDER-2.png",
+      "birthDate": "1991-10-11",
+      "address": "নজরপুর, কলম",
+      "permanentAddress": "কলম, সিংড়া, নাটোর",
+      "mobile": "01733118313",
+      "gotra": "",
+      "email": "tanmoy4bd@gmail.com",
+      "fatherName": "নরেন্দ্র নাথ মানী",
+      "motherName": "সুমিত্রা মানী",
+      "occupation": "ব্যাবসা"
     }
   ],
   "contacts": [
@@ -48,7 +63,7 @@
     },
     {
       "id": "3",
-      "name": "সমর চক্রবর্তি",
+      "name": "সমর কুমার চক্রবর্তী",
       "mobile": "01724982790",
       "address": "কুমার পাড়া",
       "occupation": "পুরোহিত"
@@ -58,20 +73,20 @@
     {
       "id": "1",
       "area": "হালদার পাড়া",
-      "personName": "রামেশ্বর হালদার",
+      "personName": "মহন হালদার",
       "familyCount": 5
     },
     {
       "id": "2",
       "area": "মধ্য পাড়া",
-      "personName": "গোপাল চন্দ্র",
-      "familyCount": 4
+      "personName": "অমিল্য হালদার",
+      "familyCount": 6
     },
     {
       "id": "3",
       "area": "ভাটোপাড়া",
-      "personName": "নীলকণ্ঠ ভট্টাচার্য",
-      "familyCount": 6
+      "personName": "নীরেন হালদার",
+      "familyCount": 10
     }
   ],
   "pdfLinks": {
