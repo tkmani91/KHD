@@ -1114,18 +1114,6 @@ function DeitiesPage() {
     </div>
   );
 }
-
-function GalleryPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
-  const [selectedPuja, setSelectedPuja] = useState<string>('all');
-  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017];
-  const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
-  const filteredImages = galleryImages.filter(img => {
-    const yearMatch = img.year === selectedYear;
-    const pujaMatch = selectedPuja === 'all' || selectedPuja === 'সব' || img.pujaType === selectedPuja;
-    return yearMatch && pujaMatch;
-  });
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -1230,7 +1218,7 @@ function MusicPage() {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, []);
+  }, [filteredSongs]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
