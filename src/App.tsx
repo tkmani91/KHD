@@ -763,7 +763,7 @@ function DeitiesPage() {
 }
 // GalleryPage - শুধু একটি ভার্সন
 function GalleryPage() {
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedPuja, setSelectedPuja] = useState<string>('সব');
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
