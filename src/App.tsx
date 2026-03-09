@@ -319,7 +319,7 @@ const accountsPDFs = {
     }
   },
   shyamaPuja: {
-    title: 'শ্যামাপ��জা হিসাব',
+    title: 'শ্যামাপূজা হিসাব',
     years: {
       2024: '/pdfs/accounts/shyama-puja-2024.pdf',
       2023: '/pdfs/accounts/shyama-puja-2023.pdf',
@@ -451,18 +451,6 @@ function Header() {
   return (
     <header className="sticky top-0 z-50">
       <NoticeMarquee />
-      
-      {/* Header Image */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 py-3">
-        <div className="max-w-7xl mx-auto px-4">
-          <img 
-            src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUTK5wFPPaWLXOn09yxkXaKCPpRuNnpm44PjDRaQCVsK_R1pLn4hoNFtApFktvJ77o-ItLiOh8mCkmVQU37DssgyYDdRmtyjWz19h8o4p78Rb_WyT09EsNVu6svOI_9La2pBeHlp7-VXg/s1600/KHDS3.png"
-            alt="কলম হিন্দু ধর্মসভা"
-            className="w-full max-h-32 object-contain"
-          />
-        </div>
-      </div>
-
       <div className="glass shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -567,18 +555,21 @@ function Footer() {
     </footer>
   );
 }
-// Pages
+
+// ✅ HomePage - শুধু ছবি, কোন টেক্সট নেই
 function HomePage() {
   return (
     <div className="space-y-8">
+      {/* ✅ হিরো সেকশন - শুধু KHDS3.png ছবি */}
       <section className="relative overflow-hidden rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-red-500 to-orange-600"></div>
         <div className="absolute inset-0 sacred-pattern opacity-30"></div>
-        <div className="relative px-6 py-16 text-center text-white">
-          <div className="text-6xl mb-4">🕉️</div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">কলম হিন্দু ধর্মসভা</h1>
-          <p className="text-lg md:text-xl text-orange-100 mb-2">কলম, সিংড়া, নাটোর, রাজশাহী</p>
-          <p className="text-sm text-orange-200">স্থাপিত: ২০১৭ সাল</p>
+        <div className="relative px-6 py-8 text-center">
+          <img 
+            src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUTK5wFPPaWLXOn09yxkXaKCPpRuNnpm44PjDRaQCVsK_R1pLn4hoNFtApFktvJ77o-ItLiOh8mCkmVQU37DssgyYDdRmtyjWz19h8o4p78Rb_WyT09EsNVu6svOI_9La2pBeHlp7-VXg/s1600/KHDS3.png"
+            alt="কলম হিন্দু ধর্মসভা"
+            className="max-w-full h-auto max-h-48 mx-auto"
+          />
         </div>
       </section>
 
@@ -639,7 +630,7 @@ function HomePage() {
     </div>
   );
 }
-
+// Puja Pages
 function DurgaPujaPage() {
   const puja = pujaData.find(p => p.id === 'durga')!;
   const schedule = [
@@ -881,10 +872,7 @@ function GalleryPage() {
       {error && !isLoading && (
         <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
           <p className="text-red-500 text-lg mb-2">⚠️ {error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
             🔄 আবার চেষ্টা করুন
           </button>
         </div>
@@ -898,20 +886,9 @@ function GalleryPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
-              <div
-                key={img.id}
-                onClick={() => setSelectedImage(img)}
-                className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer"
-              >
-                <img
-                  src={img.url}
-                  alt={img.title}
-                  className="w-full h-48 object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
-                  }}
-                />
+              <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
+                <img src={img.url} alt={img.title} className="w-full h-48 object-cover" loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=ছবি+নেই'; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                     <p className="text-sm font-medium">{img.title}</p>
@@ -932,22 +909,10 @@ function GalleryPage() {
       )}
 
       {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400"
-            >
-              ✕
-            </button>
-            <img
-              src={selectedImage.url}
-              alt={selectedImage.title}
-              className="w-full rounded-xl max-h-[80vh] object-contain"
-            />
+            <button onClick={() => setSelectedImage(null)} className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400">✕</button>
+            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
             <div className="mt-3 text-center text-white">
               <p className="font-bold text-lg">{selectedImage.title}</p>
               <p className="text-gray-400 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
@@ -976,13 +941,9 @@ function MusicPage() {
 
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
 
-  const filteredSongs = selectedCategory === 'সব'
-    ? songs
-    : songs.filter(s => s.category === selectedCategory);
+  const filteredSongs = selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory);
 
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
+  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
 
   useEffect(() => {
     const audio = new Audio();
@@ -997,40 +958,20 @@ function MusicPage() {
       }
     };
 
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-      setIsLoading(false);
-    };
+    const handleLoadedMetadata = () => { setDuration(audio.duration); setIsLoading(false); };
 
     const handleEnded = () => {
       const idx = currentIndexRef.current;
       const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
       const nextSong = songs[nextIndex];
       if (nextSong && audioRef.current) {
-        setCurrentSong(nextSong);
-        setCurrentIndex(nextIndex);
-        setProgress(0);
-        setCurrentTime(0);
-        setDuration(0);
-        setIsLoading(true);
-        audioRef.current.src = nextSong.url;
-        audioRef.current.load();
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            setIsLoading(false);
-          })
-          .catch(() => {
-            setIsPlaying(false);
-            setIsLoading(false);
-          });
+        setCurrentSong(nextSong); setCurrentIndex(nextIndex); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
+        audioRef.current.src = nextSong.url; audioRef.current.load();
+        audioRef.current.play().then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
       }
     };
 
-    const handleError = () => {
-      setIsLoading(false);
-      setIsPlaying(false);
-    };
+    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -1038,8 +979,7 @@ function MusicPage() {
     audio.addEventListener('error', handleError);
 
     return () => {
-      audio.pause();
-      audio.src = '';
+      audio.pause(); audio.src = '';
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
@@ -1047,66 +987,31 @@ function MusicPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
+  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
 
   const playSong = useCallback((song: Song, index: number) => {
     const audio = audioRef.current;
     if (!audio) return;
-
     audio.pause();
-    
-    setCurrentSong(song);
-    setCurrentIndex(index);
-    setProgress(0);
-    setCurrentTime(0);
-    setDuration(0);
-    setIsLoading(true);
-
-    audio.src = song.url;
-    audio.load();
-
+    setCurrentSong(song); setCurrentIndex(index); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
+    audio.src = song.url; audio.load();
     const playPromise = audio.play();
-    
     if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          setIsPlaying(true);
-          setIsLoading(false);
-        })
-        .catch(() => {
-          setIsPlaying(false);
-          setIsLoading(false);
-        });
+      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
     }
   }, []);
 
   const togglePlayPause = () => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
-
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      audio.play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
-    }
+    if (isPlaying) { audio.pause(); setIsPlaying(false); }
+    else { audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
   };
 
   const handleSkipBack = () => {
     if (filteredSongs.length === 0) return;
-    
     const audio = audioRef.current;
-    if (audio && audio.currentTime > 3) {
-      audio.currentTime = 0;
-      return;
-    }
-    
+    if (audio && audio.currentTime > 3) { audio.currentTime = 0; return; }
     let newIndex = currentIndex - 1;
     if (newIndex < 0) newIndex = filteredSongs.length - 1;
     playSong(filteredSongs[newIndex], newIndex);
@@ -1122,13 +1027,11 @@ function MusicPage() {
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
     if (!audio || !duration || isNaN(duration)) return;
-    
     const bar = e.currentTarget;
     const rect = bar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const barWidth = rect.width;
     const newTime = (clickX / barWidth) * duration;
-    
     audio.currentTime = newTime;
   };
 
@@ -1141,20 +1044,11 @@ function MusicPage() {
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
-    if (!song.url || song.url === '#') {
-      alert('ডাউনলোড লিংক নেই');
-      return;
-    }
+    if (!song.url || song.url === '#') { alert('ডাউনলোড লিংক নেই'); return; }
     setDownloadingId(song.id);
-    
     const link = document.createElement('a');
-    link.href = song.url;
-    link.download = `${song.title} - ${song.artist}.mp3`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
+    link.href = song.url; link.download = `${song.title} - ${song.artist}.mp3`; link.target = '_blank';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
     setTimeout(() => setDownloadingId(null), 1000);
   };
 
@@ -1169,76 +1063,31 @@ function MusicPage() {
         <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isLoading ? (
-                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              ) : (
-                <Music className="w-8 h-8" />
-              )}
+              {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
+                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
+                : (<Music className="w-8 h-8" />)}
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
               {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
-            
             <div className="flex items-center gap-3">
-              <button 
-                onClick={handleSkipBack} 
-                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-              >
-                <SkipBack className="w-5 h-5" />
+              <button onClick={handleSkipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipBack className="w-5 h-5" /></button>
+              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
+                {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
               </button>
-              <button 
-                onClick={togglePlayPause} 
-                disabled={isLoading}
-                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-6 h-6" />
-                ) : (
-                  <Play className="w-6 h-6 ml-1" />
-                )}
-              </button>
-              <button 
-                onClick={handleSkipForward} 
-                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-              >
-                <SkipForward className="w-5 h-5" />
-              </button>
+              <button onClick={handleSkipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipForward className="w-5 h-5" /></button>
             </div>
-            
             <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer"
-              />
+              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
             </div>
           </div>
-          
           <div className="mt-4 flex items-center gap-3">
             <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
-            <div 
-              className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" 
-              onClick={handleProgressClick}
-            >
-              <div 
-                className="h-full bg-white rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
+              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
           </div>
@@ -1247,16 +1096,8 @@ function MusicPage() {
 
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button 
-            key={cat} 
-            onClick={() => setSelectedCategory(cat)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition",
-              selectedCategory === cat 
-                ? "bg-orange-500 text-white" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
             {cat}
           </button>
         ))}
@@ -1264,30 +1105,12 @@ function MusicPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSongs.map((song, index) => (
-          <div 
-            key={song.id} 
-            onClick={() => playSong(song, index)}
-            className={cn(
-              "card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all",
-              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50"
-            )}
-          >
-            <div className={cn(
-              "w-14 h-14 rounded-xl flex items-center justify-center transition-all",
-              currentSong?.id === song.id && isPlaying 
-                ? "bg-gradient-to-br from-orange-500 to-red-500" 
-                : "bg-orange-100"
-            )}>
-              {currentSong?.id === song.id && isLoading ? (
-                <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-              ) : currentSong?.id === song.id && isPlaying ? (
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
-                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                </div>
-              ) : (
-                <Music className="w-6 h-6 text-orange-600" />
-              )}
+          <div key={song.id} onClick={() => playSong(song, index)}
+            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
+              {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
+                : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
+                : (<Music className="w-6 h-6 text-orange-600" />)}
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{song.title}</h4>
@@ -1295,16 +1118,8 @@ function MusicPage() {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button 
-                onClick={(e) => handleDownload(e, song)}
-                disabled={downloadingId === song.id}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200"
-              >
-                {downloadingId === song.id ? (
-                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
+              <button onClick={(e) => handleDownload(e, song)} disabled={downloadingId === song.id} className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
+                {downloadingId === song.id ? (<div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : (<Download className="w-4 h-4" />)}
               </button>
             </div>
           </div>
@@ -1324,8 +1139,7 @@ function MusicPage() {
 function PDFPage() {
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
-  const filteredFiles = selectedCategory === 'সব'
-    ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
+  const filteredFiles = selectedCategory === 'সব' ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
 
   return (
     <div className="space-y-6">
@@ -1336,8 +1150,7 @@ function PDFPage() {
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
           <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition",
-              selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
             {cat}
           </button>
         ))}
@@ -1350,8 +1163,7 @@ function PDFPage() {
             </div>
             <h4 className="font-semibold mb-1">{file.title}</h4>
             <p className="text-sm text-gray-500 mb-4">{file.category} • {file.size}</p>
-            <a href={file.url} download
-              className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+            <a href={file.url} download className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
               <Download className="w-4 h-4" />ডাউনলোড
             </a>
           </div>
@@ -1372,58 +1184,29 @@ function LiveTVPage() {
     const loadStream = async () => {
       const video = videoRef.current;
       if (!video) return;
-
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-
-      setIsLoading(true);
-      setHasError(false);
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+      setIsLoading(true); setHasError(false);
 
       try {
         const Hls = (await import('hls.js')).default;
-
         if (Hls.isSupported()) {
           const hls = new Hls();
           hlsRef.current = hls;
           hls.loadSource(activeChannel.streamUrl);
           hls.attachMedia(video);
-
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             setIsLoading(false);
-            video.play().catch(() => {
-              video.muted = true;
-              video.play().catch(() => {});
-            });
+            video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
           });
-
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-            if (data.fatal) {
-              setHasError(true);
-              setIsLoading(false);
-            }
-          });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setHasError(true); setIsLoading(false); } });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
-          video.addEventListener('loadedmetadata', () => {
-            setIsLoading(false);
-            video.play().catch(() => {});
-          });
+          video.addEventListener('loadedmetadata', () => { setIsLoading(false); video.play().catch(() => {}); });
         }
-      } catch {
-        setHasError(true);
-        setIsLoading(false);
-      }
+      } catch { setHasError(true); setIsLoading(false); }
     };
-
     loadStream();
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-      }
-    };
+    return () => { if (hlsRef.current) hlsRef.current.destroy(); };
   }, [activeChannel]);
 
   return (
@@ -1432,11 +1215,9 @@ function LiveTVPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
         <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
       </div>
-
       <div className="bg-black rounded-2xl overflow-hidden relative">
         <div className="aspect-video relative">
           <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
-          
           {isLoading && !hasError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center text-white">
@@ -1445,28 +1226,20 @@ function LiveTVPage() {
               </div>
             </div>
           )}
-
           {hasError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90">
               <div className="text-center text-white">
                 <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
-                <button onClick={() => setActiveChannel({...activeChannel})}
-                  className="px-6 py-2 bg-orange-500 rounded-lg">
-                  আবার চেষ্টা করুন
-                </button>
+                <button onClick={() => setActiveChannel({...activeChannel})} className="px-6 py-2 bg-orange-500 rounded-lg">আবার চেষ্টা করুন</button>
               </div>
             </div>
           )}
         </div>
       </div>
-
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {liveChannels.map((channel) => (
           <button key={channel.id} onClick={() => setActiveChannel(channel)}
-            className={cn("p-4 rounded-xl text-center transition-all",
-              activeChannel.id === channel.id
-                ? "bg-gradient-to-br from-orange-500 to-red-500 text-white"
-                : "bg-white hover:bg-orange-50")}>
+            className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
             <div className="text-3xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
@@ -1503,8 +1276,7 @@ function ContactPage() {
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">সোশ্যাল মিডিয়া</h3>
-          <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100">
+          <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100">
             <Facebook className="w-8 h-8 text-blue-600" />
             <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
           </a>
@@ -1526,16 +1298,10 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginData, setLoginData] = useState(DEMO_LOGIN_DATA);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
-  
   const [membersData, setMembersData] = useState<Member[]>(members);
   const [contactsData, setContactsData] = useState<ContactPerson[]>(contactPersons);
   const [invitationData, setInvitationData] = useState<InvitationList[]>(invitationLists);
-  const [pdfLinks, setPdfLinks] = useState({
-    membersList: '',
-    contactsList: '',
-    invitationList: ''
-  });
-  
+  const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
@@ -1547,246 +1313,109 @@ function LoginPage() {
         const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        if (data.normalMembers && data.accountsMembers) {
-          setLoginData(data);
-          setDataSource('github');
-        }
-      } catch {
-        setLoginData(DEMO_LOGIN_DATA);
-        setDataSource('local');
-      }
+        if (data.normalMembers && data.accountsMembers) { setLoginData(data); setDataSource('github'); }
+      } catch { setLoginData(DEMO_LOGIN_DATA); setDataSource('local'); }
     };
     fetchLoginData();
   }, []);
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    
     const fetchAllData = async () => {
       setIsDataLoading(true);
       try {
         const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        
         if (data.members) setMembersData(data.members);
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
-        
-      } catch (error) {
-        console.log('Using local data:', error);
-      } finally {
-        setIsDataLoading(false);
-      }
+      } catch (error) { console.log('Using local data:', error); }
+      finally { setIsDataLoading(false); }
     };
-    
     fetchAllData();
   }, [isLoggedIn]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
-
-    if (!usernameInput.trim()) {
-      setLoginError('মোবাইল/ইমেইল দিন');
-      return;
-    }
-    if (!passwordInput.trim()) {
-      setLoginError('পাসওয়ার্ড দিন');
-      return;
-    }
-
+    if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
+    if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
     setIsLoading(true);
-
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
-
       let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
-
       if (loginType === 'general') {
-        foundUser = loginData.normalMembers.find(
-          m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword
-        );
+        foundUser = loginData.normalMembers.find(m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       } else {
-        foundUser = loginData.accountsMembers.find(
-          m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword
-        );
+        foundUser = loginData.accountsMembers.find(m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       }
-
-      if (foundUser) {
-        setIsLoggedIn(true);
-        setLoggedInUser(foundUser.name);
-        setUsernameInput('');
-        setPasswordInput('');
-      } else {
-        setLoginError('ভুল তথ্য দিয়েছেন');
-      }
+      if (foundUser) { setIsLoggedIn(true); setLoggedInUser(foundUser.name); setUsernameInput(''); setPasswordInput(''); }
+      else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
   };
 
   const handlePdfDownload = (url: string, filename: string) => {
-    if (!url || url === '') {
-      alert('PDF লিংক এখনো যুক্ত হয়নি');
-      return;
-    }
+    if (!url || url === '') { alert('PDF লিংক এখনো যুক্ত হয়নি'); return; }
     const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    link.href = url; link.download = filename; link.target = '_blank';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  const MemberIDCard = ({ member, isFlipped, onFlip, onClose }: { 
-    member: Member; 
-    isFlipped: boolean; 
-    onFlip: () => void;
-    onClose: () => void;
-  }) => (
+  const MemberIDCard = ({ member, isFlipped, onFlip, onClose }: { member: Member; isFlipped: boolean; onFlip: () => void; onClose: () => void; }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="relative" onClick={(e) => e.stopPropagation()}>
-        <button 
-          onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-orange-400 flex items-center gap-1"
-        >
-          <X className="w-5 h-5" /> বন্ধ করুন
-        </button>
-
-        <p className="text-center text-white/80 mb-3 text-sm">
-          👆 কার্ডে ট্যাপ করে {isFlipped ? 'সামনের' : 'পেছনের'} পিঠ দেখুন
-        </p>
-
-        <div 
-          className="w-[340px] sm:w-[380px] h-[220px] cursor-pointer"
-          style={{ perspective: '1000px' }}
-          onClick={onFlip}
-        >
-          <div 
-            className="relative w-full h-full transition-transform duration-700"
-            style={{ 
-              transformStyle: 'preserve-3d',
-              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-            }}
-          >
-            <div 
-              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
+        <button onClick={onClose} className="absolute -top-10 right-0 text-white hover:text-orange-400 flex items-center gap-1"><X className="w-5 h-5" /> বন্ধ করুন</button>
+        <p className="text-center text-white/80 mb-3 text-sm">👆 কার্ডে ট্যাপ করে {isFlipped ? 'সামনের' : 'পেছনের'} পিঠ দেখুন</p>
+        <div className="w-[340px] sm:w-[380px] h-[220px] cursor-pointer" style={{ perspective: '1000px' }} onClick={onFlip}>
+          <div className="relative w-full h-full transition-transform duration-700" style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}>
+            <div className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300" style={{ backfaceVisibility: 'hidden' }}>
               <div className="h-full bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 p-4 relative">
-                <div className="absolute inset-0 opacity-10">
-                  <div className="absolute top-2 left-2 text-6xl">🕉️</div>
-                  <div className="absolute bottom-2 right-2 text-6xl">🪷</div>
-                </div>
-                
+                <div className="absolute inset-0 opacity-10"><div className="absolute top-2 left-2 text-6xl">🕉️</div><div className="absolute bottom-2 right-2 text-6xl">🪷</div></div>
                 <div className="flex items-center justify-between mb-3 relative">
                   <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-3xl">🕉️</span>
-                    </div>
-                    <div className="text-white">
-                      <h3 className="font-bold text-sm leading-tight">কলম হিন্দু ধর্মসভা</h3>
-                      <p className="text-[10px] text-orange-100">সিংড়া, নাটোর, রাজশাহী</p>
-                    </div>
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg"><span className="text-3xl">🕉️</span></div>
+                    <div className="text-white"><h3 className="font-bold text-sm leading-tight">কলম হিন্দু ধর্মসভা</h3><p className="text-[10px] text-orange-100">সিংড়া, নাটোর, রাজশাহী</p></div>
                   </div>
-                  <div className="text-right text-white bg-white/20 px-3 py-1 rounded-lg">
-                    <p className="text-[9px] text-orange-100">সদস্য নং</p>
-                    <p className="font-bold text-lg">#{member.id.padStart(3, '0')}</p>
-                  </div>
+                  <div className="text-right text-white bg-white/20 px-3 py-1 rounded-lg"><p className="text-[9px] text-orange-100">সদস্য নং</p><p className="font-bold text-lg">#{member.id.padStart(3, '0')}</p></div>
                 </div>
-
                 <div className="flex gap-3 relative">
                   <div className="w-20 h-24 bg-white rounded-lg overflow-hidden border-3 border-white shadow-xl">
-                    <img 
-                      src={member.photo} 
-                      alt={member.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x96?text=👤';
-                      }}
-                    />
+                    <img src={member.photo} alt={member.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x96?text=👤'; }} />
                   </div>
                   <div className="flex-1 text-white">
                     <h2 className="font-bold text-lg leading-tight drop-shadow">{member.name}</h2>
-                    <p className="text-orange-100 text-sm font-semibold bg-white/20 inline-block px-2 rounded mt-1">
-                      {member.designation}
-                    </p>
+                    <p className="text-orange-100 text-sm font-semibold bg-white/20 inline-block px-2 rounded mt-1">{member.designation}</p>
                     <div className="mt-2 space-y-1 text-[11px]">
-                      <p className="flex items-center gap-1.5">
-                        <Phone className="w-3 h-3" /> {member.mobile}
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <MapPin className="w-3 h-3" /> {member.address}
-                      </p>
+                      <p className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> {member.mobile}</p>
+                      <p className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> {member.address}</p>
                     </div>
                   </div>
                 </div>
-
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center text-[9px] text-orange-200">
                   <span>স্থাপিত: ২০১৭</span>
-                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded">
-                    🔄 ফ্লিপ করুন
-                  </span>
+                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded">🔄 ফ্লিপ করুন</span>
                 </div>
               </div>
             </div>
-
-            <div 
-              className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
-              style={{ 
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)'
-              }}
-            >
+            <div className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
               <div className="h-full bg-gradient-to-br from-orange-50 via-white to-orange-100 p-4 relative">
-                <div className="absolute inset-0 flex items-center justify-center opacity-5">
-                  <span className="text-[150px]">🕉️</span>
-                </div>
-                
-                <div className="flex items-center justify-center gap-2 mb-3 pb-2 border-b-2 border-orange-200 relative">
-                  <span className="text-xl">🙏</span>
-                  <h3 className="font-bold text-orange-700">বিস্তারিত তথ্য</h3>
-                </div>
-
+                <div className="absolute inset-0 flex items-center justify-center opacity-5"><span className="text-[150px]">🕉️</span></div>
+                <div className="flex items-center justify-center gap-2 mb-3 pb-2 border-b-2 border-orange-200 relative"><span className="text-xl">🙏</span><h3 className="font-bold text-orange-700">বিস্তারিত তথ্য</h3></div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] relative">
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px]">পিতার নাম</p>
-                    <p className="text-gray-800 font-semibold">{member.fatherName || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px]">মাতার নাম</p>
-                    <p className="text-gray-800 font-semibold">{member.motherName || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px]">গোত্র</p>
-                    <p className="text-gray-800 font-semibold">{member.gotra || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px]">পেশা</p>
-                    <p className="text-gray-800 font-semibold">{member.occupation || '—'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-orange-500 font-medium text-[10px]">স্থায়ী ঠিকানা</p>
-                    <p className="text-gray-800 font-semibold">{member.permanentAddress || '—'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-orange-500 font-medium text-[10px]">ইমেইল</p>
-                    <p className="text-gray-800 font-semibold">{member.email || '—'}</p>
-                  </div>
+                  <div><p className="text-orange-500 font-medium text-[10px]">পিতার নাম</p><p className="text-gray-800 font-semibold">{member.fatherName || '—'}</p></div>
+                  <div><p className="text-orange-500 font-medium text-[10px]">মাতার নাম</p><p className="text-gray-800 font-semibold">{member.motherName || '—'}</p></div>
+                  <div><p className="text-orange-500 font-medium text-[10px]">গোত্র</p><p className="text-gray-800 font-semibold">{member.gotra || '—'}</p></div>
+                  <div><p className="text-orange-500 font-medium text-[10px]">পেশা</p><p className="text-gray-800 font-semibold">{member.occupation || '—'}</p></div>
+                  <div className="col-span-2"><p className="text-orange-500 font-medium text-[10px]">স্থায়ী ঠিকানা</p><p className="text-gray-800 font-semibold">{member.permanentAddress || '—'}</p></div>
+                  <div className="col-span-2"><p className="text-orange-500 font-medium text-[10px]">ইমেইল</p><p className="text-gray-800 font-semibold">{member.email || '—'}</p></div>
                 </div>
-
                 <div className="absolute bottom-2 left-4 right-4 flex justify-between items-center">
-                  <div className="flex items-center gap-1">
-                    <span className="text-lg">🪷</span>
-                    <span className="text-[9px] text-orange-600 font-medium">শুভম্ভবতু</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Facebook className="w-3 h-3 text-blue-500" />
-                    <span className="text-[9px] text-gray-500">KHDS3</span>
-                  </div>
+                  <div className="flex items-center gap-1"><span className="text-lg">🪷</span><span className="text-[9px] text-orange-600 font-medium">শুভম্ভবতু</span></div>
+                  <div className="flex items-center gap-1"><Facebook className="w-3 h-3 text-blue-500" /><span className="text-[9px] text-gray-500">KHDS3</span></div>
                 </div>
               </div>
             </div>
@@ -1799,78 +1428,40 @@ function LoginPage() {
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold gradient-text mb-2">মেম্বর লগইন</h1>
-        </div>
-
+        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বর লগইন</h1></div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className={cn("mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2",
-            dataSource === 'github' ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600")}>
+          <div className={cn("mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2", dataSource === 'github' ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600")}>
             <div className={cn("w-2 h-2 rounded-full", dataSource === 'github' ? "bg-green-500" : "bg-yellow-500")} />
             {dataSource === 'github' ? '✓ সার্ভার থেকে ডেটা লোড হয়েছে' : '⚠ লোকাল ডেটা ব্যবহৃত হচ্ছে'}
           </div>
-
           <div className="flex gap-2 mb-6">
-            <button onClick={() => { setLoginType('general'); setLoginError(''); }}
-              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
-                loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>
-              সাধারণ সদস্য
-            </button>
-            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }}
-              className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition",
-                loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>
-              হিসাব দেখুন
-            </button>
+            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সাধারণ সদস্য</button>
+            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>হিসাব দেখুন</button>
           </div>
-
-          {loginError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-600">{loginError}</p>
-            </div>
-          )}
-
+          {loginError && (<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"><AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" /><p className="text-sm text-red-600">{loginError}</p></div>)}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল / ইমেইল</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="text" value={usernameInput}
-                  onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
-                  placeholder="মোবাইল বা ইমেইল" />
+                <input type="text" value={usernameInput} onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="মোবাইল বা ইমেইল" />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type={showPassword ? 'text' : 'password'} value={passwordInput}
-                  onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }}
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
-                  placeholder="পাসওয়ার্ড" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <input type={showPassword ? 'text' : 'password'} value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="পাসওয়ার্ড" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-
-            <button type="submit" disabled={isLoading}
-              className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition",
-                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
-              {isLoading ? (
-                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>
-              ) : (
-                <><LogIn className="w-5 h-5" />লগইন</>
-              )}
+            <button type="submit" disabled={isLoading} className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
+              {isLoading ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>) : (<><LogIn className="w-5 h-5" />লগইন</>)}
             </button>
           </form>
-
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ: 01733118313</p>
-          </div>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ: 01733118313</p></div>
         </div>
       </div>
     );
@@ -1879,238 +1470,88 @@ function LoginPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1>
-          <p className="text-sm text-gray-500">
-            স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span>
-          </p>
-        </div>
-        <button 
-          onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setSelectedMember(null); }}
-          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
-        >
-          <LogIn className="w-4 h-4" /> লগআউট
-        </button>
+        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setSelectedMember(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
-
       <div className="flex flex-wrap gap-2">
-        {[
-          { id: 'members', label: 'সদস্য তালিকা', icon: Users },
-          { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone },
-          { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
-          ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : []),
-        ].map((tab) => (
-          <button 
-            key={tab.id}
-            onClick={() => { 
-              setActiveTab(tab.id as typeof activeTab); 
-              setSelectedMember(null); 
-              setSelectedContact(null); 
-            }}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition",
-              activeTab === tab.id 
-                ? "bg-orange-500 text-white shadow-lg" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
+        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
+          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedMember(null); setSelectedContact(null); }}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
-
-      {isDataLoading && (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
-        </div>
-      )}
+      {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
 
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left">
-              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
-                <Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা
-              </h3>
-              <p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p>
-            </div>
-            <button 
-              onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')}
-              className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"
-            >
-              <Download className="w-5 h-5" />
-              PDF ডাউনলোড
-            </button>
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা</h3><p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {membersData.map((member) => (
-              <div 
-                key={member.id} 
-                onClick={() => { setSelectedMember(member); setIsCardFlipped(false); }}
-                className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100"
-              >
+              <div key={member.id} onClick={() => { setSelectedMember(member); setIsCardFlipped(false); }} className="bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all hover:-translate-y-1 border border-gray-100">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow">
-                    <img 
-                      src={member.photo} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=👤';
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-800 truncate">{member.name}</h3>
-                    <p className="text-orange-600 text-sm font-medium">{member.designation}</p>
-                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {member.mobile}
-                    </p>
-                  </div>
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow"><img src={member.photo} alt={member.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=👤'; }} /></div>
+                  <div className="flex-1 min-w-0"><h3 className="font-bold text-gray-800 truncate">{member.name}</h3><p className="text-orange-600 text-sm font-medium">{member.designation}</p><p className="text-gray-500 text-xs mt-1 flex items-center gap-1"><Phone className="w-3 h-3" /> {member.mobile}</p></div>
                   <ChevronRight className="w-5 h-5 text-orange-400 flex-shrink-0" />
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-                    ID: #{member.id.padStart(3, '0')}
-                  </span>
-                  <span className="text-xs text-orange-500 font-medium">
-                    আইডি কার্ড দেখুন →
-                  </span>
-                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between"><span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">ID: #{member.id.padStart(3, '0')}</span><span className="text-xs text-orange-500 font-medium">আইডি কার্ড দেখুন →</span></div>
               </div>
             ))}
           </div>
-
-          {membersData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
+          {membersData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Users className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left">
-              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
-                <Phone className="w-5 h-5" /> যোগাযোগ তালিকা
-              </h3>
-              <p className="text-sm text-blue-100">মোট {contactsData.length} জন</p>
-            </div>
-            <button 
-              onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')}
-              className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"
-            >
-              <Download className="w-5 h-5" />
-              PDF ডাউনলোড
-            </button>
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Phone className="w-5 h-5" /> যোগাযোগ তালিকা</h3><p className="text-sm text-blue-100">মোট {contactsData.length} জন</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactsData.map((person) => (
-              <div 
-                key={person.id} 
-                onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)}
-                className={cn(
-                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all",
-                  selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50"
-                )}
-              >
+              <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
-                    <User className="w-7 h-7 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold">{person.name}</h3>
-                    <p className="text-blue-600 text-sm">{person.occupation}</p>
-                  </div>
-                  <ChevronRight className={cn(
-                    "w-5 h-5 text-gray-400 transition-transform",
-                    selectedContact?.id === person.id && "rotate-90"
-                  )} />
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center"><User className="w-7 h-7 text-blue-600" /></div>
+                  <div className="flex-1"><h3 className="font-bold">{person.name}</h3><p className="text-blue-600 text-sm">{person.occupation}</p></div>
+                  <ChevronRight className={cn("w-5 h-5 text-gray-400 transition-transform", selectedContact?.id === person.id && "rotate-90")} />
                 </div>
-                
                 {selectedContact?.id === person.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
-                    <p className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-blue-400" />
-                      <a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">
-                        {person.mobile}
-                      </a>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>{person.address}</span>
-                    </p>
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /><a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a></p>
+                    <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{person.address}</span></p>
                   </div>
                 )}
               </div>
             ))}
           </div>
-
-          {contactsData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
+          {contactsData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left">
-              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
-                <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
-              </h3>
-              <p className="text-sm text-green-100">
-                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
-              </p>
-            </div>
-            <button 
-              onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')}
-              className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"
-            >
-              <Download className="w-5 h-5" />
-              PDF ডাউনলোড
-            </button>
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা</h3><p className="text-sm text-green-100">মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {invitationData.map((item) => (
               <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <span className="text-orange-600 font-bold text-lg">{item.familyCount}</span>
-                  </div>
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center"><MapPin className="w-6 h-6 text-green-600" /></div>
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-orange-600 font-bold text-lg">{item.familyCount}</span></div>
                 </div>
                 <h3 className="font-bold text-gray-800">{item.area}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                  <User className="w-3 h-3" /> {item.personName}
-                </p>
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <span className="text-xs text-green-600 font-medium">
-                    {item.familyCount} জন সদস্য
-                  </span>
-                </div>
+                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><User className="w-3 h-3" /> {item.personName}</p>
+                <div className="mt-3 pt-3 border-t border-gray-100"><span className="text-xs text-green-600 font-medium">{item.familyCount} জন সদস্য</span></div>
               </div>
             ))}
           </div>
-
-          {invitationData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
+          {invitationData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
@@ -2118,38 +1559,16 @@ function LoginPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
-                <h3 className="font-bold text-lg">{data.title}</h3>
-              </div>
+              <div className="flex items-center gap-3 mb-4"><div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center"><FileText className="w-6 h-6 text-orange-600" /></div><h3 className="font-bold text-lg">{data.title}</h3></div>
               <div className="grid grid-cols-3 gap-2">
-                {Object.entries(data.years).map(([year, url]) => (
-                  <a 
-                    key={year} 
-                    href={url} 
-                    download
-                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                  >
-                    <Download className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm font-medium">{year}</span>
-                  </a>
-                ))}
+                {Object.entries(data.years).map(([year, url]) => (<a key={year} href={url} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"><Download className="w-4 h-4 text-orange-600" /><span className="text-sm font-medium">{year}</span></a>))}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {selectedMember && (
-        <MemberIDCard 
-          member={selectedMember}
-          isFlipped={isCardFlipped}
-          onFlip={() => setIsCardFlipped(!isCardFlipped)}
-          onClose={() => { setSelectedMember(null); setIsCardFlipped(false); }}
-        />
-      )}
+      {selectedMember && (<MemberIDCard member={selectedMember} isFlipped={isCardFlipped} onFlip={() => setIsCardFlipped(!isCardFlipped)} onClose={() => { setSelectedMember(null); setIsCardFlipped(false); }} />)}
     </div>
   );
 }
