@@ -566,7 +566,7 @@ function HomePage() {
         <div className="absolute inset-0 sacred-pattern opacity-30"></div>
         <div className="relative px-6 py-8 text-center">
           <img 
-            src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUTK5wFPPaWLXOn09yxkXaKCPpRuNnpm44PjDRaQCVsK_R1pLn4hoNFtApFktvJ77o-ItLiOh8mCkmVQU37DssgyYDdRmtyjWz19h8o4p78Rb_WyT09EsNVu6svOI_9La2pBeHlp7-VXg/s1600/KHDS3.png"
+            src="https://raw.githubusercontent.com/tkmani91/Dharmasaba/main/hader%20Banner.png"
             alt="কলম হিন্দু ধর্মসভা"
             className="max-w-full h-auto max-h-48 mx-auto"
           />
