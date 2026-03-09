@@ -3,7 +3,7 @@
 const Header = () => {
   return (
     <header style={{
-     background: 'linear-gradient(135deg, #FFD700 0%, #E6B800 50%, #DAA520 100%)',
+  background: 'linear-gradient(135deg, #FFD700 0%, #E6B800 50%, #DAA520 100%)',
   padding: '10px 0',
   textAlign: 'center',
   boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
