@@ -2165,6 +2165,10 @@ function LoginPage() {
 }
 
 // Main App
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';  // ← এই লাইনটি যোগ করুন
+import Footer from './components/Footer';
+// ... বাকি imports
 function App() {
   return (
     <Router>
