@@ -560,9 +560,11 @@ function Footer() {
 function HomePage() {
   return (
     <div className="space-y-8">
-      {/* ✅ হিরো সেকশন - শুধু KHDS3.png ছবি */}
+      {/* ✅ হিরো সেকশন - কাঁচা হলুদ ব্যাকগ্রাউন্ড */}
       <section className="relative overflow-hidden rounded-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-red-500 to-orange-600"></div>
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(135deg, #FFD700 0%, #E6B800 100%)'
+        }}></div>
         <div className="absolute inset-0 sacred-pattern opacity-30"></div>
         <div className="relative px-6 py-8 text-center">
           <img 
