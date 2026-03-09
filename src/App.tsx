@@ -2166,9 +2166,20 @@ function LoginPage() {
 
 // Main App
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';  // ← এই লাইনটি যোগ করুন
-import Footer from './components/Footer';
-// ... বাকি imports
+import Header from './components/Header';
+import HomePage from './pages/HomePage';
+import DurgaPujaPage from './pages/DurgaPujaPage';
+import ShyamaPujaPage from './pages/ShyamaPujaPage';
+import SaraswatiPujaPage from './pages/SaraswatiPujaPage';
+import RathYatraPage from './pages/RathYatraPage';
+import DeitiesPage from './pages/DeitiesPage';
+import GalleryPage from './pages/GalleryPage';
+import MusicPage from './pages/MusicPage';
+import PDFPage from './pages/PDFPage';
+import LiveTVPage from './pages/LiveTVPage';
+import ContactPage from './pages/ContactPage';
+import LoginPage from './pages/LoginPage';
+
 function App() {
   return (
     <Router>
@@ -2190,7 +2201,6 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </Router>
   );
