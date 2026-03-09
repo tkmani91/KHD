@@ -1,3 +1,5 @@
+// src/components/Header.tsx
+
 const Header = () => {
   return (
     <header style={{
