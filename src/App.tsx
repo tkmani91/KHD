@@ -319,7 +319,7 @@ const accountsPDFs = {
     }
   },
   shyamaPuja: {
-    title: 'শ্যামাপূজা হিসাব',
+    title: 'শ্যামাপ��জা হিসাব',
     years: {
       2024: '/pdfs/accounts/shyama-puja-2024.pdf',
       2023: '/pdfs/accounts/shyama-puja-2023.pdf',
@@ -451,6 +451,18 @@ function Header() {
   return (
     <header className="sticky top-0 z-50">
       <NoticeMarquee />
+      
+      {/* Header Image */}
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 py-3">
+        <div className="max-w-7xl mx-auto px-4">
+          <img 
+            src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUTK5wFPPaWLXOn09yxkXaKCPpRuNnpm44PjDRaQCVsK_R1pLn4hoNFtApFktvJ77o-ItLiOh8mCkmVQU37DssgyYDdRmtyjWz19h8o4p78Rb_WyT09EsNVu6svOI_9La2pBeHlp7-VXg/s1600/KHDS3.png"
+            alt="কলম হিন্দু ধর্মসভা"
+            className="w-full max-h-32 object-contain"
+          />
+        </div>
+      </div>
+
       <div className="glass shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -555,7 +567,6 @@ function Footer() {
     </footer>
   );
 }
-
 // Pages
 function HomePage() {
   return (
@@ -948,7 +959,6 @@ function GalleryPage() {
   );
 }
 
-// MusicPage - Fixed Version
 function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -970,12 +980,10 @@ function MusicPage() {
     ? songs
     : songs.filter(s => s.category === selectedCategory);
 
-  // Update ref when currentIndex changes
   useEffect(() => {
     currentIndexRef.current = currentIndex;
   }, [currentIndex]);
 
-  // Audio setup - only once
   useEffect(() => {
     const audio = new Audio();
     audio.volume = volume;
@@ -995,7 +1003,6 @@ function MusicPage() {
     };
 
     const handleEnded = () => {
-      // Use ref for current index to avoid stale closure
       const idx = currentIndexRef.current;
       const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
       const nextSong = songs[nextIndex];
@@ -1040,7 +1047,6 @@ function MusicPage() {
     };
   }, []);
 
-  // Volume change
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -1314,7 +1320,6 @@ function MusicPage() {
     </div>
   );
 }
-// পার্ট ১ এর পরে এই কোড যোগ করুন
 
 function PDFPage() {
   const [selectedCategory, setSelectedCategory] = useState('সব');
@@ -1536,7 +1541,6 @@ function LoginPage() {
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Login data fetch
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -1555,7 +1559,6 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Members/Contacts/Invitations data fetch
   useEffect(() => {
     if (!isLoggedIn) return;
     
@@ -1638,7 +1641,6 @@ function LoginPage() {
     document.body.removeChild(link);
   };
 
-  // Member ID Card Component
   const MemberIDCard = ({ member, isFlipped, onFlip, onClose }: { 
     member: Member; 
     isFlipped: boolean; 
@@ -1670,7 +1672,6 @@ function LoginPage() {
               transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
             }}
           >
-            {/* Front Side */}
             <div 
               className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
               style={{ backfaceVisibility: 'hidden' }}
@@ -1733,7 +1734,6 @@ function LoginPage() {
               </div>
             </div>
 
-            {/* Back Side */}
             <div 
               className="absolute w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-orange-300"
               style={{ 
@@ -1796,7 +1796,6 @@ function LoginPage() {
     </div>
   );
 
-  // Login Form (Not Logged In)
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -1877,10 +1876,8 @@ function LoginPage() {
     );
   }
 
-  // Logged In Dashboard
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1>
@@ -1896,7 +1893,6 @@ function LoginPage() {
         </button>
       </div>
 
-      {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
         {[
           { id: 'members', label: 'সদস্য তালিকা', icon: Users },
@@ -1923,7 +1919,6 @@ function LoginPage() {
         ))}
       </div>
 
-      {/* Loading State */}
       {isDataLoading && (
         <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -1931,7 +1926,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1998,7 +1992,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2068,7 +2061,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2122,7 +2114,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Accounts Tab */}
       {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
@@ -2151,7 +2142,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Member ID Card Modal */}
       {selectedMember && (
         <MemberIDCard 
           member={selectedMember}
@@ -2165,21 +2155,6 @@ function LoginPage() {
 }
 
 // Main App
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import HomePage from './pages/HomePage';
-import DurgaPujaPage from './pages/DurgaPujaPage';
-import ShyamaPujaPage from './pages/ShyamaPujaPage';
-import SaraswatiPujaPage from './pages/SaraswatiPujaPage';
-import RathYatraPage from './pages/RathYatraPage';
-import DeitiesPage from './pages/DeitiesPage';
-import GalleryPage from './pages/GalleryPage';
-import MusicPage from './pages/MusicPage';
-import PDFPage from './pages/PDFPage';
-import LiveTVPage from './pages/LiveTVPage';
-import ContactPage from './pages/ContactPage';
-import LoginPage from './pages/LoginPage';
-
 function App() {
   return (
     <Router>
@@ -2201,6 +2176,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   );
