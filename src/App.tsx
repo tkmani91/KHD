@@ -26,8 +26,7 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  MapPin,
-  CreditCard
+  MapPin
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
@@ -103,8 +102,6 @@ interface Member {
   motherName: string;
   occupation: string;
   pdfUrl: string;
-  idCardFront?: string;  // নতুন ফিল্ড
-  idCardBack?: string;   // নতুন ফিল্ড
 }
 
 interface ContactPerson {
@@ -347,7 +344,7 @@ const accountsPDFs = {
 const notices = [
   '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
   '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
-  '🎉 মেম্বর তথ্য এবং হিসাব বিবরণী দেখতে মেম্বর লগইন এ প্রবেশ করুণ।',
+  '🎉 মেম্বার তথ্য এবং হিসাব বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
   '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
 ];
 
@@ -376,6 +373,7 @@ function useCountdown(targetDate: string): CountdownTime {
 
   return timeLeft;
 }
+
 // Components
 function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
   const time = useCountdown(targetDate);
@@ -447,7 +445,7 @@ function Header() {
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
     { path: '/contact', label: 'যোগাযোগ', icon: Phone },
-    { path: '/login', label: 'মেম্বর লগইন', icon: LogIn },
+    { path: '/login', label: 'মেম্বার লগইন', icon: LogIn },
   ];
 
   return (
@@ -775,7 +773,7 @@ function SaraswatiPujaPage() {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">
-              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র। ভক্তরা সাধারণত হলুদ পোশাকে সেজে এদিন দেবীর চরণে পুষ্পাঞ্জলি নিবেদন করেন।
+              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র।
             </p>
           </div>
           <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -814,14 +812,14 @@ function RathYatraPage() {
   const puja = pujaData.find(p => p.id === 'rath')!;
   const schedule = [
     { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
-    { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা কলম হিন্দু ধর্মসভা মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
+    { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+    { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা' },
   ];
 
   return (
@@ -1037,6 +1035,7 @@ function GalleryPage() {
     </div>
   );
 }
+
 function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -1417,9 +1416,7 @@ function LoginPage() {
   const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
-  const [showIDCard, setShowIDCard] = useState<Member | null>(null);
 
   useEffect(() => {
     const fetchLoginData = async () => {
@@ -1479,6 +1476,7 @@ function LoginPage() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
+  // Member Details Modal
   const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -1550,304 +1548,23 @@ function LoginPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6">
             <a 
               href={`tel:${member.mobile}`}
-              className="flex-1 py-3 bg-green-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
+              className="w-full py-3 bg-green-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
             >
               <Phone className="w-5 h-5" /> কল করুন
             </a>
-            <button 
-              onClick={() => { onClose(); setShowIDCard(member); }}
-              className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:from-purple-600 hover:to-pink-600 transition"
-            >
-              <CreditCard className="w-5 h-5" /> আইডি কার্ড
-            </button>
           </div>
         </div>
       </div>
     </div>
   );
-
-const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => {
-  const frontCardRef = useRef<HTMLDivElement>(null);
-  const backCardRef = useRef<HTMLDivElement>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadSide, setDownloadSide] = useState<'front' | 'back' | 'both'>('both');
-
-  const handleDownload = async (side: 'front' | 'back' | 'both') => {
-    setIsDownloading(true);
-    setDownloadSide(side);
-    
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      
-      if (side === 'both' || side === 'front') {
-        if (frontCardRef.current) {
-          const canvas = await html2canvas(frontCardRef.current, {
-            scale: 3,
-            backgroundColor: '#ffffff',
-            useCORS: true,
-            logging: false,
-          });
-          const link = document.createElement('a');
-          link.download = `${member.name}-ID-Front.png`;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        }
-      }
-      
-      if (side === 'both' || side === 'back') {
-        // একটু দেরি করে ব্যাক কার্ড ডাউনলোড (যদি both হয়)
-        if (side === 'both') await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (backCardRef.current) {
-          const canvas = await html2canvas(backCardRef.current, {
-            scale: 3,
-            backgroundColor: '#ffffff',
-            useCORS: true,
-            logging: false,
-          });
-          const link = document.createElement('a');
-          link.download = `${member.name}-ID-Back.png`;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-        }
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
-    }
-    
-    setIsDownloading(false);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-4xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 p-4 flex justify-between items-center rounded-t-2xl">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <CreditCard className="w-6 h-6" /> সদস্য আইডি কার্ড
-          </h2>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => handleDownload('both')}
-              disabled={isDownloading}
-              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition disabled:opacity-50 shadow-lg"
-            >
-              {isDownloading && downloadSide === 'both' ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                  ডাউনলোড হচ্ছে...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  উভয় পার্ট
-                </>
-              )}
-            </button>
-            <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-8 bg-gray-50">
-          {/* Front Card */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <span className="w-7 h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
-                সামনের অংশ
-              </p>
-              <button 
-                onClick={() => handleDownload('front')}
-                disabled={isDownloading}
-                className="text-xs flex items-center gap-1 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition disabled:opacity-50"
-              >
-                {isDownloading && downloadSide === 'front' ? (
-                  <div className="w-3 h-3 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Download className="w-3 h-3" />
-                )}
-                শুধু এটি
-              </button>
-            </div>
-            
-            <div ref={frontCardRef} className="w-full aspect-[1.586/1] bg-gradient-to-br from-orange-50 to-red-50 rounded-xl shadow-2xl overflow-hidden border-4 border-orange-200 relative">
-              {/* Header Banner */}
-              <div className="absolute top-0 left-0 right-0 h-[15%] bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 flex items-center justify-center">
-                <h1 className="text-white font-black text-[3.5vw] md:text-2xl tracking-wide drop-shadow-lg">
-                  কলম হিন্দু ধর্মসভা
-                </h1>
-              </div>
-
-              {/* Member Photo */}
-              <div className="absolute left-[6%] top-[22%] w-[28%] aspect-[3/4]">
-                <div className="w-full h-full rounded-lg overflow-hidden border-4 border-white shadow-xl">
-                  <img 
-                    src={member.photo} 
-                    alt={member.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400?text=Photo'; }}
-                  />
-                </div>
-              </div>
-
-              {/* Member Info */}
-              <div className="absolute left-[37%] top-[22%] right-[6%]">
-                <div className="space-y-1">
-                  <h2 className="font-black text-[2.8vw] md:text-xl text-gray-800 leading-tight">
-                    {member.name}
-                  </h2>
-                  <p className="font-bold text-[2vw] md:text-base text-orange-600">
-                    {member.designation}
-                  </p>
-                  
-                  <div className="mt-3 space-y-1 text-[1.6vw] md:text-sm text-gray-700">
-                    <div className="flex items-center gap-1">
-                      <Phone className="w-[2vw] md:w-4 h-[2vw] md:h-4 text-orange-500 flex-shrink-0" />
-                      <span className="font-semibold">{member.mobile}</span>
-                    </div>
-                    <div className="flex items-start gap-1">
-                      <MapPin className="w-[2vw] md:w-4 h-[2vw] md:h-4 text-orange-500 flex-shrink-0 mt-0.5" />
-                      <span className="font-medium leading-tight">{member.address}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Member ID Badge */}
-              <div className="absolute top-[22%] right-[6%] bg-gradient-to-br from-orange-500 to-red-600 text-white px-3 py-1.5 rounded-lg shadow-lg">
-                <p className="text-[1.2vw] md:text-xs font-medium">সদস্য নং</p>
-                <p className="text-[2.5vw] md:text-xl font-black leading-none">#{member.id.padStart(3, '0')}</p>
-              </div>
-
-              {/* Footer */}
-              <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-between px-[5%]">
-                <p className="text-white font-bold text-[1.8vw] md:text-sm flex items-center gap-1">
-                  <span className="text-[2.5vw] md:text-xl">🕉️</span>
-                  কলম, সিংড়া, নাটোর
-                </p>
-                <p className="text-orange-100 font-semibold text-[1.5vw] md:text-xs">
-                  স্থাপিত: ২০১৭
-                </p>
-              </div>
-
-              {/* Decorative Elements */}
-              <div className="absolute top-[15%] left-[2%] text-orange-300 opacity-20 text-[4vw] md:text-4xl">🕉️</div>
-              <div className="absolute bottom-[14%] right-[2%] text-red-300 opacity-20 text-[4vw] md:text-4xl">🪔</div>
-            </div>
-          </div>
-
-          {/* Back Card */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <span className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
-                পেছনের অংশ
-              </p>
-              <button 
-                onClick={() => handleDownload('back')}
-                disabled={isDownloading}
-                className="text-xs flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition disabled:opacity-50"
-              >
-                {isDownloading && downloadSide === 'back' ? (
-                  <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Download className="w-3 h-3" />
-                )}
-                শুধু এটি
-              </button>
-            </div>
-            
-            <div ref={backCardRef} className="w-full aspect-[1.586/1] bg-gradient-to-br from-orange-50 to-red-50 rounded-xl shadow-2xl overflow-hidden border-4 border-red-200 relative">
-              {/* Header Banner */}
-              <div className="absolute top-0 left-0 right-0 h-[15%] bg-gradient-to-r from-red-600 via-orange-600 to-red-600 flex items-center justify-center">
-                <h1 className="text-white font-black text-[3.5vw] md:text-2xl tracking-wide drop-shadow-lg">
-                  কলম হিন্দু ধর্মসভা
-                </h1>
-              </div>
-
-              {/* Member Details */}
-              <div className="absolute left-[8%] right-[8%] top-[22%] bottom-[15%]">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 h-full">
-                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">👨 পিতার নাম</p>
-                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm leading-tight">
-                      {member.fatherName || '—'}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">👩 মাতার নাম</p>
-                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm leading-tight">
-                      {member.motherName || '—'}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">🔱 গোত্র</p>
-                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm">
-                      {member.gotra || '—'}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">💼 পেশা</p>
-                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm">
-                      {member.occupation || '—'}
-                    </p>
-                  </div>
-                  
-                  <div className="col-span-2 bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">🏠 স্থায়ী ঠিকানা</p>
-                    <p className="text-gray-800 font-bold text-[1.6vw] md:text-sm leading-tight">
-                      {member.permanentAddress || '—'}
-                    </p>
-                  </div>
-                  
-                  <div className="col-span-2 bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
-                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">📧 ইমেইল</p>
-                    <p className="text-gray-800 font-bold text-[1.5vw] md:text-xs break-all">
-                      {member.email || '—'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center px-[5%]">
-                <p className="text-white font-bold text-[1.8vw] md:text-sm text-center">
-                  📞 যোগাযোগ: +880 1733118313 | 🌐 www.khdharmasabha.com
-                </p>
-              </div>
-
-              {/* Decorative OM Symbol */}
-              <div className="absolute top-[18%] right-[3%] text-orange-200 opacity-30 text-[8vw] md:text-7xl font-bold">
-                🕉️
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Info */}
-        <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-b-2xl text-center border-t-2 border-orange-200">
-          <p className="text-sm text-gray-700 font-medium">
-            💡 <span className="font-bold">টিপ:</span> "উভয় পার্ট" বাটনে ক্লিক করে সামনে ও পেছনের কার্ড একসাথে ডাউনলোড করুন
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বর লগইন</h1></div>
+        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1></div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <div className={cn("mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2", dataSource === 'github' ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600")}>
             <div className={cn("w-2 h-2 rounded-full", dataSource === 'github' ? "bg-green-500" : "bg-yellow-500")} />
@@ -1890,7 +1607,7 @@ const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void 
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); setShowIDCard(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
       <div className="flex flex-wrap gap-2">
         {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
@@ -1936,22 +1653,13 @@ const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void 
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={() => setShowMemberDetails(member)}
-                    className="py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-orange-600 transition"
-                  >
-                    <Eye className="w-4 h-4" />
-                    বিস্তারিত
-                  </button>
-                  <button 
-                    onClick={() => setShowIDCard(member)}
-                    className="py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:from-purple-600 hover:to-pink-600 transition"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    আইডি কার্ড
-                  </button>
-                </div>
+                <button 
+                  onClick={() => setShowMemberDetails(member)}
+                  className="w-full py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-orange-600 transition"
+                >
+                  <Eye className="w-4 h-4" />
+                  বিস্তারিত দেখুন
+                </button>
               </div>
             ))}
           </div>
@@ -2022,25 +1730,17 @@ const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void 
         </div>
       )}
 
-      {/* =============================================
-          মোডালস - নতুন
-          ============================================= */}
+      {/* Member Details Modal */}
       {showMemberDetails && (
         <MemberDetailsModal 
           member={showMemberDetails} 
           onClose={() => setShowMemberDetails(null)} 
         />
       )}
-
-      {showIDCard && (
-        <IDCardModal 
-          member={showIDCard} 
-          onClose={() => setShowIDCard(null)} 
-        />
-      )}
     </div>
   );
 }
+
 // Main App Component
 function App() {
   return (
