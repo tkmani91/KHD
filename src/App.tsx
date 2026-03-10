@@ -26,7 +26,8 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  MapPin
+  MapPin,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
@@ -111,6 +112,7 @@ interface ContactPerson {
   address: string;
   occupation: string;
   pdfUrl: string;
+  photo?: string;
 }
 
 interface InvitationList {
@@ -121,41 +123,18 @@ interface InvitationList {
   pdfUrl: string;
 }
 
-// Data
-const pujaData: PujaInfo[] = [
-  {
-    id: 'durga',
-    name: 'দূর্গাপূজা',
-    date: '2026-10-17',
-    description: 'দূর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - শক্তির আরাধনা',
-    image: 'https://i.ibb.co.com/G3dkhLZq/Durga.png',
-    facebookLink: 'https://facebook.com/KHDS3'
-  },
-  {
-    id: 'shyama',
-    name: 'শ্যামাপূজা',
-    date: '2026-11-08',
-    description: 'শ্যামা মা কালীর অন্য রূপ, কৃষ্ণবর্ণা - কালীপূজা',
-    image: 'https://i.ibb.co.com/0TXrT0n/Kali-Ma.png',
-    facebookLink: 'https://facebook.com/KHDS3'
-  },
-  {
-    id: 'saraswati',
-    name: 'সরস্বতী পূজা',
-    date: '2027-02-11',
-    description: 'সরস্বতী মা বিদ্যাদেবী, বাণীদেবী - জ্ঞানের আরাধনা',
-    image: 'https://i.ibb.co.com/1Jw49LtJ/Saraswati.png',
-    facebookLink: 'https://facebook.com/KHDS3'
-  },
-  {
-    id: 'rath',
-    name: 'রথযাত্রা',
-    date: '2026-05-16',
-    description: 'জগন্নাথ দেব বিশ্বনাথ, পুরীধাম - ভগবানের রথযাত্রা',
-    image: 'https://i.ibb.co.com/Xf79K9JZ/jagannath.png',
-    facebookLink: 'https://facebook.com/KHDS3'
-  }
-];
+interface AccountsPDFs {
+  [key: string]: {
+    title: string;
+    years: {
+      [year: string]: string;
+    };
+  };
+}
+
+// Data URLs
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
 const deities: Deity[] = [
   {
@@ -195,127 +174,6 @@ const deities: Deity[] = [
   }
 ];
 
-const songs: Song[] = [
-  { id: '1', title: 'নমোঃ দেবযাই মহা দেবযাই', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Namoh%20Devyai%20Maha%20Devyai.webm', duration: '9:27' },
-  { id: '2', title: 'মধুকৈটভ বিধবংশী', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Madhukaitava%20Vidhwangsi.webm', duration: '9:48' },
-  { id: '3', title: 'ওম আয়ুর্দেহি যশোদেহি', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Ayurdehi%20Jashodehi.webm', duration: '7:16' },
-  { id: '4', title: 'ওম জয়তাং দেবী চামুন্ডে', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Om%20Jayatang%20Devi%20Chamunde.webm', duration: '8:20' },
-  { id: '5', title: 'সাভারণী সূর্যো তমায়ো', artist: 'তুষার দত্ত', category: 'দূর্গা পূজা স্পেশাল', url: 'https://github.com/tkmani91/Dharmasaba/raw/main/MP3/Durga%20Devi%20Sthuti/Savarni%20Suryo%20Tanayo.mp3', duration: '6:04' },
-  { id: '6', title: 'আমার সাধ না মিটিল', artist: 'শুভঙ্কর', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/glpacs.webm', duration: '4:01' },
-  { id: '7', title: 'আমার আর কোনও গুন নেই মা', artist: 'মধুপূর্ণা গাঙ্গুলি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/gpra90.webm', duration: '5:45' },
-  { id: '8', title: 'আমার চেতনা চৈতন্য', artist: 'মেখলা দাশগুপ্ত', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/1wl9oi.webm', duration: '3:32' },
-  { id: '9', title: 'আমার সাধ না মিটিল', artist: 'সোমচন্দ ভট্টাচার্য', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/7f4a2l.webm', duration: '4:48' },
-  { id: '10', title: 'আমি সকল কাজের', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/k76bty.webm', duration: '3:41' },
-  { id: '11', title: 'ভেবে দেখ মন', artist: 'অরিজিৎ চক্রবর্তী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/1tn51j.webm', duration: '5:37' },
-  { id: '12', title: 'বল মা আমি দাঁড়াই কোথা', artist: 'গুরুজিৎ সিং', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/q9of4f.webm', duration: '4:48' },
-  { id: '13', title: 'ডাক দেখি মন', artist: 'অর্পণা চক্রবর্তী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/xpxdq7.webm', duration: '3:16' },
-  { id: '14', title: 'দোষ কারো নয় গো', artist: 'সৃজন চ্যাটার্জী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/0gsfj5.webm', duration: '4:45' },
-  { id: '15', title: 'ডুব দে রে মন কালী বলে', artist: 'অর্পিতা দে', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/03wm3l.webm', duration: '5:58' },
-  { id: '16', title: 'একবার নাচো মা', artist: 'কালিকাপ্রসাদ', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/kmiive.webm', duration: '5:39' },
-  { id: '17', title: 'কালী কালী বল রসনা', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/6sktoa.webm', duration: '4:46' },
-  { id: '18', title: 'কালো মেয়ের পায়ের তলায়', artist: 'শুভঙ্কর', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/bms14y.webm', duration: '4:31' },
-  { id: '19', title: 'মা গো তোর কৃপা', artist: 'সৌরভ মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/ybmbw2.webm', duration: '5:06' },
-  { id: '20', title: 'মায়ের মূর্তি গড়াতে চাই', artist: 'সোহিনী মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/hbb5il.webm', duration: '3:41' },
-  { id: '21', title: 'মায়ের পায়ের জবা', artist: 'অভিক মুখার্জি', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/9fefj5.webm', duration: '3:31' },
-  { id: '22', title: 'মন রে কৃষিকাজ', artist: 'অরিজিৎ চক্রবর্তী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/mu6tpm.webm', duration: '4:03' },
-  { id: '23', title: 'মন তোরে তাই বলি বলি', artist: 'বিভবেন্দু ভট্টাচার্য', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/svrhp5.webm', duration: '5:33' },
-  { id: '24', title: 'সদানন্দময়ী কালী', artist: 'অমৃতা দত্ত', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/sn28p5.webm', duration: '4:20' },
-  { id: '25', title: 'সকলই তোমারই ইচ্ছা', artist: 'শুভঙ্কর - রামদুলাল নন্দী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/dkmn3u.webm', duration: '3:00' },
-  { id: '26', title: 'শ্যামা মা কি আমার', artist: 'অমৃতা', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/2f9fxp.webm', duration: '4:09' },
-  { id: '27', title: 'সুরের প্রেমাঞ্জলী', artist: 'অপরাজিতা চক্রবর্তী', category: 'শ্যামা সংগীত', url: 'https://files.catbox.moe/u9x41k.webm', duration: '3:59' },
-  { id: '28', title: 'হরে কৃষ্ণ হরে কৃষ্ণ', artist: 'চৈতন্য মহাপ্রভু', category: 'মহামন্ত্র', url: 'https://ia903208.us.archive.org/29/items/hare-krishna-hare-rama/Hare%20Krishna%20Hare%20Rama.webm', duration: '15:59' },
-  { id: '29', title: 'হরি হরয়ে নমঃ কৃষ্ণ', artist: 'সনাতন গোস্বামী', category: 'ভজন', url: 'https://ia903208.us.archive.org/29/items/hare-krishna-hare-rama/Hari%20Haraye%20Namaha%20Krishna.webm', duration: '7:00' },
-  { id: '30', title: 'জগন্নাথ স্বামী নয়ন পথগামী', artist: 'শ্রী জগন্নাথ অষ্টকম্', category: 'ভজন', url: 'https://ia903208.us.archive.org/29/items/hare-krishna-hare-rama/Jagannaath%20Ashtakam.webm', duration: '8:59' },
-  { id: '31', title: 'জয়ও জগন্নাথ', artist: 'বাসুদেব ঘোষ', category: 'ভজন', url: 'https://ia803208.us.archive.org/29/items/hare-krishna-hare-rama/Joyo%20Jagannaath.webm', duration: '14:06' },
-];
-
-const pdfFiles: PDFFile[] = [
-  { id: '1', title: 'দূর্গাপূজা ফর্দ', category: 'পূজা ফর্দ', url: 'https://tinyurl.com/ywj8ejmr', size: '170 KB' },
-  { id: '2', title: 'শ্যামাপূজা ফর্দ', category: 'পূজা ফর্দ', url: '#', size: '2.1 MB' },
-  { id: '3', title: 'সরস্বতী পূজা ফর্দ', category: 'পূজা ফর্দ', url: '#', size: '1.8 MB' },
-  { id: '4', title: 'বিবাহ ফর্দ (কনে পক্ষ)', category: 'বিবাহ', url: '#', size: '3.2 MB' },
-  { id: '5', title: 'বিবাহ ফর্দ (বর পক্ষ)', category: 'বিবাহ', url: '#', size: '3.0 MB' },
-  { id: '6', title: 'আদ্যশ্রাদ্ধ', category: 'শ্রাদ্ধ', url: '#', size: '1.5 MB' },
-  { id: '7', title: 'বাৎসরিক শ্রাদ্ধ', category: 'শ্রাদ্ধ', url: '#', size: '1.7 MB' },
-];
-
-const liveChannels: LiveChannel[] = [
-  { id: '1', name: 'Sanskar TV', logo: '📺', streamUrl: 'https://d26idhjf0y1p2g.cloudfront.net/out/v1/cd66dd25b9774cb29943bab54bbf3e2f/index.m3u8' },
-  { id: '2', name: 'Shubh TV', logo: '🙏', streamUrl: 'https://d2g1vdc6ozl2o8.cloudfront.net/out/v1/0a0dc7d7911b4fddbb4dfc963fdd4b9e/index.m3u8' },
-  { id: '3', name: 'Satsang TV', logo: '🪔', streamUrl: 'https://d2vfwvjxwtwq1t.cloudfront.net/out/v1/6b24239d5517495b986e7705490c6e65/index.m3u8' },
-  { id: '4', name: 'SVBC 4', logo: '☸️', streamUrl: 'https://d1msejlow1t3l4.cloudfront.net/fta/svbchindi4/chunks.m3u8' },
-];
-
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
-
-const DEMO_LOGIN_DATA = {
-  normalMembers: [
-    { mobile: "01712345678", email: "demo@member.com", password: "demo123", name: "ডেমো মেম্বর" },
-    { mobile: "01733118313", email: "tanmoy4bd@gmail.com", password: "admin123", name: "তন্ময় কুমার মানী" },
-  ],
-  accountsMembers: [
-    { mobile: "01812345678", email: "demo@member.com", password: "demo123", name: "ডেমো অ্যাডমিন" },
-  ]
-};
-
-const members: Member[] = [
-  {
-    id: '1',
-    name: 'লোডিং ব্যর্থ',
-    designation: '',
-    photo: '',
-    birthDate: '0000-00-00',
-    address: '',
-    permanentAddress: '',
-    mobile: '',
-    gotra: '',
-    email: '',
-    fatherName: '',
-    motherName: '',
-    occupation: '',
-    pdfUrl: ''
-  },
-  ];
-
-const contactPersons: ContactPerson[] = [
-  { id: '1', name: 'লোডিং ব্যর্থ', mobile: '', address: '', occupation: '', pdfUrl: '' },
- ];
-
-const invitationLists: InvitationList[] = [];
-
-const accountsPDFs = {
-  durgaPuja: {
-    title: 'দূর্গাপূজা হিসাব',
-    years: {
-      2024: '/pdfs/accounts/durga-puja-2024.pdf',
-      2023: '/pdfs/accounts/durga-puja-2023.pdf',
-      2022: '/pdfs/accounts/durga-puja-2022.pdf',
-    }
-  },
-  shyamaPuja: {
-    title: 'শ্যামাপূজা হিসাব',
-    years: {
-      2024: '/pdfs/accounts/shyama-puja-2024.pdf',
-      2023: '/pdfs/accounts/shyama-puja-2023.pdf',
-    }
-  },
-  saraswatiPuja: {
-    title: 'সরস্বতী পূজা হিসাব',
-    years: {
-      2024: '/pdfs/accounts/saraswati-puja-2024.pdf',
-      2023: '/pdfs/accounts/saraswati-puja-2023.pdf',
-    }
-  },
-  rathYatra: {
-    title: 'রথযাত্রা হিসাব',
-    years: {
-      2024: '/pdfs/accounts/rath-yatra-2024.pdf',
-      2023: '/pdfs/accounts/rath-yatra-2023.pdf',
-    }
-  }
-};
-
 const notices = [
   '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
   '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
@@ -347,6 +205,33 @@ function useCountdown(targetDate: string): CountdownTime {
   }, [targetDate]);
 
   return timeLeft;
+}
+
+// Data Loader Hook
+function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
+  const [data, setData] = useState<T>(fallback);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to load');
+        const jsonData = await response.json();
+        setData(jsonData);
+        setError('');
+      } catch {
+        setError('ডেটা লোড করতে সমস্যা হয়েছে');
+        setData(fallback);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [url]);
+
+  return [data, isLoading, error];
 }
 
 // Components
@@ -532,6 +417,8 @@ function Footer() {
 }
 
 function HomePage() {
+  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-2xl">
@@ -605,16 +492,43 @@ function HomePage() {
   );
 }
 
-function DurgaPujaPage() {
-  const puja = pujaData.find(p => p.id === 'durga')!;
-  const schedule = [
-    { day: 'মহালয়া', date: '১০ অক্টোবর  শনিবার', event: 'দেবীপক্ষের সূচনা' },
-    { day: 'ষষ্ঠী', date: '১৭ অক্টোবর শনিবার', event: 'দেবীর বোধন' },
-    { day: 'সপ্তমী', date: '১৮ অক্টোবর রবিবার', event: 'সপ্তমী পূজা' },
-    { day: 'অষ্টমী', date: '১৯ অক্টোবর সোমবার', event: 'অষ্টমী পূজা' },
-    { day: 'নবমী', date: '২০ অক্টোবর মঙ্গলবার', event: 'নবমী পূজা' },
-    { day: 'দশমী', date: '২১ অক্টোবর বুধবার', event: 'বিজয়া দশমী' },
-  ];
+function PujaPage({ pujaId }: { pujaId: string }) {
+  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  const puja = pujaData.find(p => p.id === pujaId);
+
+  if (!puja) {
+    return <div className="text-center py-12">পূজার তথ্য পাওয়া যায়নি</div>;
+  }
+
+  const schedules: { [key: string]: any[] } = {
+    durga: [
+      { day: 'মহালয়া', date: '১০ অক্টোবর শনিবার', event: 'দেবীপক্ষের সূচনা' },
+      { day: 'ষষ্ঠী', date: '১৭ অক্টোবর শনিবার', event: 'দেবীর বোধন' },
+      { day: 'সপ্তমী', date: '১৮ অক্টোবর রবিবার', event: 'সপ্তমী পূজা' },
+      { day: 'অষ্টমী', date: '১৯ অক্টোবর সোমবার', event: 'অষ্টমী পূজা' },
+      { day: 'নবমী', date: '২০ অক্টোবর মঙ্গলবার', event: 'নবমী পূজা' },
+      { day: 'দশমী', date: '২১ অক্টোবর বুধবার', event: 'বিজয়া দশমী' },
+    ],
+    shyama: [
+      { day: 'দীপাবলি', date: '৮ নভেম্বর ২০২৬ রবিবার', event: 'শ্যামা পূজা' },
+    ],
+    saraswati: [
+      { day: 'পঞ্চমী', date: '২৩ জানুয়ারি ২০২৬ শুক্রবার', event: 'সরস্বতী পূজা' },
+    ],
+    rath: [
+      { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
+      { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
+      { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা' },
+    ]
+  };
+
+  const schedule = schedules[pujaId] || [];
 
   return (
     <div className="space-y-8">
@@ -631,9 +545,7 @@ function DurgaPujaPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-            <p className="text-gray-700 leading-relaxed">
-              দূর্গাপূজা হলো হিন্দু ধর্মাবলম্বীদের সবচেয়ে বড় উৎসব। দুর্গা মা অসুরদমনী, মহিষাসুরমর্দিনী - শক্তির প্রতীক।
-            </p>
+            <p className="text-gray-700 leading-relaxed">{puja.description}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
@@ -667,187 +579,10 @@ function DurgaPujaPage() {
   );
 }
 
-function ShyamaPujaPage() {
-  const puja = pujaData.find(p => p.id === 'shyama')!;
-  const schedule = [
-    { day: 'দীপাবলি', date: '৮ নভেম্বর ২০২৬ রবিবার', event: 'শ্যামা পূজা' },
-  ];
-
-  return (
-    <div className="space-y-8">
-      <div className="relative rounded-2xl overflow-hidden">
-        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
-          <p className="text-orange-200">{puja.description}</p>
-        </div>
-      </div>
-      <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-            <p className="text-gray-700 leading-relaxed">
-              শ্যামা পূজা বা কালীপূজা কার্তিক অমাবস্যায় অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ।
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
-            <div className="space-y-3">
-              {schedule.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
-            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SaraswatiPujaPage() {
-  const puja = pujaData.find(p => p.id === 'saraswati')!;
-  const schedule = [
-    { day: 'পঞ্চমী', date: '২৩ জানুয়ারি ২০২৬ শুক্রবার', event: 'সরস্বতী পূজা' },
-  ];
-
-  return (
-    <div className="space-y-8">
-      <div className="relative rounded-2xl overflow-hidden">
-        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
-          <p className="text-orange-200">{puja.description}</p>
-        </div>
-      </div>
-      <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-            <p className="text-gray-700 leading-relaxed">
-              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র।
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
-            <div className="space-y-3">
-              {schedule.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
-            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RathYatraPage() {
-  const puja = pujaData.find(p => p.id === 'rath')!;
-  const schedule = [
-    { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
-    { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-    { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা' },
-  ];
-
-  return (
-    <div className="space-y-8">
-      <div className="relative rounded-2xl overflow-hidden">
-        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
-          <p className="text-orange-200">{puja.description}</p>
-        </div>
-      </div>
-      <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-            <p className="text-gray-700 leading-relaxed">
-              রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব।
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
-            <div className="space-y-3">
-              {schedule.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
-            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+function DurgaPujaPage() { return <PujaPage pujaId="durga" />; }
+function ShyamaPujaPage() { return <PujaPage pujaId="shyama" />; }
+function SaraswatiPujaPage() { return <PujaPage pujaId="saraswati" />; }
+function RathYatraPage() { return <PujaPage pujaId="rath" />; }
 
 function DeitiesPage() {
   return (
@@ -1012,6 +747,7 @@ function GalleryPage() {
 }
 
 function MusicPage() {
+  const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1072,7 +808,7 @@ function MusicPage() {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [songs]);
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
 
@@ -1224,6 +960,7 @@ function MusicPage() {
 }
 
 function PDFPage() {
+  const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
   const filteredFiles = selectedCategory === 'সব' ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
@@ -1261,13 +998,22 @@ function PDFPage() {
 }
 
 function LiveTVPage() {
-  const [activeChannel, setActiveChannel] = useState<LiveChannel>(liveChannels[0]);
+  const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
+  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<any>(null);
 
   useEffect(() => {
+    if (liveChannels.length > 0 && !activeChannel) {
+      setActiveChannel(liveChannels[0]);
+    }
+  }, [liveChannels, activeChannel]);
+
+  useEffect(() => {
+    if (!activeChannel) return;
+
     const loadStream = async () => {
       const video = videoRef.current;
       if (!video) return;
@@ -1295,6 +1041,10 @@ function LiveTVPage() {
     loadStream();
     return () => { if (hlsRef.current) hlsRef.current.destroy(); };
   }, [activeChannel]);
+
+  if (!activeChannel) {
+    return <div className="text-center py-12">লোড হচ্ছে...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -1383,28 +1133,37 @@ function LoginPage() {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [loginData, setLoginData] = useState(DEMO_LOGIN_DATA);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
-  const [membersData, setMembersData] = useState<Member[]>(members);
-  const [contactsData, setContactsData] = useState<ContactPerson[]>(contactPersons);
-  const [invitationData, setInvitationData] = useState<InvitationList[]>(invitationLists);
+  const [membersData, setMembersData] = useState<Member[]>([]);
+  const [contactsData, setContactsData] = useState<ContactPerson[]>([]);
+  const [invitationData, setInvitationData] = useState<InvitationList[]>([]);
+  const [accountsPDFs, setAccountsPDFs] = useState<AccountsPDFs>({});
   const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
+  const [loginData, setLoginData] = useState<any>(null);
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
+  // Load login data
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
         const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        if (data.normalMembers && data.accountsMembers) { setLoginData(data); setDataSource('github'); }
-      } catch { setLoginData(DEMO_LOGIN_DATA); setDataSource('local'); }
+        if (data.normalMembers && data.accountsMembers) { 
+          setLoginData(data); 
+          setDataSource('github'); 
+        }
+      } catch { 
+        setDataSource('local');
+      }
     };
     fetchLoginData();
   }, []);
 
+  // Load member data after login
   useEffect(() => {
     if (!isLoggedIn) return;
     const fetchAllData = async () => {
@@ -1417,10 +1176,26 @@ function LoginPage() {
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
-      } catch (error) { console.log('Using local data:', error); }
+      } catch (error) { 
+        console.log('Using local data:', error); 
+      }
       finally { setIsDataLoading(false); }
     };
     fetchAllData();
+
+    // Load accounts PDFs
+    const loadAccountsPDFs = async () => {
+      try {
+        const response = await fetch('/data/accountsPDFs.json');
+        if (response.ok) {
+          const data = await response.json();
+          setAccountsPDFs(data);
+        }
+      } catch (error) {
+        console.log('Failed to load accounts PDFs:', error);
+      }
+    };
+    loadAccountsPDFs();
   }, [isLoggedIn]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -1428,17 +1203,28 @@ function LoginPage() {
     setLoginError('');
     if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
     if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
+    
+    if (!loginData) {
+      setLoginError('লগইন ডেটা লোড হয়নি');
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
       let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
       if (loginType === 'general') {
-        foundUser = loginData.normalMembers.find(m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
+        foundUser = loginData.normalMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       } else {
-        foundUser = loginData.accountsMembers.find(m => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
+        foundUser = loginData.accountsMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       }
-      if (foundUser) { setIsLoggedIn(true); setLoggedInUser(foundUser.name); setUsernameInput(''); setPasswordInput(''); }
+      if (foundUser) { 
+        setIsLoggedIn(true); 
+        setLoggedInUser(foundUser.name); 
+        setUsernameInput(''); 
+        setPasswordInput(''); 
+      }
       else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
@@ -1536,15 +1322,26 @@ function LoginPage() {
     </div>
   );
 
+  // Group invitations by area
+  const groupedInvitations = invitationData.reduce((acc, item) => {
+    if (!acc[item.area]) {
+      acc[item.area] = [];
+    }
+    acc[item.area].push(item);
+    return acc;
+  }, {} as { [key: string]: InvitationList[] });
+
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
         <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1></div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <div className={cn("mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2", dataSource === 'github' ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600")}>
-            <div className={cn("w-2 h-2 rounded-full", dataSource === 'github' ? "bg-green-500" : "bg-yellow-500")} />
-            {dataSource === 'github' ? '✓ সার্ভার থেকে ডেটা লোড হয়েছে' : '⚠ লোকাল ডেটা ব্যবহৃত হচ্ছে'}
-          </div>
+          {dataSource === 'github' && (
+            <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              ✓ সার্ভার থেকে ডেটা লোড হয়েছে
+            </div>
+          )}
           <div className="flex gap-2 mb-6">
             <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য</button>
             <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন</button>
@@ -1652,8 +1449,18 @@ function LoginPage() {
             {contactsData.map((person) => (
               <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center"><User className="w-7 h-7 text-blue-600" /></div>
-                  <div className="flex-1"><h3 className="font-bold">{person.name}</h3><p className="text-blue-600 text-sm">{person.occupation}</p></div>
+                  <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
+                    <img 
+                      src={person.photo || 'https://via.placeholder.com/56?text=👤'} 
+                      alt={person.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/56?text=👤'; }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold">{person.name}</h3>
+                    <p className="text-blue-600 text-sm">{person.occupation}</p>
+                  </div>
                   <ChevronRight className={cn("w-5 h-5 text-gray-400 transition-transform", selectedContact?.id === person.id && "rotate-90")} />
                 </div>
                 {selectedContact?.id === person.id && (
@@ -1672,23 +1479,86 @@ function LoginPage() {
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা</h3><p className="text-sm text-green-100">মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য</p></div>
-            <button onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
+              </h3>
+              <p className="text-sm text-green-100">
+                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
+              </p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {invitationData.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center"><MapPin className="w-6 h-6 text-green-600" /></div>
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><span className="text-orange-600 font-bold text-lg">{item.familyCount}</span></div>
+
+          <div className="space-y-3">
+            {Object.entries(groupedInvitations).map(([area, items]) => {
+              const totalMembers = items.reduce((sum, item) => sum + item.familyCount, 0);
+              const isExpanded = expandedArea === area;
+
+              return (
+                <div key={area} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedArea(isExpanded ? null : area)}
+                    className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-gray-800">{area}</h3>
+                        <p className="text-sm text-gray-500">মোট: {totalMembers} জন</p>
+                      </div>
+                    </div>
+                    <ChevronDown 
+                      className={cn(
+                        "w-5 h-5 text-gray-400 transition-transform",
+                        isExpanded && "rotate-180"
+                      )} 
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-gray-100">
+                      <div className="p-4 space-y-2">
+                        {items.map((item) => (
+                          <div 
+                            key={item.id} 
+                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <User className="w-4 h-4 text-green-600" />
+                              </div>
+                              <span className="font-medium text-gray-700">{item.personName}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500">{item.familyCount} জন</span>
+                              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <span className="text-orange-600 font-bold text-sm">{item.familyCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <h3 className="font-bold text-gray-800">{item.area}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1"><User className="w-3 h-3" /> {item.personName}</p>
-                <div className="mt-3 pt-3 border-t border-gray-100"><span className="text-xs text-green-600 font-medium">{item.familyCount} জন সদস্য</span></div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          {invitationData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p></div>)}
+
+          {invitationData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -1696,16 +1566,30 @@ function LoginPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4"><div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center"><FileText className="w-6 h-6 text-orange-600" /></div><h3 className="font-bold text-lg">{data.title}</h3></div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg">{data.title}</h3>
+              </div>
               <div className="grid grid-cols-3 gap-2">
-                {Object.entries(data.years).map(([year, url]) => (<a key={year} href={url} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"><Download className="w-4 h-4 text-orange-600" /><span className="text-sm font-medium">{year}</span></a>))}
+                {Object.entries(data.years).map(([year, url]) => (
+                  <a 
+                    key={year} 
+                    href={url} 
+                    download 
+                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+                  >
+                    <Download className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">{year}</span>
+                  </a>
+                ))}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Member Details Modal */}
       {showMemberDetails && (
         <MemberDetailsModal 
           member={showMemberDetails} 
