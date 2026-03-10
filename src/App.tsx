@@ -374,7 +374,6 @@ function useCountdown(targetDate: string): CountdownTime {
 
   return timeLeft;
 }
-
 // Components
 function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
   const time = useCountdown(targetDate);
@@ -557,11 +556,9 @@ function Footer() {
   );
 }
 
-// ✅ HomePage - শুধু ছবি, কোন টেক্সট নেই
 function HomePage() {
   return (
     <div className="space-y-8">
-      {/* ✅ হিরো সেকশন - কাঁচা হলুদ ব্যাকগ্রাউন্ড */}
       <section className="relative overflow-hidden rounded-2xl">
         <div className="absolute inset-0" style={{
           background: 'linear-gradient(135deg, #FFD700 0%, #E6B800 100%)'
@@ -632,7 +629,7 @@ function HomePage() {
     </div>
   );
 }
-// Puja Pages
+
 function DurgaPujaPage() {
   const puja = pujaData.find(p => p.id === 'durga')!;
   const schedule = [
@@ -1038,7 +1035,6 @@ function GalleryPage() {
     </div>
   );
 }
-
 function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -1420,7 +1416,6 @@ function LoginPage() {
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   
-  // নতুন state যুক্ত করা হয়েছে
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
   const [showIDCard, setShowIDCard] = useState<Member | null>(null);
 
@@ -1482,13 +1477,9 @@ function LoginPage() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // =============================================
-  // নতুন: সদস্য বিস্তারিত মোডাল
-  // =============================================
   const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <User className="w-5 h-5" /> সদস্য বিস্তারিত
@@ -1498,9 +1489,7 @@ function LoginPage() {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
-          {/* Photo & Basic Info */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="w-32 h-32 mx-auto sm:mx-0 rounded-xl overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0">
               <img 
@@ -1517,7 +1506,6 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p>
@@ -1560,7 +1548,6 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="mt-6 flex gap-3">
             <a 
               href={`tel:${member.mobile}`}
@@ -1580,20 +1567,15 @@ function LoginPage() {
     </div>
   );
 
-  // =============================================
-  // নতুন: আইডি কার্ড মোডাল (দুই পিঠ একসাথে)
-  // =============================================
   const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    // আইডি কার্ড ডাউনলোড ফাংশন
     const handleDownload = async () => {
       if (!cardRef.current) return;
       
       setIsDownloading(true);
       try {
-        // html2canvas ব্যবহার করে ইমেজ তৈরি
         const html2canvas = (await import('html2canvas')).default;
         const canvas = await html2canvas(cardRef.current, {
           scale: 2,
@@ -1601,7 +1583,6 @@ function LoginPage() {
           useCORS: true,
         });
         
-        // ডাউনলোড লিংক তৈরি
         const link = document.createElement('a');
         link.download = `${member.name}-ID-Card.png`;
         link.href = canvas.toDataURL('image/png');
@@ -1616,7 +1597,6 @@ function LoginPage() {
     return (
       <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
         <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex justify-between items-center rounded-t-2xl">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <CreditCard className="w-5 h-5" /> আইডি কার্ড
@@ -1645,23 +1625,19 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* ID Cards Container */}
           <div ref={cardRef} className="p-6 space-y-6 bg-gray-50">
-            {/* সামনের পিঠ (Front Side) */}
             <div>
               <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
                 <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
                 সামনের অংশ
               </p>
               <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-purple-200">
-                {/* Background Image */}
                 <img 
                   src="https://i.postimg.cc/pds0fRHn/PART-A-1.png" 
                   alt="ID Card Front" 
                   className="w-full h-auto"
                 />
                 
-                {/* Member Photo Overlay */}
                 <div className="absolute" style={{ top: '35%', left: '8%', width: '22%' }}>
                   <img 
                     src={member.photo} 
@@ -1671,7 +1647,6 @@ function LoginPage() {
                   />
                 </div>
 
-                {/* Member Info Overlay */}
                 <div className="absolute text-gray-800" style={{ top: '38%', left: '35%', right: '5%' }}>
                   <h3 className="font-bold text-lg md:text-xl leading-tight">{member.name}</h3>
                   <p className="text-orange-600 font-semibold text-sm md:text-base">{member.designation}</p>
@@ -1685,28 +1660,24 @@ function LoginPage() {
                   </div>
                 </div>
 
-                {/* Member ID Badge */}
                 <div className="absolute bg-orange-500 text-white px-3 py-1 rounded-lg font-bold" style={{ top: '22%', right: '5%' }}>
                   #{member.id.padStart(3, '0')}
                 </div>
               </div>
             </div>
 
-            {/* পেছনের পিঠ (Back Side) */}
             <div>
               <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
                 <span className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
                 পেছনের অংশ
               </p>
               <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-pink-200">
-                {/* Background Image */}
                 <img 
                   src="https://i.postimg.cc/G29XzVLK/PART-B.png" 
                   alt="ID Card Back" 
                   className="w-full h-auto"
                 />
 
-                {/* Member Details Overlay */}
                 <div className="absolute text-gray-800" style={{ top: '25%', left: '8%', right: '8%' }}>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
                     <div>
@@ -1739,7 +1710,6 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* Footer Note */}
           <div className="p-4 bg-gray-100 rounded-b-2xl text-center">
             <p className="text-xs text-gray-500">
               💡 টিপ: ডাউনলোড বাটনে ক্লিক করে আইডি কার্ড সংরক্ষণ করুন
@@ -1796,11 +1766,11 @@ function LoginPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); // setSelectedMember(null); setShowMemberDetails(null); setShowIDCard(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); setShowIDCard(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
       <div className="flex flex-wrap gap-2">
         {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
-          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); // setSelectedMember(null); setSelectedContact(null); }}
+          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedContact(null); }}
             className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
@@ -1808,9 +1778,6 @@ function LoginPage() {
       </div>
       {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
 
-      {/* =============================================
-          সদস্য তালিকা - আপডেটেড
-          ============================================= */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1821,7 +1788,6 @@ function LoginPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {membersData.map((member) => (
               <div key={member.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all border border-gray-100">
-                {/* Member Info */}
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
                     <img 
@@ -1840,16 +1806,12 @@ function LoginPage() {
                   </div>
                 </div>
 
-                {/* Member ID */}
                 <div className="mb-4 pb-3 border-b border-gray-100">
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                     সদস্য নং: #{member.id.padStart(3, '0')}
                   </span>
                 </div>
 
-                {/* =============================================
-                    দুটি আলাদা বাটন - নতুন
-                    ============================================= */}
                 <div className="grid grid-cols-2 gap-2">
                   <button 
                     onClick={() => setShowMemberDetails(member)}
