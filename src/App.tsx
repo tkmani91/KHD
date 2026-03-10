@@ -259,56 +259,6 @@ const DEMO_LOGIN_DATA = {
   ]
 };
 
-const members: Member[] = [
-  {
-    id: '1',
-    name: 'পিনাকী কুন্ডু',
-    designation: 'সভাপতি',
-    photo: 'https://i.ibb.co.com/0R0mJxmJ/PINAKI.png',
-    birthDate: '1970-05-15',
-    address: 'নজরপুর, কলম',
-    permanentAddress: 'কলম, সিংড়া, নাটোর',
-    mobile: '01712345678',
-    gotra: '',
-    email: 'ram@example.com',
-    fatherName: 'ভূপতী কুন্ডু',
-    motherName: '',
-    occupation: 'ব্যবসায়ী',
-    pdfUrl: '/pdfs/members-list-2025.pdf'
-  },
-  {
-    id: '2',
-    name: 'শুভ্র জ্যোতি পোদ্দার',
-    designation: 'সাধারণ সম্পাদক',
-    photo: 'https://i.ibb.co.com/r2WgcXQt/SUVROJOTI-PODDER-2.png',
-    birthDate: '1975-08-20',
-    address: 'নজরপুর, কলম',
-    permanentAddress: 'কলম, সিংড়া, নাটোর',
-    mobile: '01576693413',
-    gotra: '',
-    email: '',
-    fatherName: 'আনান্দ পোদ্দার',
-    motherName: 'কনা রানী পোদ্দার',
-    occupation: 'সরকারী চাকুরী',
-    pdfUrl: '/pdfs/members-list-2025.pdf'
-  },
-];
-
-const contactPersons: ContactPerson[] = [
-  { id: '1', name: 'গৌর', mobile: '01753838412', address: 'রাখালগাছা সিংড়া', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-  { id: '2', name: 'আনোয়ার সরদার', mobile: '01757909116', address: 'বড় সাঐল বুদা বাজার', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-  { id: '3', name: 'সমর চক্রবর্তি', mobile: '01724982790', address: 'কুমার পাড়া', occupation: 'পুরোহিত', pdfUrl: '/pdfs/contact-persons-list.pdf' },
-];
-
-const invitationLists: InvitationList[] = [
-  { id: '1', area: 'হালদার পাড়া', personName: 'রামেশ্বর হালদার', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-  { id: '2', area: 'মধ্য পাড়া', personName: 'গোপাল চন্দ্র', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-  { id: '3', area: 'ভাটোপাড়া', personName: 'নীলকণ্ঠ ভট্টাচার্য', familyCount: 6, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-  { id: '4', area: 'বাজার পাড়া', personName: 'কালীপদ দাস', familyCount: 3, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-  { id: '5', area: 'পুন্ডরী', personName: 'বিষ্ণু পুন্ডরিক', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-  { id: '6', area: 'কুমার পাড়া', personName: 'শ্যাম কুমার', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
-];
-
 const accountsPDFs = {
   durgaPuja: {
     title: 'দূর্গাপূজা হিসাব',
