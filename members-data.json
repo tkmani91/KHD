@@ -47,88 +47,92 @@
     }
   ],
   "contacts": [
-    {
+     {
       "id": "1",
-      "name": "গৌর",
-      "mobile": "01753838412",
-      "address": "রাখালগাছা সিংড়া",
-      "occupation": "ঢাকওয়ালা"
-    },
-    {
-      "id": "2",
-      "name": "আনোয়ার সরদার",
-      "mobile": "01757909116",
-      "address": "বড় সাঐল বুদা বাজার",
-      "occupation": "নৌকাওয়ালা"
-    },
-    {
-      "id": "3",
       "name": "সমর কুমার চক্রবর্তী",
       "mobile": "01724982790",
       "address": "কুমার পাড়া",
-      "occupation": "পুরোহিত"
+      "occupation": "পুরোহিত",
+      "photo": "https://i.ibb.co.com/3m0sqgk8/SAMAR.jpg"
+    },
+    {
+      "id": "2",
+      "name": "গৌর",
+      "mobile": "01753838412",
+      "address": "রাখালগাছা সিংড়া",
+      "occupation": "ঢাকওয়ালা",
+      "photo": "https://i.ibb.co/xxxxx/shyam.jpg"
+    },
+    {
+      "id": "3",
+      "name": "আনোয়ার সরদার",
+      "mobile": "01757909116",
+      "address": "বড় সাঐল বুদা বাজার",
+      "occupation": "নৌকাওয়ালা",
+      "photo": "https://i.ibb.co/xxxxx/shyam.jpg"
     }
-  ],
+    ],
+  
   "invitations": [
     {
       "id": "1",
       "area": "হালদার পাড়া",
       "personName": "মহন হালদার",
-      "familyCount": 5
+      "familyCount": ৫
     },
     {
       "id": "2",
       "area": "হালদার পাড়া",
       "personName": "শংকর",
-      "familyCount": 3
+      "familyCount": ৩
     },
     {
       "id": "3",
       "area": "হালদার পাড়া",
       "personName": "কাজলী",
-      "familyCount": 4
+      "familyCount": ৪
     },
     {
       "id": "4",
       "area": "হালদার পাড়া",
       "personName": "বুড়া - রামপ্রশাদ",
-      "familyCount": 9
+      "familyCount": ৯
     },
     {
       "id": "5",
       "area": "হালদার পাড়া",
       "personName": "গোবিন্দ - আনন্দ",
-      "familyCount": 9
+      "familyCount": ৯
     },
     {
       "id": "6",
       "area": "হালদার পাড়া",
       "personName": "গৌড়",
-      "familyCount": 5
+      "familyCount": ৫
     },
     {
       "id": "7",
       "area": "হালদার পাড়া",
       "personName": "নরত্তম - তাপস",
-      "familyCount": 6
+      "familyCount": ৬
     },
     {
       "id": "8",
       "area": "হালদার পাড়া",
       "personName": "সন্তোষ",
-      "familyCount": 3
+      "familyCount": ৩
     },
     {
       "id": "9",
       "area": "মধ্য পাড়া",
       "personName": "অমিল্য হালদার",
-      "familyCount": 6
+      "familyCount": ৬
     },
     {
       "id": "10",
       "area": "ভাটোপাড়া",
       "personName": "নীরেন হালদার",
-      "familyCount": 10
+      "familyCount": ১০
     }
   ],
   "pdfLinks": {
