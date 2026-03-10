@@ -13,9 +13,7 @@
       "email": "pinaki@example.com",
       "fatherName": "ভূপতী কুন্ডু",
       "motherName": "সুভদ্রা কুন্ডু",
-      "occupation": "ব্যবসায়ী",
-      "idCardFront": "https://i.ibb.co.com/1fhhsRcq/PINAKI-KUNDU-1.png",
-      "idCardBack": "https://i.ibb.co.com/mCM7yKH0/PINAKI-KUNDU-2.png"
+      "occupation": "ব্যবসায়ী"
     },
     {
       "id": "2",
@@ -30,10 +28,8 @@
       "email": "suvro@example.com",
       "fatherName": "আনান্দ পোদ্দার",
       "motherName": "কনা রানী পোদ্দার",
-      "occupation": "সরকারী চাকুরী",
-      "idCardFront": "",
-      "idCardBack": ""
-    },
+      "occupation": "সরকারী চাকুরী"
+     },
     {
       "id": "3",
       "name": "তন্ময় কুমার মানী",
@@ -47,10 +43,8 @@
       "email": "tanmoy4bd@gmail.com",
       "fatherName": "নরেন্দ্র নাথ মানী",
       "motherName": "সুমিত্রা মানী",
-      "occupation": "ব্যাবসা",
-      "idCardFront": "",
-      "idCardBack": ""
-    }
+      "occupation": "ব্যাবসা"
+     }
   ],
   "contacts": [
     {
