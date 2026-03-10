@@ -1549,8 +1549,8 @@ function LoginPage() {
             {dataSource === 'github' ? '✓ সার্ভার থেকে ডেটা লোড হয়েছে' : '⚠ লোকাল ডেটা ব্যবহৃত হচ্ছে'}
           </div>
           <div className="flex gap-2 mb-6">
-            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য লগইন</button>
-            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন লগইন</button>
+            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য</button>
+            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন</button>
           </div>
           {loginError && (<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"><AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" /><p className="text-sm text-red-600">{loginError}</p></div>)}
           <form onSubmit={handleLogin} className="space-y-4">
