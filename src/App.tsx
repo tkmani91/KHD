@@ -26,7 +26,8 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  MapPin
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
