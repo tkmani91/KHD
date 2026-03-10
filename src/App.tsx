@@ -1575,7 +1575,7 @@ function LoginPage() {
               {isLoading ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>) : (<><LogIn className="w-5 h-5" />লগইন</>)}
             </button>
           </form>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ: +88 01733118313 । +88 01612118313</p></div>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313</p></div>
         </div>
       </div>
     );
