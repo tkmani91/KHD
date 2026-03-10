@@ -614,8 +614,7 @@ function HomePage() {
         </h2>
         <div className="space-y-4">
           {[
-            { title: 'দূর্গাপূজা ২০২৫ এর প্রস্তুতি শুরু', date: '২ জানুয়ারি ২০২৫', type: 'নোটিশ' },
-            { title: 'নতুন কমিটি গঠন সম্পন্ন', date: '১ জানুয়ারি ২০২৫', type: 'সংবাদ' },
+            { title: 'নতুন কমিটি গঠন সম্পন্ন', date: '৪ অক্টোবর ২০২৫', type: 'সংবাদ' },
           ].map((item, index) => (
             <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-orange-50 transition">
               <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 font-bold text-xs">
