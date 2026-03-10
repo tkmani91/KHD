@@ -111,7 +111,6 @@ interface ContactPerson {
   id: string;
   name: string;
   mobile: string;
-  photo: string;
   address: string;
   occupation: string;
   pdfUrl: string;
@@ -1575,8 +1574,8 @@ const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void 
   const [isDownloading, setIsDownloading] = useState(false);
 
   // ডিফল্ট ইমেজ (যদি মেম্বারের কাছে না থাকে)
-  const defaultCardFront = "https://i.postimg.cc/pds0fRHn/PART-A-1.png";
-  const defaultCardBack = "https://i.postimg.cc/G29XzVLK/PART-B.png";
+  const defaultCardFront = "";
+  const defaultCardBack = "";
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
