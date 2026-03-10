@@ -1570,161 +1570,279 @@ function LoginPage() {
   );
 
 const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const frontCardRef = useRef<HTMLDivElement>(null);
+  const backCardRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSide, setDownloadSide] = useState<'front' | 'back' | 'both'>('both');
 
-  // ডিফল্ট ইমেজ (যদি মেম্বারের কাছে না থাকে)
-  const defaultCardFront = "";
-  const defaultCardBack = "";
-
-  const handleDownload = async () => {
-    if (!cardRef.current) return;
-    
+  const handleDownload = async (side: 'front' | 'back' | 'both') => {
     setIsDownloading(true);
+    setDownloadSide(side);
+    
     try {
       const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-      });
       
-      const link = document.createElement('a');
-      link.download = `${member.name}-ID-Card.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      if (side === 'both' || side === 'front') {
+        if (frontCardRef.current) {
+          const canvas = await html2canvas(frontCardRef.current, {
+            scale: 3,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false,
+          });
+          const link = document.createElement('a');
+          link.download = `${member.name}-ID-Front.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      }
+      
+      if (side === 'both' || side === 'back') {
+        // একটু দেরি করে ব্যাক কার্ড ডাউনলোড (যদি both হয়)
+        if (side === 'both') await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (backCardRef.current) {
+          const canvas = await html2canvas(backCardRef.current, {
+            scale: 3,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false,
+          });
+          const link = document.createElement('a');
+          link.download = `${member.name}-ID-Back.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      }
     } catch (error) {
       console.error('Download error:', error);
       alert('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     }
+    
     setIsDownloading(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-      <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex justify-between items-center rounded-t-2xl">
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-4xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 p-4 flex justify-between items-center rounded-t-2xl">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <CreditCard className="w-5 h-5" /> আইডি কার্ড
+            <CreditCard className="w-6 h-6" /> সদস্য আইডি কার্ড
           </h2>
           <div className="flex items-center gap-2">
             <button 
-              onClick={handleDownload}
+              onClick={() => handleDownload('both')}
               disabled={isDownloading}
-              className="flex items-center gap-2 bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition disabled:opacity-50"
+              className="flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-orange-50 transition disabled:opacity-50 shadow-lg"
             >
-              {isDownloading ? (
+              {isDownloading && downloadSide === 'both' ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
                   ডাউনলোড হচ্ছে...
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  ডাউনলোড
+                  উভয় পার্ট
                 </>
               )}
             </button>
             <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        <div ref={cardRef} className="p-6 space-y-6 bg-gray-50">
+        <div className="p-6 space-y-8 bg-gray-50">
+          {/* Front Card */}
           <div>
-            <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
-              <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
-              সামনের অংশ
-            </p>
-            <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-purple-200">
-              <img 
-                src={member.idCardFront || defaultCardFront} 
-                alt="ID Card Front" 
-                className="w-full h-auto"
-              />
-              
-              <div className="absolute" style={{ top: '35%', left: '8%', width: '22%' }}>
-                <img 
-                  src={member.photo} 
-                  alt={member.name}
-                  className="w-full aspect-[3/4] object-cover rounded-lg border-2 border-white shadow-md"
-                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100x130?text=👤'; }}
-                />
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                <span className="w-7 h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
+                সামনের অংশ
+              </p>
+              <button 
+                onClick={() => handleDownload('front')}
+                disabled={isDownloading}
+                className="text-xs flex items-center gap-1 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition disabled:opacity-50"
+              >
+                {isDownloading && downloadSide === 'front' ? (
+                  <div className="w-3 h-3 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3" />
+                )}
+                শুধু এটি
+              </button>
+            </div>
+            
+            <div ref={frontCardRef} className="w-full aspect-[1.586/1] bg-gradient-to-br from-orange-50 to-red-50 rounded-xl shadow-2xl overflow-hidden border-4 border-orange-200 relative">
+              {/* Header Banner */}
+              <div className="absolute top-0 left-0 right-0 h-[15%] bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 flex items-center justify-center">
+                <h1 className="text-white font-black text-[3.5vw] md:text-2xl tracking-wide drop-shadow-lg">
+                  কলম হিন্দু ধর্মসভা
+                </h1>
               </div>
 
-              <div className="absolute text-gray-800" style={{ top: '38%', left: '35%', right: '5%' }}>
-                <h3 className="font-bold text-lg md:text-xl leading-tight">{member.name}</h3>
-                <p className="text-orange-600 font-semibold text-sm md:text-base">{member.designation}</p>
-                <div className="mt-2 space-y-1 text-xs md:text-sm">
-                  <p className="flex items-center gap-1">
-                    <Phone className="w-3 h-3 text-orange-500" /> {member.mobile}
-                  </p>
-                  <p className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-orange-500" /> {member.address}
-                  </p>
+              {/* Member Photo */}
+              <div className="absolute left-[6%] top-[22%] w-[28%] aspect-[3/4]">
+                <div className="w-full h-full rounded-lg overflow-hidden border-4 border-white shadow-xl">
+                  <img 
+                    src={member.photo} 
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400?text=Photo'; }}
+                  />
                 </div>
               </div>
 
-              <div className="absolute bg-orange-500 text-white px-3 py-1 rounded-lg font-bold" style={{ top: '22%', right: '5%' }}>
-                #{member.id.padStart(3, '0')}
+              {/* Member Info */}
+              <div className="absolute left-[37%] top-[22%] right-[6%]">
+                <div className="space-y-1">
+                  <h2 className="font-black text-[2.8vw] md:text-xl text-gray-800 leading-tight">
+                    {member.name}
+                  </h2>
+                  <p className="font-bold text-[2vw] md:text-base text-orange-600">
+                    {member.designation}
+                  </p>
+                  
+                  <div className="mt-3 space-y-1 text-[1.6vw] md:text-sm text-gray-700">
+                    <div className="flex items-center gap-1">
+                      <Phone className="w-[2vw] md:w-4 h-[2vw] md:h-4 text-orange-500 flex-shrink-0" />
+                      <span className="font-semibold">{member.mobile}</span>
+                    </div>
+                    <div className="flex items-start gap-1">
+                      <MapPin className="w-[2vw] md:w-4 h-[2vw] md:h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                      <span className="font-medium leading-tight">{member.address}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Member ID Badge */}
+              <div className="absolute top-[22%] right-[6%] bg-gradient-to-br from-orange-500 to-red-600 text-white px-3 py-1.5 rounded-lg shadow-lg">
+                <p className="text-[1.2vw] md:text-xs font-medium">সদস্য নং</p>
+                <p className="text-[2.5vw] md:text-xl font-black leading-none">#{member.id.padStart(3, '0')}</p>
+              </div>
+
+              {/* Footer */}
+              <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-gradient-to-r from-orange-600 to-red-600 flex items-center justify-between px-[5%]">
+                <p className="text-white font-bold text-[1.8vw] md:text-sm flex items-center gap-1">
+                  <span className="text-[2.5vw] md:text-xl">🕉️</span>
+                  কলম, সিংড়া, নাটোর
+                </p>
+                <p className="text-orange-100 font-semibold text-[1.5vw] md:text-xs">
+                  স্থাপিত: ২০১৭
+                </p>
+              </div>
+
+              {/* Decorative Elements */}
+              <div className="absolute top-[15%] left-[2%] text-orange-300 opacity-20 text-[4vw] md:text-4xl">🕉️</div>
+              <div className="absolute bottom-[14%] right-[2%] text-red-300 opacity-20 text-[4vw] md:text-4xl">🪔</div>
             </div>
           </div>
 
+          {/* Back Card */}
           <div>
-            <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
-              <span className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
-              পেছনের অংশ
-            </p>
-            <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-pink-200">
-              <img 
-                src={member.idCardBack || defaultCardBack} 
-                alt="ID Card Back" 
-                className="w-full h-auto"
-              />
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                <span className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
+                পেছনের অংশ
+              </p>
+              <button 
+                onClick={() => handleDownload('back')}
+                disabled={isDownloading}
+                className="text-xs flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition disabled:opacity-50"
+              >
+                {isDownloading && downloadSide === 'back' ? (
+                  <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-3 h-3" />
+                )}
+                শুধু এটি
+              </button>
+            </div>
+            
+            <div ref={backCardRef} className="w-full aspect-[1.586/1] bg-gradient-to-br from-orange-50 to-red-50 rounded-xl shadow-2xl overflow-hidden border-4 border-red-200 relative">
+              {/* Header Banner */}
+              <div className="absolute top-0 left-0 right-0 h-[15%] bg-gradient-to-r from-red-600 via-orange-600 to-red-600 flex items-center justify-center">
+                <h1 className="text-white font-black text-[3.5vw] md:text-2xl tracking-wide drop-shadow-lg">
+                  কলম হিন্দু ধর্মসভা
+                </h1>
+              </div>
 
-              <div className="absolute text-gray-800" style={{ top: '25%', left: '8%', right: '8%' }}>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">পিতার নাম</p>
-                    <p className="font-semibold">{member.fatherName || '—'}</p>
+              {/* Member Details */}
+              <div className="absolute left-[8%] right-[8%] top-[22%] bottom-[15%]">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3 h-full">
+                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">👨 পিতার নাম</p>
+                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm leading-tight">
+                      {member.fatherName || '—'}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">মাতার নাম</p>
-                    <p className="font-semibold">{member.motherName || '—'}</p>
+                  
+                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">👩 মাতার নাম</p>
+                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm leading-tight">
+                      {member.motherName || '—'}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">গোত্র</p>
-                    <p className="font-semibold">{member.gotra || '—'}</p>
+                  
+                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">🔱 গোত্র</p>
+                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm">
+                      {member.gotra || '—'}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">পেশা</p>
-                    <p className="font-semibold">{member.occupation || '—'}</p>
+                  
+                  <div className="bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">💼 পেশা</p>
+                    <p className="text-gray-800 font-bold text-[1.8vw] md:text-sm">
+                      {member.occupation || '—'}
+                    </p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">স্থায়ী ঠিকানা</p>
-                    <p className="font-semibold">{member.permanentAddress || '—'}</p>
+                  
+                  <div className="col-span-2 bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">🏠 স্থায়ী ঠিকানা</p>
+                    <p className="text-gray-800 font-bold text-[1.6vw] md:text-sm leading-tight">
+                      {member.permanentAddress || '—'}
+                    </p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">ইমেইল</p>
-                    <p className="font-semibold text-xs">{member.email || '—'}</p>
+                  
+                  <div className="col-span-2 bg-white/60 backdrop-blur-sm p-2 rounded-lg shadow">
+                    <p className="text-orange-600 font-bold text-[1.4vw] md:text-xs mb-0.5">📧 ইমেইল</p>
+                    <p className="text-gray-800 font-bold text-[1.5vw] md:text-xs break-all">
+                      {member.email || '—'}
+                    </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Footer */}
+              <div className="absolute bottom-0 left-0 right-0 h-[12%] bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center px-[5%]">
+                <p className="text-white font-bold text-[1.8vw] md:text-sm text-center">
+                  📞 যোগাযোগ: +880 1733118313 | 🌐 www.khdharmasabha.com
+                </p>
+              </div>
+
+              {/* Decorative OM Symbol */}
+              <div className="absolute top-[18%] right-[3%] text-orange-200 opacity-30 text-[8vw] md:text-7xl font-bold">
+                🕉️
               </div>
             </div>
           </div>
         </div>
 
-        <div className="p-4 bg-gray-100 rounded-b-2xl text-center">
-          <p className="text-xs text-gray-500">
-            💡 টিপ: ডাউনলোড বাটনে ক্লিক করে আইডি কার্ড সংরক্ষণ করুন
-            </p>
-          </div>
+        {/* Footer Info */}
+        <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 rounded-b-2xl text-center border-t-2 border-orange-200">
+          <p className="text-sm text-gray-700 font-medium">
+            💡 <span className="font-bold">টিপ:</span> "উভয় পার্ট" বাটনে ক্লিক করে সামনে ও পেছনের কার্ড একসাথে ডাউনলোড করুন
+          </p>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   if (!isLoggedIn) {
     return (
