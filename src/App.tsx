@@ -636,12 +636,12 @@ function HomePage() {
 function DurgaPujaPage() {
   const puja = pujaData.find(p => p.id === 'durga')!;
   const schedule = [
-    { day: 'মহালয়া', date: '১০ অক্টোবর', event: 'দেবীপক্ষের সূচনা' },
-    { day: 'ষষ্ঠী', date: '১৭ অক্টোবর', event: 'দেবীর বোধন' },
-    { day: 'সপ্তমী', date: '১৮ অক্টোবর', event: 'সপ্তমী পূজা' },
-    { day: 'অষ্টমী', date: '১৯ অক্টোবর', event: 'অষ্টমী পূজা' },
-    { day: 'নবমী', date: '২০ অক্টোবর', event: 'নবমী পূজা' },
-    { day: 'দশমী', date: '২১ অক্টোবর', event: 'বিজয়া দশমী' },
+    { day: 'মহালয়া', date: '১০ অক্টোবর  শনিবার', event: 'দেবীপক্ষের সূচনা' },
+    { day: 'ষষ্ঠী', date: '১৭ অক্টোবর শনিবার', event: 'দেবীর বোধন' },
+    { day: 'সপ্তমী', date: '১৮ অক্টোবর রবিবার', event: 'সপ্তমী পূজা' },
+    { day: 'অষ্টমী', date: '১৯ অক্টোবর সোমবার', event: 'অষ্টমী পূজা' },
+    { day: 'নবমী', date: '২০ অক্টোবর মঙ্গলবার', event: 'নবমী পূজা' },
+    { day: 'দশমী', date: '২১ অক্টোবর বুধবার', event: 'বিজয়া দশমী' },
   ];
 
   return (
@@ -697,9 +697,10 @@ function DurgaPujaPage() {
 
 function ShyamaPujaPage() {
   const puja = pujaData.find(p => p.id === 'shyama')!;
-    const schedule = [
-    { day: 'দীপাবলি', date: '৮ নভেম্বর ২০২৬ রবিবার ', event: 'শ্যামা পূজা' },
-     ];
+  const schedule = [
+    { day: 'দীপাবলি', date: '৮ নভেম্বর ২০২৬ রবিবার', event: 'শ্যামা পূজা' },
+  ];
+
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
@@ -711,12 +712,16 @@ function ShyamaPujaPage() {
         </div>
       </div>
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-        <p className="text-gray-700 leading-relaxed">
-          শ্যামা পূজা বা কালীপূজা কার্তিক অমাবস্যায় অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ।
-        </p>
-      </div>  <div className="bg-white rounded-2xl p-6 shadow-lg">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
+            <p className="text-gray-700 leading-relaxed">
+              শ্যামা পূজা বা কালীপূজা কার্তিক অমাবস্যায় অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ।
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
@@ -747,13 +752,13 @@ function ShyamaPujaPage() {
     </div>
   );
 }
-
 
 function SaraswatiPujaPage() {
   const puja = pujaData.find(p => p.id === 'saraswati')!;
-    const schedule = [
+  const schedule = [
     { day: 'পঞ্চমী', date: '২৩ জানুয়ারি ২০২৬ শুক্রবার', event: 'সরস্বতী পূজা' },
-     ];
+  ];
+
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
@@ -765,13 +770,16 @@ function SaraswatiPujaPage() {
         </div>
       </div>
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-        <p className="text-gray-700 leading-relaxed">
-          সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র। ভক্তরা সাধারণত হলুদ পোশাকে সেজে এদিন দেবীর চরণে পুষ্পাঞ্জলি নিবেদন করেন।
-        </p>
-      </div>
-   <div className="bg-white rounded-2xl p-6 shadow-lg">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
+            <p className="text-gray-700 leading-relaxed">
+              সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র। ভক্তরা সাধারণত হলুদ পোশাকে সেজে এদিন দেবীর চরণে পুষ্পাঞ্জলি নিবেদন করেন।
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
@@ -802,21 +810,21 @@ function SaraswatiPujaPage() {
     </div>
   );
 }
-
 
 function RathYatraPage() {
   const puja = pujaData.find(p => p.id === 'rath')!;
-    const schedule = [
-    { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
-    { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
-    { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা কলম হিন্দু ধর্মসভা মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
+  const schedule = [
+    { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
+    { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট. প্রসাদ বিতরন দুপুর ২ ঘটিকায়. আরতী সন্ধাঃ ৮ ঘটিকায় স্থানঃ কলম হিন্দু ধর্মসভা প্রাঙ্গন' },
+    { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা কলম হিন্দু ধর্মসভা মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
   ];
+
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
@@ -828,12 +836,16 @@ function RathYatraPage() {
         </div>
       </div>
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
-      <div className="bg-white rounded-2xl p-6 shadow-lg">
-        <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
-        <p className="text-gray-700 leading-relaxed">
-          রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব।
-        </p>
-      </div>  <div className="bg-white rounded-2xl p-6 shadow-lg">
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
+            <p className="text-gray-700 leading-relaxed">
+              রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব।
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
             <div className="space-y-3">
               {schedule.map((item, index) => (
@@ -864,38 +876,6 @@ function RathYatraPage() {
     </div>
   );
 }
-  <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
-            <div className="space-y-3">
-              {schedule.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
-            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
-              <Facebook className="w-5 h-5" />
-              ফেসবুক পেজ দেখুন
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 
 function DeitiesPage() {
   return (
