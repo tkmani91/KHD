@@ -111,6 +111,7 @@ interface ContactPerson {
   id: string;
   name: string;
   mobile: string;
+  photo: string;
   address: string;
   occupation: string;
   pdfUrl: string;
