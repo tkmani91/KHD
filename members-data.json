@@ -13,8 +13,7 @@
       "email": "pinaki@example.com",
       "fatherName": "ভূপতী কুন্ডু",
       "motherName": "সুভদ্রা কুন্ডু",
-      "occupation": "ব্যবসায়ী"
-      "pdfUrl": "/pdfs/members-list-2025.pdf",
+      "occupation": "ব্যবসায়ী",
       "idCardFront": "",
       "idCardBack": ""
     },
@@ -31,14 +30,13 @@
       "email": "suvro@example.com",
       "fatherName": "আনান্দ পোদ্দার",
       "motherName": "কনা রানী পোদ্দার",
-      "occupation": "সরকারী চাকুরী"
-      "pdfUrl": "/pdfs/members-list-2025.pdf",
+      "occupation": "সরকারী চাকুরী",
       "idCardFront": "",
       "idCardBack": ""
     },
-     {
+    {
       "id": "3",
-      "name": "তন্ময় কুমার মানী",
+      "name": "তন্ময় কুমার মানী",
       "designation": "প্রচার সম্পাদক",
       "photo": "https://i.ibb.co.com/1tt71gwF/TANMOY.png",
       "birthDate": "1991-10-11",
@@ -49,8 +47,7 @@
       "email": "tanmoy4bd@gmail.com",
       "fatherName": "নরেন্দ্র নাথ মানী",
       "motherName": "সুমিত্রা মানী",
-      "occupation": "ব্যাবসা"
-      "pdfUrl": "/pdfs/members-list-2025.pdf",
+      "occupation": "ব্যাবসা",
       "idCardFront": "",
       "idCardBack": ""
     }
