@@ -9,7 +9,7 @@
       "address": "নজরপুর, কলম",
       "permanentAddress": "কলম, সিংড়া, নাটোর",
       "mobile": "01712345678",
-      "gotra": "কাশ্যপ",
+      "gotra": "",
       "email": "pinaki@example.com",
       "fatherName": "ভূপতী কুন্ডু",
       "motherName": "সুভদ্রা কুন্ডু",
@@ -26,7 +26,7 @@
       "address": "নজরপুর, কলম",
       "permanentAddress": "কলম, সিংড়া, নাটোর",
       "mobile": "01576693413",
-      "gotra": "ভরদ্বাজ",
+      "gotra": "",
       "email": "suvro@example.com",
       "fatherName": "আনান্দ পোদ্দার",
       "motherName": "কনা রানী পোদ্দার",
@@ -82,6 +82,48 @@
       "personName": "মহন হালদার",
       "familyCount": 5
     },
+    {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "শংকর",
+      "familyCount": 3
+    },
+     {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "কাজলী",
+      "familyCount": 4
+    },
+    {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "বুড়া - রামপ্রশাদ",
+      "familyCount": 9
+    },
+    {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "গোবিন্দ - আনন্দ",
+      "familyCount": 9
+    },
+    {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "গৌড়",
+      "familyCount": 5
+    },
+    {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "নরত্তম - তাপস",
+      "familyCount": 6
+    },
+     {
+      "id": "2",
+      "area": "হালদার পাড়া",
+      "personName": "সন্তোষ",
+      "familyCount": 3
+    }
     {
       "id": "2",
       "area": "মধ্য পাড়া",
