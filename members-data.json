@@ -47,7 +47,7 @@
     }
   ],
   "contacts": [
-     {
+    {
       "id": "1",
       "name": "সমর কুমার চক্রবর্তী",
       "mobile": "01724982790",
@@ -61,7 +61,7 @@
       "mobile": "01753838412",
       "address": "রাখালগাছা সিংড়া",
       "occupation": "ঢাকওয়ালা",
-      "photo": "https://i.ibb.co/xxxxx/shyam.jpg"
+      "photo": ""
     },
     {
       "id": "3",
@@ -69,70 +69,69 @@
       "mobile": "01757909116",
       "address": "বড় সাঐল বুদা বাজার",
       "occupation": "নৌকাওয়ালা",
-      "photo": "https://i.ibb.co/xxxxx/shyam.jpg"
+      "photo": ""
     }
-    ],
-  
+  ],
   "invitations": [
     {
       "id": "1",
       "area": "হালদার পাড়া",
       "personName": "মহন হালদার",
-      "familyCount": ৫
+      "familyCount": 5
     },
     {
       "id": "2",
       "area": "হালদার পাড়া",
       "personName": "শংকর",
-      "familyCount": ৩
+      "familyCount": 3
     },
     {
       "id": "3",
       "area": "হালদার পাড়া",
       "personName": "কাজলী",
-      "familyCount": ৪
+      "familyCount": 4
     },
     {
       "id": "4",
       "area": "হালদার পাড়া",
       "personName": "বুড়া - রামপ্রশাদ",
-      "familyCount": ৯
+      "familyCount": 9
     },
     {
       "id": "5",
       "area": "হালদার পাড়া",
       "personName": "গোবিন্দ - আনন্দ",
-      "familyCount": ৯
+      "familyCount": 9
     },
     {
       "id": "6",
       "area": "হালদার পাড়া",
       "personName": "গৌড়",
-      "familyCount": ৫
+      "familyCount": 5
     },
     {
       "id": "7",
       "area": "হালদার পাড়া",
       "personName": "নরত্তম - তাপস",
-      "familyCount": ৬
+      "familyCount": 6
     },
     {
       "id": "8",
       "area": "হালদার পাড়া",
       "personName": "সন্তোষ",
-      "familyCount": ৩
+      "familyCount": 3
     },
     {
       "id": "9",
       "area": "মধ্য পাড়া",
       "personName": "অমিল্য হালদার",
-      "familyCount": ৬
+      "familyCount": 6
     },
     {
       "id": "10",
       "area": "ভাটোপাড়া",
       "personName": "নীরেন হালদার",
-      "familyCount": ১০
+      "familyCount": 10
     }
   ],
   "pdfLinks": {
