@@ -103,6 +103,8 @@ interface Member {
   motherName: string;
   occupation: string;
   pdfUrl: string;
+  idCardFront?: string;  // নতুন ফিল্ড
+  idCardBack?: string;   // নতুন ফিল্ড
 }
 
 interface ContactPerson {
@@ -1567,152 +1569,156 @@ function LoginPage() {
     </div>
   );
 
-  const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const [isDownloading, setIsDownloading] = useState(false);
+const IDCardModal = ({ member, onClose }: { member: Member; onClose: () => void }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-    const handleDownload = async () => {
-      if (!cardRef.current) return;
+  // ডিফল্ট ইমেজ (যদি মেম্বারের কাছে না থাকে)
+  const defaultCardFront = "https://i.postimg.cc/pds0fRHn/PART-A-1.png";
+  const defaultCardBack = "https://i.postimg.cc/G29XzVLK/PART-B.png";
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    
+    setIsDownloading(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
       
-      setIsDownloading(true);
-      try {
-        const html2canvas = (await import('html2canvas')).default;
-        const canvas = await html2canvas(cardRef.current, {
-          scale: 2,
-          backgroundColor: '#ffffff',
-          useCORS: true,
-        });
-        
-        const link = document.createElement('a');
-        link.download = `${member.name}-ID-Card.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      } catch (error) {
-        console.error('Download error:', error);
-        alert('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
-      }
-      setIsDownloading(false);
-    };
+      const link = document.createElement('a');
+      link.download = `${member.name}-ID-Card.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+    }
+    setIsDownloading(false);
+  };
 
-    return (
-      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
-        <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex justify-between items-center rounded-t-2xl">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <CreditCard className="w-5 h-5" /> আইডি কার্ড
-            </h2>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="flex items-center gap-2 bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition disabled:opacity-50"
-              >
-                {isDownloading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                    ডাউনলোড হচ্ছে...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    ডাউনলোড
-                  </>
-                )}
-              </button>
-              <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
-                <X className="w-5 h-5" />
-              </button>
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex justify-between items-center rounded-t-2xl">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <CreditCard className="w-5 h-5" /> আইডি কার্ড
+          </h2>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="flex items-center gap-2 bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition disabled:opacity-50"
+            >
+              {isDownloading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                  ডাউনলোড হচ্ছে...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  ডাউনলোড
+                </>
+              )}
+            </button>
+            <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div ref={cardRef} className="p-6 space-y-6 bg-gray-50">
+          <div>
+            <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+              <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
+              সামনের অংশ
+            </p>
+            <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-purple-200">
+              <img 
+                src={member.idCardFront || defaultCardFront} 
+                alt="ID Card Front" 
+                className="w-full h-auto"
+              />
+              
+              <div className="absolute" style={{ top: '35%', left: '8%', width: '22%' }}>
+                <img 
+                  src={member.photo} 
+                  alt={member.name}
+                  className="w-full aspect-[3/4] object-cover rounded-lg border-2 border-white shadow-md"
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100x130?text=👤'; }}
+                />
+              </div>
+
+              <div className="absolute text-gray-800" style={{ top: '38%', left: '35%', right: '5%' }}>
+                <h3 className="font-bold text-lg md:text-xl leading-tight">{member.name}</h3>
+                <p className="text-orange-600 font-semibold text-sm md:text-base">{member.designation}</p>
+                <div className="mt-2 space-y-1 text-xs md:text-sm">
+                  <p className="flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-orange-500" /> {member.mobile}
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-orange-500" /> {member.address}
+                  </p>
+                </div>
+              </div>
+
+              <div className="absolute bg-orange-500 text-white px-3 py-1 rounded-lg font-bold" style={{ top: '22%', right: '5%' }}>
+                #{member.id.padStart(3, '0')}
+              </div>
             </div>
           </div>
 
-          <div ref={cardRef} className="p-6 space-y-6 bg-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
-                <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs">১</span>
-                সামনের অংশ
-              </p>
-              <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-purple-200">
-                <img 
-                  src="https://i.postimg.cc/pds0fRHn/PART-A-1.png" 
-                  alt="ID Card Front" 
-                  className="w-full h-auto"
-                />
-                
-                <div className="absolute" style={{ top: '35%', left: '8%', width: '22%' }}>
-                  <img 
-                    src={member.photo} 
-                    alt={member.name}
-                    className="w-full aspect-[3/4] object-cover rounded-lg border-2 border-white shadow-md"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/100x130?text=👤'; }}
-                  />
-                </div>
+          <div>
+            <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+              <span className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
+              পেছনের অংশ
+            </p>
+            <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-pink-200">
+              <img 
+                src={member.idCardBack || defaultCardBack} 
+                alt="ID Card Back" 
+                className="w-full h-auto"
+              />
 
-                <div className="absolute text-gray-800" style={{ top: '38%', left: '35%', right: '5%' }}>
-                  <h3 className="font-bold text-lg md:text-xl leading-tight">{member.name}</h3>
-                  <p className="text-orange-600 font-semibold text-sm md:text-base">{member.designation}</p>
-                  <div className="mt-2 space-y-1 text-xs md:text-sm">
-                    <p className="flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-orange-500" /> {member.mobile}
-                    </p>
-                    <p className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-orange-500" /> {member.address}
-                    </p>
+              <div className="absolute text-gray-800" style={{ top: '25%', left: '8%', right: '8%' }}>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">পিতার নাম</p>
+                    <p className="font-semibold">{member.fatherName || '—'}</p>
                   </div>
-                </div>
-
-                <div className="absolute bg-orange-500 text-white px-3 py-1 rounded-lg font-bold" style={{ top: '22%', right: '5%' }}>
-                  #{member.id.padStart(3, '0')}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
-                <span className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">২</span>
-                পেছনের অংশ
-              </p>
-              <div className="relative rounded-xl overflow-hidden shadow-lg border-2 border-pink-200">
-                <img 
-                  src="https://i.postimg.cc/G29XzVLK/PART-B.png" 
-                  alt="ID Card Back" 
-                  className="w-full h-auto"
-                />
-
-                <div className="absolute text-gray-800" style={{ top: '25%', left: '8%', right: '8%' }}>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs md:text-sm">
-                    <div>
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">পিতার নাম</p>
-                      <p className="font-semibold">{member.fatherName || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">মাতার নাম</p>
-                      <p className="font-semibold">{member.motherName || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">গোত্র</p>
-                      <p className="font-semibold">{member.gotra || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">পেশা</p>
-                      <p className="font-semibold">{member.occupation || '—'}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">স্থায়ী ঠিকানা</p>
-                      <p className="font-semibold">{member.permanentAddress || '—'}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-orange-500 font-medium text-[10px] md:text-xs">ইমেইল</p>
-                      <p className="font-semibold text-xs">{member.email || '—'}</p>
-                    </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">মাতার নাম</p>
+                    <p className="font-semibold">{member.motherName || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">গোত্র</p>
+                    <p className="font-semibold">{member.gotra || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">পেশা</p>
+                    <p className="font-semibold">{member.occupation || '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">স্থায়ী ঠিকানা</p>
+                    <p className="font-semibold">{member.permanentAddress || '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-orange-500 font-medium text-[10px] md:text-xs">ইমেইল</p>
+                    <p className="font-semibold text-xs">{member.email || '—'}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="p-4 bg-gray-100 rounded-b-2xl text-center">
-            <p className="text-xs text-gray-500">
-              💡 টিপ: ডাউনলোড বাটনে ক্লিক করে আইডি কার্ড সংরক্ষণ করুন
+        <div className="p-4 bg-gray-100 rounded-b-2xl text-center">
+          <p className="text-xs text-gray-500">
+            💡 টিপ: ডাউনলোড বাটনে ক্লিক করে আইডি কার্ড সংরক্ষণ করুন
             </p>
           </div>
         </div>
