@@ -496,39 +496,13 @@ function PujaPage({ pujaId }: { pujaId: string }) {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
   const puja = pujaData.find(p => p.id === pujaId);
 
+  // ✅ JSON থেকে schedules লোড করুন
+  const [schedulesData] = useDataLoader<{ [key: string]: any[] }>('/data/schedules.json', {});
+  const schedule = schedulesData[pujaId] || [];
+
   if (!puja) {
     return <div className="text-center py-12">পূজার তথ্য পাওয়া যায়নি</div>;
   }
-
-  const schedules: { [key: string]: any[] } = {
-    durga: [
-      { day: 'মহালয়া', date: '১০ অক্টোবর শনিবার', event: 'দেবীপক্ষের সূচনা' },
-      { day: 'ষষ্ঠী', date: '১৭ অক্টোবর শনিবার', event: 'দেবীর বোধন' },
-      { day: 'সপ্তমী', date: '১৮ অক্টোবর রবিবার', event: 'সপ্তমী পূজা' },
-      { day: 'অষ্টমী', date: '১৯ অক্টোবর সোমবার', event: 'অষ্টমী পূজা' },
-      { day: 'নবমী', date: '২০ অক্টোবর মঙ্গলবার', event: 'নবমী পূজা' },
-      { day: 'দশমী', date: '২১ অক্টোবর বুধবার', event: 'বিজয়া দশমী' },
-    ],
-    shyama: [
-      { day: 'দীপাবলি', date: '৮ নভেম্বর ২০২৬ রবিবার', event: 'শ্যামা পূজা' },
-    ],
-    saraswati: [
-      { day: 'পঞ্চমী', date: '২৩ জানুয়ারি ২০২৬ শুক্রবার', event: 'সরস্বতী পূজা' },
-    ],
-    rath: [
-      { day: 'রথযাত্রা শুরু', date: '১৬ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'রথযাত্রা জগন্নাথ মন্দির হইতে সময়ঃ ৪:৩০ মিনিট' },
-      { day: 'অবস্থান', date: '১৭ জুলাই, ২০২৬ শুক্রবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'আড়প দর্শন', date: '১৮ জুলাই, ২০২৬ শনিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'মহাপ্রসাদ সেবন', date: '১৯ জুলাই, ২০২৬ রবিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'হেরা পঞ্চমী', date: '২০ জুলাই, ২০২৬ সোমবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'ষষ্ঠী উৎসব', date: '২১ জুলাই, ২০২৬ মঙ্গলবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'সন্ধ্যা দর্শন', date: '২২ জুলাই, ২০২৬ বুধবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'প্রস্তুতি', date: '২৩ জুলাই, ২০২৬ বৃহস্পতিবার', event: 'নিত্য ভোগ সময়ঃ সকাল ১০:৩০ মিনিট' },
-      { day: 'বহুড়া যাত্রা', date: '২৪ জুলাই, ২০২৬ শুক্রবার', event: 'উল্টো রথযাত্রা' },
-    ]
-  };
-
-  const schedule = schedules[pujaId] || [];
 
   return (
     <div className="space-y-8">
@@ -540,30 +514,38 @@ function PujaPage({ pujaId }: { pujaId: string }) {
           <p className="text-orange-200">{puja.description}</p>
         </div>
       </div>
+      
       <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
             <p className="text-gray-700 leading-relaxed">{puja.description}</p>
           </div>
+          
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
-            <div className="space-y-3">
-              {schedule.map((item, index) => (
-                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
-                  <div className="w-16 text-center">
-                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
+            {schedule.length > 0 ? (
+              <div className="space-y-3">
+                {schedule.map((item, index) => (
+                  <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                    <div className="w-16 text-center">
+                      <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{item.event}</div>
+                      <div className="text-sm text-gray-500">{item.date}</div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{item.event}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">সময়সূচি শীঘ্রই যুক্ত করা হবে</p>
+            )}
           </div>
         </div>
+        
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
             <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
