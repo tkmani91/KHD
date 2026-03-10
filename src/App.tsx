@@ -716,10 +716,38 @@ function ShyamaPujaPage() {
         <p className="text-gray-700 leading-relaxed">
           শ্যামা পূজা বা কালীপূজা কার্তিক অমাবস্যায় অনুষ্ঠিত হয়। শ্যামা মা হলেন কালীর অন্য রূপ।
         </p>
+      </div>  <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
+            <div className="space-y-3">
+              {schedule.map((item, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                  <div className="w-16 text-center">
+                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.event}</div>
+                    <div className="text-sm text-gray-500">{item.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
+              <Facebook className="w-5 h-5" />
+              ফেসবুক পেজ দেখুন
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
 
 function SaraswatiPujaPage() {
   const puja = pujaData.find(p => p.id === 'saraswati')!;
@@ -743,9 +771,38 @@ function SaraswatiPujaPage() {
           সরস্বতী পূজা মাঘ মাসের শুক্লা পঞ্চমী তিথিতে অনুষ্ঠিত হয়। এই দিনটি বিদ্যা, জ্ঞান ও সঙ্গীতের দেবী সরস্বতীর আরাধনার জন্য অত্যন্ত পবিত্র। ভক্তরা সাধারণত হলুদ পোশাকে সেজে এদিন দেবীর চরণে পুষ্পাঞ্জলি নিবেদন করেন।
         </p>
       </div>
+   <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
+            <div className="space-y-3">
+              {schedule.map((item, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                  <div className="w-16 text-center">
+                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.event}</div>
+                    <div className="text-sm text-gray-500">{item.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
+              <Facebook className="w-5 h-5" />
+              ফেসবুক পেজ দেখুন
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
 
 function RathYatraPage() {
   const puja = pujaData.find(p => p.id === 'rath')!;
@@ -776,10 +833,69 @@ function RathYatraPage() {
         <p className="text-gray-700 leading-relaxed">
           রথযাত্রা হলো জগন্নাথ দেবের বার্ষিক উৎসব।
         </p>
+      </div>  <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
+            <div className="space-y-3">
+              {schedule.map((item, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                  <div className="w-16 text-center">
+                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.event}</div>
+                    <div className="text-sm text-gray-500">{item.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
+              <Facebook className="w-5 h-5" />
+              ফেসবুক পেজ দেখুন
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+  <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
+            <div className="space-y-3">
+              {schedule.map((item, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                  <div className="w-16 text-center">
+                    <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.event}</div>
+                    <div className="text-sm text-gray-500">{item.date}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
+              <Facebook className="w-5 h-5" />
+              ফেসবুক পেজ দেখুন
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function DeitiesPage() {
   return (
