@@ -1239,7 +1239,7 @@ function LoginPage() {
                 src={member.photo} 
                 alt={member.name} 
                 className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/128?text=👤'; }}
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
               />
             </div>
             <div className="text-center sm:text-left">
@@ -1389,7 +1389,7 @@ function LoginPage() {
                       src={member.photo} 
                       alt={member.name} 
                       className="w-full h-full object-cover" 
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=👤'; }} 
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }} 
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1433,10 +1433,10 @@ function LoginPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
                     <img 
-                      src={person.photo || 'https://via.placeholder.com/56?text=👤'} 
+                      src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
                       alt={person.name} 
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/56?text=👤'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
                     />
                   </div>
                   <div className="flex-1">
