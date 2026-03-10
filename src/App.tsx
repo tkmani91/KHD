@@ -1417,7 +1417,6 @@ function LoginPage() {
   const [contactsData, setContactsData] = useState<ContactPerson[]>(contactPersons);
   const [invitationData, setInvitationData] = useState<InvitationList[]>(invitationLists);
   const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   
