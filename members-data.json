@@ -29,7 +29,7 @@
       "fatherName": "আনান্দ পোদ্দার",
       "motherName": "কনা রানী পোদ্দার",
       "occupation": "সরকারী চাকুরী"
-     },
+    },
     {
       "id": "3",
       "name": "তন্ময় কুমার মানী",
@@ -44,7 +44,7 @@
       "fatherName": "নরেন্দ্র নাথ মানী",
       "motherName": "সুমিত্রা মানী",
       "occupation": "ব্যাবসা"
-     },
+    }
   ],
   "contacts": [
     {
@@ -82,50 +82,50 @@
       "personName": "শংকর",
       "familyCount": 3
     },
-     {
-      "id": "2",
+    {
+      "id": "3",
       "area": "হালদার পাড়া",
       "personName": "কাজলী",
       "familyCount": 4
     },
     {
-      "id": "2",
+      "id": "4",
       "area": "হালদার পাড়া",
-      "personName": "বুড়া - রামপ্রশাদ",
+      "personName": "বুড়া - রামপ্রশাদ",
       "familyCount": 9
     },
     {
-      "id": "2",
+      "id": "5",
       "area": "হালদার পাড়া",
       "personName": "গোবিন্দ - আনন্দ",
       "familyCount": 9
     },
     {
-      "id": "2",
+      "id": "6",
       "area": "হালদার পাড়া",
-      "personName": "গৌড়",
+      "personName": "গৌড়",
       "familyCount": 5
     },
     {
-      "id": "2",
+      "id": "7",
       "area": "হালদার পাড়া",
       "personName": "নরত্তম - তাপস",
       "familyCount": 6
     },
-     {
-      "id": "2",
+    {
+      "id": "8",
       "area": "হালদার পাড়া",
       "personName": "সন্তোষ",
       "familyCount": 3
-    }
+    },
     {
-      "id": "2",
+      "id": "9",
       "area": "মধ্য পাড়া",
       "personName": "অমিল্য হালদার",
       "familyCount": 6
     },
     {
-      "id": "3",
+      "id": "10",
       "area": "ভাটোপাড়া",
       "personName": "নীরেন হালদার",
       "familyCount": 10
