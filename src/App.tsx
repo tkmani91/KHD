@@ -259,7 +259,24 @@ const DEMO_LOGIN_DATA = {
   ]
 };
 
-const members: Member[] 
+const members: Member[] = [
+  {
+    id: '1',
+    name: 'ডাটা লোড হয় নি',
+    designation: 'ডাটা লোড হয় নি',
+    photo: 'https://i.ibb.co.com/0R0mJxmJ/PINAKI.png',
+    birthDate: 'ডাটা লোড হয় নি',
+    address: 'ডাটা লোড হয় নি',
+    permanentAddress: 'ডাটা লোড হয় নি',
+    mobile: '01712345678',
+    gotra: '',
+    email: 'ডাটা লোড হয় নি',
+    fatherName: 'ডাটা লোড হয় নি',
+    motherName: '',
+    occupation: 'ডাটা লোড হয় নি'
+  },
+];
+
 const contactPersons: ContactPerson[] = [
   { id: '1', name: 'গৌর', mobile: '01753838412', address: 'রাখালগাছা সিংড়া', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
   { id: '2', name: 'আনোয়ার সরদার', mobile: '01757909116', address: 'বড় সাঐল বুদা বাজার', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
