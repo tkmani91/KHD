@@ -262,20 +262,21 @@ const DEMO_LOGIN_DATA = {
 const members: Member[] = [
   {
     id: '1',
-    name: 'ডাটা লোড হয় নি',
-    designation: 'ডাটা লোড হয় নি',
-    photo: 'https://i.ibb.co.com/0R0mJxmJ/PINAKI.png',
-    birthDate: 'ডাটা লোড হয় নি',
-    address: 'ডাটা লোড হয় নি',
-    permanentAddress: 'ডাটা লোড হয় নি',
-    mobile: '01712345678',
+    name: 'লোডিং ব্যর্থ',
+    designation: '',
+    photo: '',
+    birthDate: '0000-00-00',
+    address: '',
+    permanentAddress: '',
+    mobile: '',
     gotra: '',
-    email: 'ডাটা লোড হয় নি',
-    fatherName: 'ডাটা লোড হয় নি',
+    email: '',
+    fatherName: '',
     motherName: '',
-    occupation: 'ডাটা লোড হয় নি'
+    occupation: '',
+    pdfUrl: ''
   },
-];
+  ];
 
 const contactPersons: ContactPerson[] = [
   { id: '1', name: 'গৌর', mobile: '01753838412', address: 'রাখালগাছা সিংড়া', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
