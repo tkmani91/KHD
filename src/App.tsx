@@ -282,9 +282,7 @@ const contactPersons: ContactPerson[] = [
   { id: '1', name: 'লোডিং ব্যর্থ', mobile: '', address: '', occupation: '', pdfUrl: '' },
  ];
 
-const invitationLists: InvitationList[] = [
-  { id: '1', area: 'লোডিং ব্যর্থ', personName: '', familyCount: , pdfUrl: '' },
-];
+const invitationLists: InvitationList[] = [];
 
 const accountsPDFs = {
   durgaPuja: {
