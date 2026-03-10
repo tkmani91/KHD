@@ -1,0 +1,33 @@
+{
+  "accounts": {
+    "durgaPuja": {
+      "title": "দূর্গাপূজা হিসাব",
+      "years": {
+        "2024": "/pdfs/accounts/durga-puja-2024.pdf",
+        "2023": "/pdfs/accounts/durga-puja-2023.pdf",
+        "2022": "/pdfs/accounts/durga-puja-2022.pdf"
+      }
+    },
+    "shyamaPuja": {
+      "title": "শ্যামাপূজা হিসাব",
+      "years": {
+        "2024": "/pdfs/accounts/shyama-puja-2024.pdf",
+        "2023": "/pdfs/accounts/shyama-puja-2023.pdf"
+      }
+    },
+    "saraswatiPuja": {
+      "title": "সরস্বতী পূজা হিসাব",
+      "years": {
+        "2024": "/pdfs/accounts/saraswati-puja-2024.pdf",
+        "2023": "/pdfs/accounts/saraswati-puja-2023.pdf"
+      }
+    },
+    "rathYatra": {
+      "title": "রথযাত্রা হিসাব",
+      "years": {
+        "2024": "/pdfs/accounts/rath-yatra-2024.pdf",
+        "2023": "/pdfs/accounts/rath-yatra-2023.pdf"
+      }
+    }
+  }
+}
