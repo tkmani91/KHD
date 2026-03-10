@@ -259,6 +259,22 @@ const DEMO_LOGIN_DATA = {
   ]
 };
 
+const members: Member[] 
+const contactPersons: ContactPerson[] = [
+  { id: '1', name: 'গৌর', mobile: '01753838412', address: 'রাখালগাছা সিংড়া', occupation: 'ঢাকওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '2', name: 'আনোয়ার সরদার', mobile: '01757909116', address: 'বড় সাঐল বুদা বাজার', occupation: 'নৌকাওয়ালা', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+  { id: '3', name: 'সমর চক্রবর্তি', mobile: '01724982790', address: 'কুমার পাড়া', occupation: 'পুরোহিত', pdfUrl: '/pdfs/contact-persons-list.pdf' },
+];
+
+const invitationLists: InvitationList[] = [
+  { id: '1', area: 'হালদার পাড়া', personName: 'রামেশ্বর হালদার', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '2', area: 'মধ্য পাড়া', personName: 'গোপাল চন্দ্র', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '3', area: 'ভাটোপাড়া', personName: 'নীলকণ্ঠ ভট্টাচার্য', familyCount: 6, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '4', area: 'বাজার পাড়া', personName: 'কালীপদ দাস', familyCount: 3, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '5', area: 'পুন্ডরী', personName: 'বিষ্ণু পুন্ডরিক', familyCount: 5, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+  { id: '6', area: 'কুমার পাড়া', personName: 'শ্যাম কুমার', familyCount: 4, pdfUrl: '/pdfs/invitation-list-all-areas.pdf' },
+];
+
 const accountsPDFs = {
   durgaPuja: {
     title: 'দূর্গাপূজা হিসাব',
