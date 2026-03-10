@@ -1796,11 +1796,11 @@ function LoginPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setSelectedMember(null); setShowMemberDetails(null); setShowIDCard(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); // setSelectedMember(null); setShowMemberDetails(null); setShowIDCard(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
       <div className="flex flex-wrap gap-2">
         {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
-          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedMember(null); setSelectedContact(null); }}
+          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); // setSelectedMember(null); setSelectedContact(null); }}
             className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
