@@ -1,293 +1,49 @@
 [
-  {
-    "id": "dp24-1", // -----------দূর্গাপূজা ২০০৮
-    "year": 2008,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/vCrVWjZv/JAGORONI-1-2008.jpg",
-    "title": "ভোলেনাথের সাজে সৌরভ"
-  },
-  {
-    "id": "dp24-2",
-    "year": 2008,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/PBQVYmB/JAGORONI-2-2008.jpg",
-    "title": "দূর্গা মা প্রতিমা ২০০৮"
-  },
-  {
-    "id": "dp24-3",
-    "year": 2008,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/nNTrGvvF/JAGORONI-3-2008.jpg",
-    "title": "কার্তিক গণেশ প্রতিমা ২০০৮"
-  },
-  {
-    "id": "dp24-4",
-    "year": 2008,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/NgSq5cdS/JAGORONI-4-2008.jpg",
-    "title": "দূর্গা মা প্রতিমা ২০০৮"
-  },
-  {
-    "id": "dp24-1",  // -----------দূর্গাপূজা ২০০৯
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/ZqT4JC2/DSC00003.jpg",
-    "title": "দুর্গা পূজার আয়োজন"
-  },
-  {
-    "id": "dp24-2",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/xtL7z7TV/DSC00001.jpg",
-    "title": "ডিংগে তোলা"
-  },
-  {
-    "id": "dp24-3",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/HLcD91rk/DSC00004.jpg",
-    "title": "মা দুর্গার মূর্তি"
-  },
-  {
-    "id": "dp24-4",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/tM9CtD8k/DSC00006.jpg",
-    "title": "অসুর সজ্জা"
-  },
-  {
-    "id": "dp24-5",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/N2N4MhdK/DSC00007.jpg",
-    "title": "অসুর এর সাজে মিঠু"
-  },
-  {
-    "id": "dp24-6",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/35wGKwV7/DSC00009.jpg",
-    "title": "নাটকের কিছু দৃশ্য"
-  },
-  {
-    "id": "dp24-7",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/gZz9R95F/DSC00010.jpg",
-    "title": "নাটকের কিছু দৃশ্য"
-  },
-  {
-    "id": "dp24-8",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/s9CXWf5j/DSC00018.jpg",
-    "title": "কমিটি বর্গ"
-  },
-  {
-    "id": "dp24-9",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/9m7c1LR2/DSC00021.jpg",
-    "title": "সুতা বন্ধন"
-  },
-  {
-    "id": "dp24-10",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/WWKKDnMC/DSC00027.jpg",
-    "title": "মা দূর্গা"
-  },
-  {
-    "id": "dp24-11",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/sdpzG17Q/DSC00050.jpg",
-    "title": "বিসর্জন মিছিল"
-  },
-  {
-    "id": "dp24-12",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/ZzCSbyp0/DSC00046.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-13",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/v6r2tT2w/DSC00053.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-14",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/XxYScGV5/DSC00054.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-15",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/Q3Y3SsnZ/DSC00057.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-16",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/KcQvTGMv/DSC00059.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-17",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/207ynkqg/DSC00061.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-18",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/rGKHTSHf/DSC00063.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-19",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/Lz3ZDkfN/DSC00067.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-20",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/3mmsVtJd/DSC00068.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-21",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/bRCjPtxM/DSC00071.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-22",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/xqHqv8yk/DSC00079.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-23",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/99w0f31Y/DSC00083.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-24",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/8gfDtwvg/DSC00084.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-25",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/7xMWs6mf/DSC00086.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-26",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/cSQ0pkzV/DSC00087.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-27",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/Myp9g9nk/DSC00089.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-28",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/hJ6ttJNm/DSC00090.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-29",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/nNT3GRr7/DSC00097.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-30",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/0pVvwzsp/DSC00098.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-31",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/Dfdf5zRK/DSC00100.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-32",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/8gn3pppT/DSC00101.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-33",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/B5wT2yTk/DSC00104.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-34",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/G4mRnstH/DSC00105.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-35",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/DHFxV7sb/DSC00107.jpg",
-    "title": ""
-  },
-  {
-    "id": "dp24-36",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/HTfCNWP0/DSC00256.jpg",
-    "title": "ঘাটে চাঁদা আদায়"
-  },
-  {
-    "id": "dp24-37",
-    "year": 2009,
-    "pujaType": "দূর্গাপূজা",
-    "url": "https://i.ibb.co.com/qFnZw4hM/DSC00260.jpg",
-    "title": "প্যান্ডেল নির্মাণ"
-  },
+  { "id": "dp24-1", "year": 2008, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/vCrVWjZv/JAGORONI-1-2008.jpg", "title": "ভোলেনাথের সাজে সৌরভ" },  // -----------দূর্গাপূজা ২০০৮
+  { "id": "dp24-2", "year": 2008, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/PBQVYmB/JAGORONI-2-2008.jpg", "title": "দূর্গা মা প্রতিমা" },
+  { "id": "dp24-3", "year": 2008, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/nNTrGvvF/JAGORONI-3-2008.jpg", "title": "কার্তিক গণেশ প্রতিমা" },
+  { "id": "dp24-4", "year": 2008, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/NgSq5cdS/JAGORONI-4-2008.jpg","title": "দূর্গা মা প্রতিমা" },
+  { "id": "dp24-1", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/ZqT4JC2/DSC00003.jpg", "title": "দুর্গা পূজার আয়োজন" },
+  { "id": "dp24-2", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/xtL7z7TV/DSC00001.jpg", "title": "ডিংগে তোলা" },
+ 
+  { "id": "dp24-3", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/HLcD91rk/DSC00004.jpg", "title": "মা দুর্গার মূর্তি" },  // -----------দূর্গাপূজা ২০০৯
+  { "id": "dp24-4", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/tM9CtD8k/DSC00006.jpg", "title": "অসুর সজ্জা" },
+  { "id": "dp24-5", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/N2N4MhdK/DSC00007.jpg", "title": "অসুর এর সাজে মিঠু" },
+  { "id": "dp24-6", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/35wGKwV7/DSC00009.jpg", "title": "নাটকের কিছু দৃশ্য" },
+  { "id": "dp24-7", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/gZz9R95F/DSC00010.jpg", "title": "নাটকের কিছু দৃশ্য" },
+  { "id": "dp24-8", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/s9CXWf5j/DSC00018.jpg", "title": "কমিটি বর্গ" },
+  { "id": "dp24-9", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/9m7c1LR2/DSC00021.jpg", "title": "সুতা বন্ধন" },
+  { "id": "dp24-10", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/WWKKDnMC/DSC00027.jpg", "title": "মা দূর্গা" },
+  { "id": "dp24-11", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/sdpzG17Q/DSC00050.jpg", "title": "বিসর্জন মিছিল" },
+  { "id": "dp24-12", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/ZzCSbyp0/DSC00046.jpg", "title": "" },
+  { "id": "dp24-13", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/v6r2tT2w/DSC00053.jpg", "title": "" },
+  { "id": "dp24-14", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/XxYScGV5/DSC00054.jpg", "title": "" },
+  { "id": "dp24-15", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/Q3Y3SsnZ/DSC00057.jpg", "title": "" },
+  { "id": "dp24-16", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/KcQvTGMv/DSC00059.jpg", "title": "" },
+  { "id": "dp24-17", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/207ynkqg/DSC00061.jpg", "title": "" },
+  { "id": "dp24-18", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/rGKHTSHf/DSC00063.jpg", "title": "" },
+  { "id": "dp24-19", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/Lz3ZDkfN/DSC00067.jpg", "title": "" },
+  { "id": "dp24-20", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/3mmsVtJd/DSC00068.jpg", "title": "" },
+  { "id": "dp24-21", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/bRCjPtxM/DSC00071.jpg", "title": "" },
+  { "id": "dp24-22", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/xqHqv8yk/DSC00079.jpg", "title": "" },
+  { "id": "dp24-23", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/99w0f31Y/DSC00083.jpg", "title": "" },
+  { "id": "dp24-24", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/8gfDtwvg/DSC00084.jpg", "title": "" },
+  { "id": "dp24-25", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/7xMWs6mf/DSC00086.jpg", "title": "" },
+  { "id": "dp24-26" ,"year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/cSQ0pkzV/DSC00087.jpg", "title": "" },
+  { "id": "dp24-27", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/Myp9g9nk/DSC00089.jpg", "title": "" },
+  { "id": "dp24-28", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/hJ6ttJNm/DSC00090.jpg", "title": "" },
+  { "id": "dp24-29", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/nNT3GRr7/DSC00097.jpg", "title": "" },
+  { "id": "dp24-30", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/0pVvwzsp/DSC00098.jpg", "title": "" },
+  { "id": "dp24-31", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/Dfdf5zRK/DSC00100.jpg", "title": "" },
+  { "id": "dp24-32", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/8gn3pppT/DSC00101.jpg", "title": "" },
+  { "id": "dp24-33" ,"year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/B5wT2yTk/DSC00104.jpg", "title": "" },
+  { "id": "dp24-34", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/G4mRnstH/DSC00105.jpg", "title": "" },
+  { "id": "dp24-35", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/DHFxV7sb/DSC00107.jpg", "title": ""},
+  { "id": "dp24-36", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/HTfCNWP0/DSC00256.jpg", "title": "ঘাটে চাঁদা আদায়" },
+   {"id": "dp24-37", "year": 2009, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/qFnZw4hM/DSC00260.jpg", "title": "প্যান্ডেল নির্মাণ" },
   
-  { "id": "dp24-2", "year": 2010, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/LDxyDLPd/tkm-v0035.jpg", "title": "" },
+  
+  { "id": "dp24-2", "year": 2010, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/LDxyDLPd/tkm-v0035.jpg", "title": "" },    // -----------দূর্গাপূজা ২০১০
   { "id": "dp24-3", "year": 2010, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/5X1ht2Jc/tkm-v0037.jpg", "title": "" },
   { "id": "dp24-4", "year": 2010, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/6RpcvFvT/TKM-V0045.jpg", "title": "" },
   { "id": "dp24-5", "year": 2010, "pujaType": "দূর্গাপূজা", "url": "https://i.ibb.co.com/B05yDVc/TKM-V0040.jpg", "title": "" },
