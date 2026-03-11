@@ -183,9 +183,14 @@ const notices = [
 
 // Hooks
 function useCountdown(targetDate: string): CountdownTime {
-  const [timeLeft, setTimeLeft] = useState<CountdownTime>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<CountdownTime>({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0 
+  });
 
-  (() => {
+  useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = new Date(targetDate).getTime() - new Date().getTime();
       if (difference > 0) {
@@ -206,7 +211,6 @@ function useCountdown(targetDate: string): CountdownTime {
 
   return timeLeft;
 }
-
 // Data Loader Hook
 function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   const [data, setData] = useState<T>(fallback);
