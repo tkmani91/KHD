@@ -810,7 +810,7 @@ function CalendarPage() {
       </div>
     );
   }
-
+const PanchangCalendar = CalendarPage;
   return (
     <div className="max-w-4xl mx-auto my-10 px-4">
       <div className="bg-white shadow-2xl rounded-xl overflow-hidden border-2 border-slate-800">
@@ -1709,7 +1709,7 @@ function App() {
             <Route path="/rath" element={<RathYatraPage />} />
             <Route path="/deities" element={<DeitiesPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/calendar" element={<PanchangCalendar />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/pdf" element={<PDFPage />} />
             <Route path="/live" element={<LiveTVPage />} />
