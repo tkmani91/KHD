@@ -1426,9 +1426,9 @@ function LoginPage() {
                     সদস্য নং: #{member.id.padStart(3, '0')}
                   </span>
                 <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
-               🩸 {member.bloodGroup}
-               </span>
-               </div>
+              🩸 {member.bloodGroup}
+                </span>
+                </div>
 
                 <button 
                   onClick={() => setShowMemberDetails(member)}
