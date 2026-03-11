@@ -93,6 +93,7 @@ interface Member {
   name: string;
   designation: string;
   photo: string;
+  bloodGroup: string;
   birthDate: string;
   address: string;
   permanentAddress: string;
