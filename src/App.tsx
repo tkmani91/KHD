@@ -136,6 +136,23 @@ interface AccountsPDFs {
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
+const getBengaliDate = (date: Date) => {
+  let d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
+  const bnMonths = ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "শ্রাবণ", "ভাদ্র", "আশ্বিন", "কার্তিক", "অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন", "চৈত্র"];
+  const monthMap = [14, 14, 15, 14, 15, 16, 16, 16, 16, 16, 15, 15];
+  let bnDay, bnMonth, bnYear;
+  if (d >= monthMap[m - 1]) {
+    bnDay = d - monthMap[m - 1] + 1;
+    bnMonth = bnMonths[m >= 4 ? m - 4 : m + 8];
+  } else {
+    let prevDays = new Date(y, m - 1, 0).getDate();
+    bnDay = prevDays - monthMap[m - 2 >= 0 ? m - 2 : 11] + d + 1;
+    bnMonth = bnMonths[m >= 5 ? m - 5 : m + 7];
+  }
+  bnYear = (m > 4 || (m === 4 && d >= 14)) ? y - 593 : y - 594;
+  return { day: bnDay, month: bnMonth, year: bnYear };
+};
+
 const deities: Deity[] = [
   {
     id: 'durga',
@@ -742,6 +759,45 @@ function GalleryPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+function CalendarPage() {
+  const [viewDate, setViewDate] = useState(new Date());
+  const year = viewDate.getFullYear(), month = viewDate.getMonth();
+  const monthNames = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const days = [];
+
+  for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="h-20 bg-gray-50/50 border border-gray-100"></div>);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const bn = getBengaliDate(new Date(year, month, d));
+    const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
+    days.push(
+      <div key={d} className={`h-20 md:h-28 border border-gray-100 p-2 flex flex-col justify-between ${isToday ? 'bg-orange-100 ring-1 ring-orange-400' : ''}`}>
+        <div className="flex justify-between font-bold text-gray-800">
+          <span>{d}</span>
+          <span className="text-[10px] text-orange-600">{bn.day} {bn.month}</span>
+        </div>
+        <span className="text-[8px] text-gray-400 ml-auto">{bn.year} বঙ্গাব্দ</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-6 max-w-5xl mx-auto px-2">
+      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-orange-100">
+        <div className="bg-orange-600 p-6 text-white flex justify-between items-center">
+          <button onClick={() => setViewDate(new Date(year, month - 1, 1))}>আগের মাস</button>
+          <h2 className="text-xl font-bold">{monthNames[month]} {year}</h2>
+          <button onClick={() => setViewDate(new Date(year, month + 1, 1))}>পরের মাস</button>
+        </div>
+        <div className="grid grid-cols-7 bg-orange-50 text-[10px] font-bold py-2 text-center border-b">
+          {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map(d => <div key={d}>{d}</div>)}
+        </div>
+        <div className="grid grid-cols-7">{days}</div>
+      </div>
     </div>
   );
 }
@@ -1615,6 +1671,7 @@ function App() {
             <Route path="/rath" element={<RathYatraPage />} />
             <Route path="/deities" element={<DeitiesPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/pdf" element={<PDFPage />} />
             <Route path="/live" element={<LiveTVPage />} />
