@@ -136,35 +136,6 @@ interface AccountsPDFs {
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
-const specialEvents: { [key: string]: string } = {
-  "2026-01-20": "সরস্বতী পূজা",
-  "2026-02-17": "মহা শিবরাত্রি",
-  "2026-03-04": "দোল পূর্ণিমা",
-  "2026-04-14": "চৈত্র সংক্রান্তি",
-  "2026-04-15": "পহেলা বৈশাখ (১৪৩৩)",
-  "2026-10-15": "শারদীয় দুর্গাপূজা শুরু",
-  "2026-10-19": "বিজয় দশমী",
-  "2026-11-09": "শ্যামাপূজা",
-};
-
-const getPanchangInfo = (date: Date) => {
-  const d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
-  const bnMonths = ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "শ্রাবণ", "ভাদ্র", "আশ্বিন", "কার্তিক", "অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন", "চৈত্র"];
-  const tithiList = ["প্রতিপদ", "দ্বিতীয়া", "তৃতীয়া", "চতুর্থী", "পঞ্চমী", "ষষ্ঠী", "সপ্তমী", "অষ্টমী", "নবমী", "দশমী", "একাদশী", "দ্বাদশী", "ত্রয়োদশী", "চতুর্দশী", "পূর্ণিমা/অমাবস্যা"];
-  const monthMap = [14, 14, 15, 14, 15, 16, 16, 16, 16, 16, 15, 15];
-  let bnDay, bnMonthIndex;
-  if (d >= monthMap[m - 1]) {
-    bnDay = d - monthMap[m - 1] + 1;
-    bnMonthIndex = m >= 4 ? m - 4 : m + 8;
-  } else {
-    let prevDays = new Date(y, m - 1, 0).getDate();
-    bnDay = prevDays - monthMap[m - 2 >= 0 ? m - 2 : 11] + d + 1;
-    bnMonthIndex = m >= 5 ? m - 5 : m + 7;
-  }
-  const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  return { bnDay, bnMonth: bnMonths[bnMonthIndex], bnYear: (m > 4 || (m === 4 && d >= 14)) ? y - 593 : y - 594, tithi: tithiList[(bnDay - 1) % 15], event: specialEvents[dateStr] };
-};
-
 const deities: Deity[] = [
   {
     id: 'durga',
@@ -334,7 +305,6 @@ function Header() {
     { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
     { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
-    { path: '/calendar', label: 'পঞ্জিকা', icon: Calendar },
     { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
@@ -775,70 +745,6 @@ function GalleryPage() {
     </div>
   );
 }
-function CalendarPage() {
-  const [viewDate, setViewDate] = useState(new Date());
-  const year = viewDate.getFullYear(), month = viewDate.getMonth();
-  const engMonths = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDay = new Date(year, month, 1).getDay();
-  const days = [];
-
-  for (let i = 0; i < firstDay; i++) days.push(<div key={`e-${i}`} className="h-24 md:h-32 border border-gray-100 bg-gray-50/30"></div>);
-  
-  for (let d = 1; d <= daysInMonth; d++) {
-    const info = getPanchangInfo(new Date(year, month, d));
-    const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
-    
-    days.push(
-      <div key={d} className={`h-24 md:h-32 border border-gray-200 p-1 relative flex flex-col items-center justify-center hover:bg-orange-50 transition ${isToday ? 'bg-orange-100 ring-1 ring-orange-500 z-10' : ''} ${info.event ? 'bg-red-50' : ''}`}>
-        <span className={`text-2xl md:text-4xl font-black ${info.event ? 'text-red-600' : 'text-slate-800'}`}>
-          {info.bnDay}
-        </span>
-        <span className="text-[10px] md:text-xs text-slate-500 font-medium mt-1 uppercase">
-          {info.tithi}
-        </span>
-        {info.event && (
-          <div className="absolute top-1 text-center px-1">
-            <span className="text-[8px] md:text-[10px] font-bold text-red-600 bg-red-100 px-1 rounded leading-tight">
-              {info.event}
-            </span>
-          </div>
-        )}
-        <span className="absolute bottom-1 right-2 text-[10px] md:text-xs font-bold text-blue-600 opacity-60">
-          {d}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto my-10 px-4">
-      <div className="bg-white shadow-2xl rounded-xl overflow-hidden border-2 border-slate-800">
-        <div className="bg-slate-800 p-5 text-white flex justify-between items-center">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition">
-            <ChevronDown className="rotate-90" /> {/* ChevronLeft এর বদলে */}
-          </button>
-          <div className="text-center">
-            <h2 className="text-xl md:text-2xl font-bold">
-              {getPanchangInfo(new Date(year, month, 1)).bnMonth} - {getPanchangInfo(new Date(year, month, 1)).bnYear}
-            </h2>
-            <p className="text-sm opacity-70 font-medium">{engMonths[month]} {year}</p>
-          </div>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition">
-            <ChevronDown className="-rotate-90" /> {/* ChevronRight এর বদলে */}
-          </button>
-        </div>
-        <div className="grid grid-cols-7 text-center font-bold bg-slate-100 border-b-2 border-slate-800 py-3 text-xs md:text-sm text-slate-700">
-          {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map(day => (
-            <div key={day}>{day}</div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">{days}</div>
-      </div>
-    </div>
-  );
-}
-
 
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
@@ -1709,7 +1615,6 @@ function App() {
             <Route path="/rath" element={<RathYatraPage />} />
             <Route path="/deities" element={<DeitiesPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/pdf" element={<PDFPage />} />
             <Route path="/live" element={<LiveTVPage />} />
@@ -1722,4 +1627,5 @@ function App() {
     </Router>
   );
 }
+
 export default App;
