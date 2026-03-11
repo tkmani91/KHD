@@ -1421,14 +1421,14 @@ function LoginPage() {
                   </div>
                 </div>
 
-                <div className="mb-4 pb-3 border-b border-gray-100">
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-                    সদস্য নং: #{member.id.padStart(3, '0')}
-                  </span>
-                <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
-              🩸 {member.bloodGroup}
-                </span>
-                </div>
+               <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+            সদস্য নং: #{member.id.padStart(3, '0')}
+            </span>
+          <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
+            🩸 {member.bloodGroup}
+          </span>
+          </div>
 
                 <button 
                   onClick={() => setShowMemberDetails(member)}
