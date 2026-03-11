@@ -185,7 +185,7 @@ const notices = [
 function useCountdown(targetDate: string): CountdownTime {
   const [timeLeft, setTimeLeft] = useState<CountdownTime>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
-  useEffect(() => {
+  (() => {
     const calculateTimeLeft = () => {
       const difference = new Date(targetDate).getTime() - new Date().getTime();
       if (difference > 0) {
@@ -603,24 +603,27 @@ function GalleryPage() {
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
   useEffect(() => {
-    const fetchImages = async () => {
-      setIsLoading(true);
-      setError('');
-      try {
-        const response = await fetch(
-          'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json',
-          { cache: 'no-cache' }
-        );
-        if (!response.ok) throw new Error('লোড ব্যর্থ');
-        const data = await response.json();
-        setGalleryImages(data);
-      } catch {
-        setError('ছবি লোড করতে সমস্যা হয়েছে।');
-        setGalleryImages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+   const fetchImages = async () => {
+  setIsLoading(true);
+  setError('');
+  try {
+    // লিঙ্কের শেষে ?t= এবং বর্তমান সময় যোগ করা হয়েছে যেন ক্যাশ না করে
+    const cacheBuster = `?t=${new Date().getTime()}`;
+    const response = await fetch(
+      'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json' + cacheBuster,
+      { cache: 'no-store' } // 'no-cache' এর বদলে 'no-store' ব্যবহার করা ভালো
+    );
+
+    if (!response.ok) throw new Error('লোড ব্যর্থ');
+    const data = await response.json();
+    setGalleryImages(data);
+  } catch (err) {
+    setError('ছবি লোড করতে সমস্যা হয়েছে।');
+    console.error(err);
+  } finally {
+    setIsLoading(false);
+  }
+};
     fetchImages();
   }, []);
 
