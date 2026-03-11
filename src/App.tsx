@@ -602,30 +602,33 @@ function GalleryPage() {
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
-  useEffect(() => {
-   const fetchImages = async () => {
-  setIsLoading(true);
-  setError('');
-  try {
-    // লিঙ্কের শেষে ?t= এবং বর্তমান সময় যোগ করা হয়েছে যেন ক্যাশ না করে
-    const cacheBuster = `?t=${new Date().getTime()}`;
-    const response = await fetch(
-      'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json' + cacheBuster,
-      { cache: 'no-store' } // 'no-cache' এর বদলে 'no-store' ব্যবহার করা ভালো
-    );
+ useEffect(() => {
+  const fetchImages = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const cacheBuster = `?t=${new Date().getTime()}`;
+      const response = await fetch(
+        `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
+        { cache: 'no-store' }
+      );
 
-    if (!response.ok) throw new Error('লোড ব্যর্থ');
-    const data = await response.json();
-    setGalleryImages(data);
-  } catch (err) {
-    setError('ছবি লোড করতে সমস্যা হয়েছে।');
-    console.error(err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-    fetchImages();
-  }, []);
+      if (!response.ok) {
+        throw new Error('নেটওয়ার্ক রেসপন্স সঠিক নয়');
+      }
+      
+      const data = await response.json();
+      setGalleryImages(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError('ছবি লোড করতে সমস্যা হয়েছে।');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchImages();
+}, []); // Dependency array ঠিক আছে
 
   const filteredImages = galleryImages.filter(img => {
     const yearMatch = img.year === selectedYear;
@@ -694,8 +697,17 @@ function GalleryPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
               <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
-                <img src={img.url} alt={img.title} className="w-full h-48 object-cover" loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=ছবি+নেই'; }} />
+                // এই অংশটি চেক করুন (বিশেষ করে onError এর ভেতর)
+<img 
+  src={img.url} 
+  alt={img.title} 
+  className="w-full h-48 object-cover" 
+  loading="lazy"
+  onError={(e) => {
+    const target = e.target as HTMLImageElement;
+    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
+  }} 
+/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                     <p className="text-sm font-medium">{img.title}</p>
