@@ -136,21 +136,33 @@ interface AccountsPDFs {
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
-const getBengaliDate = (date: Date) => {
-  let d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
+const specialEvents: { [key: string]: string } = {
+  "2026-01-20": "সরস্বতী পূজা",
+  "2026-02-17": "মহা শিবরাত্রি",
+  "2026-03-04": "দোল পূর্ণিমা",
+  "2026-04-14": "চৈত্র সংক্রান্তি",
+  "2026-04-15": "পহেলা বৈশাখ (১৪৩৩)",
+  "2026-10-15": "শারদীয় দুর্গাপূজা শুরু",
+  "2026-10-19": "বিজয় দশমী",
+  "2026-11-09": "শ্যামাপূজা",
+};
+
+const getPanchangInfo = (date: Date) => {
+  const d = date.getDate(), m = date.getMonth() + 1, y = date.getFullYear();
   const bnMonths = ["বৈশাখ", "জ্যৈষ্ঠ", "আষাঢ়", "শ্রাবণ", "ভাদ্র", "আশ্বিন", "কার্তিক", "অগ্রহায়ণ", "পৌষ", "মাঘ", "ফাল্গুন", "চৈত্র"];
+  const tithiList = ["প্রতিপদ", "দ্বিতীয়া", "তৃতীয়া", "চতুর্থী", "পঞ্চমী", "ষষ্ঠী", "সপ্তমী", "অষ্টমী", "নবমী", "দশমী", "একাদশী", "দ্বাদশী", "ত্রয়োদশী", "চতুর্দশী", "পূর্ণিমা/অমাবস্যা"];
   const monthMap = [14, 14, 15, 14, 15, 16, 16, 16, 16, 16, 15, 15];
-  let bnDay, bnMonth, bnYear;
+  let bnDay, bnMonthIndex;
   if (d >= monthMap[m - 1]) {
     bnDay = d - monthMap[m - 1] + 1;
-    bnMonth = bnMonths[m >= 4 ? m - 4 : m + 8];
+    bnMonthIndex = m >= 4 ? m - 4 : m + 8;
   } else {
     let prevDays = new Date(y, m - 1, 0).getDate();
     bnDay = prevDays - monthMap[m - 2 >= 0 ? m - 2 : 11] + d + 1;
-    bnMonth = bnMonths[m >= 5 ? m - 5 : m + 7];
+    bnMonthIndex = m >= 5 ? m - 5 : m + 7;
   }
-  bnYear = (m > 4 || (m === 4 && d >= 14)) ? y - 593 : y - 594;
-  return { day: bnDay, month: bnMonth, year: bnYear };
+  const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  return { bnDay, bnMonth: bnMonths[bnMonthIndex], bnYear: (m > 4 || (m === 4 && d >= 14)) ? y - 593 : y - 594, tithi: tithiList[(bnDay - 1) % 15], event: specialEvents[dateStr] };
 };
 
 const deities: Deity[] = [
