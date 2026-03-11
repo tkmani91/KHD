@@ -697,7 +697,6 @@ function GalleryPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
               <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
-                // এই অংশটি চেক করুন (বিশেষ করে onError এর ভেতর)
 <img 
   src={img.url} 
   alt={img.title} 
