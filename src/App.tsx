@@ -791,18 +791,12 @@ function CalendarPage() {
     
     days.push(
       <div key={d} className={`h-24 md:h-32 border border-gray-200 p-1 relative flex flex-col items-center justify-center hover:bg-orange-50 transition ${isToday ? 'bg-orange-100 ring-1 ring-orange-500 z-10' : ''} ${info.event ? 'bg-red-50' : ''}`}>
-        
-        {/* বড় বোল্ড বাংলা তারিখ */}
         <span className={`text-2xl md:text-4xl font-black ${info.event ? 'text-red-600' : 'text-slate-800'}`}>
           {info.bnDay}
         </span>
-        
-        {/* তিথি */}
         <span className="text-[10px] md:text-xs text-slate-500 font-medium mt-1 uppercase">
           {info.tithi}
         </span>
-
-        {/* বিশেষ দিন/পূজা */}
         {info.event && (
           <div className="absolute top-1 text-center px-1">
             <span className="text-[8px] md:text-[10px] font-bold text-red-600 bg-red-100 px-1 rounded leading-tight">
@@ -810,8 +804,6 @@ function CalendarPage() {
             </span>
           </div>
         )}
-
-        {/* ছোট ইংরেজি তারিখ নিচে ডানে */}
         <span className="absolute bottom-1 right-2 text-[10px] md:text-xs font-bold text-blue-600 opacity-60">
           {d}
         </span>
@@ -823,15 +815,21 @@ function CalendarPage() {
     <div className="max-w-4xl mx-auto my-10 px-4">
       <div className="bg-white shadow-2xl rounded-xl overflow-hidden border-2 border-slate-800">
         <div className="bg-slate-800 p-5 text-white flex justify-between items-center">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition"><ChevronLeft/></button>
+          <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition">
+            <ChevronDown className="rotate-90" /> {/* ChevronLeft এর বদলে */}
+          </button>
           <div className="text-center">
-            <h2 className="text-xl md:text-2xl font-bold">{getPanchangInfo(new Date(year, month, 1)).bnMonth} - {getPanchangInfo(new Date(year, month, 1)).bnYear}</h2>
+            <h2 className="text-xl md:text-2xl font-bold">
+              {getPanchangInfo(new Date(year, month, 1)).bnMonth} - {getPanchangInfo(new Date(year, month, 1)).bnYear}
+            </h2>
             <p className="text-sm opacity-70 font-medium">{engMonths[month]} {year}</p>
           </div>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition"><ChevronRight/></button>
+          <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="hover:bg-white/20 p-2 rounded-full transition">
+            <ChevronDown className="-rotate-90" /> {/* ChevronRight এর বদলে */}
+          </button>
         </div>
         <div className="grid grid-cols-7 text-center font-bold bg-slate-100 border-b-2 border-slate-800 py-3 text-xs md:text-sm text-slate-700">
-          {["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"].map(day => (
+          {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map(day => (
             <div key={day}>{day}</div>
           ))}
         </div>
@@ -840,22 +838,7 @@ function CalendarPage() {
     </div>
   );
 }
-  return (
-    <div className="py-6 max-w-5xl mx-auto px-2">
-      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-orange-100">
-        <div className="bg-orange-600 p-6 text-white flex justify-between items-center">
-          <button onClick={() => setViewDate(new Date(year, month - 1, 1))}>আগের মাস</button>
-          <h2 className="text-xl font-bold">{monthNames[month]} {year}</h2>
-          <button onClick={() => setViewDate(new Date(year, month + 1, 1))}>পরের মাস</button>
-        </div>
-        <div className="grid grid-cols-7 bg-orange-50 text-[10px] font-bold py-2 text-center border-b">
-          {["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"].map(d => <div key={d}>{d}</div>)}
-        </div>
-        <div className="grid grid-cols-7">{days}</div>
-      </div>
-    </div>
-  );
-}
+
 
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
@@ -1739,5 +1722,4 @@ function App() {
     </Router>
   );
 }
-
 export default App;
