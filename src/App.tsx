@@ -322,6 +322,7 @@ function Header() {
     { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
     { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
+    { path: '/calendar', label: 'বাংলা পঞ্জিকা', icon: Calendar },
     { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
