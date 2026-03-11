@@ -810,7 +810,7 @@ function CalendarPage() {
       </div>
     );
   }
-const PanchangCalendar = CalendarPage;
+
   return (
     <div className="max-w-4xl mx-auto my-10 px-4">
       <div className="bg-white shadow-2xl rounded-xl overflow-hidden border-2 border-slate-800">
