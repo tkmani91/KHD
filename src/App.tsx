@@ -1265,6 +1265,7 @@ function LoginPage() {
               <h3 className="text-2xl font-bold text-gray-800">{member.name}</h3>
               <p className="text-orange-600 font-semibold text-lg">{member.designation}</p>
               <p className="text-gray-500 text-sm mt-1">সদস্য নং: #{member.id.padStart(3, '0')}</p>
+              <p className="text-red-600 font-medium text-sm mt-1">🩸 রক্তের গ্রুপ: {member.bloodGroup}</p>
             </div>
           </div>
 
