@@ -1,36 +1,252 @@
 {
-  "normalMembers": [
+  "accountsMembers": [
     {
-      "mobile": "01712345678",
-      "email": "demo@member.com",
-      "password": "demo123",
-      "name": "ডেমো মেম্বর"
-    },
-    {
+      "id": "18",
+      "name": "তন্ময় কুমার মানী",
       "mobile": "01733118313",
       "email": "tanmoy4bd@gmail.com",
       "password": "admin123",
-      "name": "তন্ময় কুমার মানী"
+      "role": "superAdmin"
     },
     {
-      "mobile": "01755555555",
-      "email": "newmember@gmail.com",
-      "password": "pass456",
-      "name": "নতুন সদস্য"
+      "id": "3",
+      "name": "ড. শ্যামল কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "5",
+      "name": "আশীষ কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "6",
+      "name": "তপন কুমার ঘোষ",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "7",
+      "name": "নয়ন কুমার ঘোষ",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "8",
+      "name": "লিটন কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "10",
+      "name": "সুমন কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "14",
+      "name": "পিনাকী কুমার কুন্ডু",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "15",
+      "name": "শুভ্র জ্যোতি পোদ্দার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "16",
+      "name": "অনুপম কুমার মানী",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "17",
+      "name": "শুভ কুমার ঘোষ",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "19",
+      "name": "তন্ময় কুমার কুন্ডু",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "20",
+      "name": "পাপ্পু কুমার বিশ্বাস",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "21",
+      "name": "নিরেন কুমার মানী (মোংলা)",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "29",
+      "name": "সৌরভ সরকার",
+      "mobile": "",
+      "email": "",
+      "password": ""
     }
   ],
-  "accountsMembers": [
+  "normalMembers": [
     {
-      "mobile": "01733118313",
-      "email": "tanmoybd@gmail.com",
-      "password": "admin123",
-      "name": "তন্ময় কুমার মানী"
+      "id": "4",
+      "name": "অচিন্ত্য কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
     },
     {
-      "mobile": "01748040115",
-      "email": "tsourav4bd@gmail.com",
-      "password": "sourav321",
-      "name": "সৌরভ সরকার"
+      "id": "9",
+      "name": "সুজিত কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "11",
+      "name": "চঞ্চল কুমার সাহা",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "12",
+      "name": "বাপ্পি কুমার কুন্ডু",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "13",
+      "name": "সনৎ কুমার পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "22",
+      "name": "বিপুল কুমার পোদ্দার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "23",
+      "name": "নন্দ দুলাল পোদ্দার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "24",
+      "name": "অসিম কুমার সরকার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "25",
+      "name": "টনি কুমার ঘোষ",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "26",
+      "name": "কিরণ কুমার সাহা",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "27",
+      "name": "পিযুষ পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "28",
+      "name": "অভিজিৎ পাল",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "30",
+      "name": "সঞ্জয় হালদার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "31",
+      "name": "গোপাল হালদার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "32",
+      "name": "মনমত হালদার",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "33",
+      "name": "উত্তম কুমার দাস",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "34",
+      "name": "শ্যাম কুমার দাস",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "35",
+      "name": "সুবল দাস",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "36",
+      "name": "সজীব কুমার সুত্রধর",
+      "mobile": "",
+      "email": "",
+      "password": ""
+    },
+    {
+      "id": "37",
+      "name": "গোপাল কুমার কুন্ডু",
+      "mobile": "",
+      "email": "",
+      "password": ""
     }
   ]
 }
