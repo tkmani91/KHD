@@ -27,7 +27,25 @@ import {
   EyeOff, 
   AlertCircle,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  User, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  LogIn, 
+  AlertCircle, 
+  Users, 
+  Phone, 
+  FileText, 
+  Download, 
+  X, 
+  ChevronRight, 
+  ChevronDown, 
+  MapPin,
+  Tv, 
+  Settings, 
+  Copy, 
+  Database 
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
