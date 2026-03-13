@@ -27,7 +27,15 @@ import {
   EyeOff, 
   AlertCircle,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Bell,
+  Send,
+  Settings,
+  Copy,
+  Check,
+  LogOut,
+  DollarSign,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from './utils/cn';
 
@@ -133,9 +141,19 @@ interface AccountsPDFs {
   };
 }
 
+interface LoginUser {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  password: string;
+  role: 'Member' | 'Admin' | 'Super Admin';
+}
+
 // Data URLs
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
 const deities: Deity[] = [
   {
@@ -212,7 +230,7 @@ function useCountdown(targetDate: string): CountdownTime {
 
   return timeLeft;
 }
-// Data Loader Hook
+
 function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   const [data, setData] = useState<T>(fallback);
   const [isLoading, setIsLoading] = useState(true);
@@ -500,8 +518,6 @@ function HomePage() {
 function PujaPage({ pujaId }: { pujaId: string }) {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
   const puja = pujaData.find(p => p.id === pujaId);
-
-  // ✅ JSON থেকে schedules লোড করুন
   const [schedulesData] = useDataLoader<{ [key: string]: any[] }>('/data/schedules.json', {});
   const schedule = schedulesData[pujaId] || [];
 
@@ -607,33 +623,33 @@ function GalleryPage() {
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
- useEffect(() => {
-  const fetchImages = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const cacheBuster = `?t=${new Date().getTime()}`;
-      const response = await fetch(
-        `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
-        { cache: 'no-store' }
-      );
+  useEffect(() => {
+    const fetchImages = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        const response = await fetch(
+          `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
+          { cache: 'no-store' }
+        );
 
-      if (!response.ok) {
-        throw new Error('নেটওয়ার্ক রেসপন্স সঠিক নয়');
+        if (!response.ok) {
+          throw new Error('নেটওয়ার্ক রেসপন্স সঠিক নয়');
+        }
+        
+        const data = await response.json();
+        setGalleryImages(data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError('ছবি লোড করতে সমস্যা হয়েছে।');
+      } finally {
+        setIsLoading(false);
       }
-      
-      const data = await response.json();
-      setGalleryImages(data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError('ছবি লোড করতে সমস্যা হয়েছে।');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  fetchImages();
-}, []); // Dependency array ঠিক আছে
+    fetchImages();
+  }, []);
 
   const filteredImages = galleryImages.filter(img => {
     const yearMatch = img.year === selectedYear;
@@ -702,16 +718,16 @@ function GalleryPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
               <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
-<img 
-  src={img.url} 
-  alt={img.title} 
-  className="w-full h-48 object-cover" 
-  loading="lazy"
-  onError={(e) => {
-    const target = e.target as HTMLImageElement;
-    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
-  }} 
-/>
+                <img 
+                  src={img.url} 
+                  alt={img.title} 
+                  className="w-full h-48 object-cover" 
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
+                  }} 
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                     <p className="text-sm font-medium">{img.title}</p>
@@ -1124,12 +1140,582 @@ function ContactPage() {
   );
 }
 
+// ==================== NEW COMPONENTS ====================
+
+// Notice Board Component
+function NoticeBoard() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
+  const noticesList = dynamicContent.notices || [];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+          <Bell className="w-7 h-7" />
+          জরুরী বিজ্ঞপ্তি
+        </h2>
+        <span className="text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-medium">
+          {noticesList.length}টি নোটিশ
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {noticesList.map((notice: any) => (
+          <div 
+            key={notice.id} 
+            onClick={() => setSelectedNotice(notice)}
+            className={cn(
+              "bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4",
+              notice.priority === 'high' ? 'border-red-500' : 
+              notice.priority === 'medium' ? 'border-yellow-500' : 'border-blue-500'
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-1">{notice.title}</h3>
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {notice.date}
+                  </span>
+                  <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-medium">
+                    {notice.category}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {noticesList.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">কোনো বিজ্ঞপ্তি নেই</p>
+        </div>
+      )}
+
+      {selectedNotice && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedNotice(null)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className={cn(
+              "p-6 rounded-t-2xl text-white",
+              selectedNotice.priority === 'high' ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+              selectedNotice.priority === 'medium' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+              'bg-gradient-to-r from-blue-500 to-blue-600'
+            )}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">{selectedNotice.title}</h2>
+                  <p className="text-sm opacity-90">{selectedNotice.date}</p>
+                </div>
+                <button onClick={() => setSelectedNotice(null)} className="text-white hover:bg-white/20 p-2 rounded-full transition">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                {selectedNotice.details}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Live Broadcasting Component
+function LiveBroadcasting() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const stream = dynamicContent.liveStream || {};
+
+  const getBengaliMonth = (monthIndex: number) => {
+    const months = ['জানু', 'ফেব', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগ', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিসে'];
+    return months[monthIndex] || '';
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+        <Tv className="w-7 h-7" />
+        সরাসরি সম্প্রচার
+      </h2>
+
+      {stream.isLive ? (
+        <div className="space-y-4">
+          <div className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 w-fit animate-pulse">
+            <div className="w-3 h-3 bg-white rounded-full" />
+            <span className="font-bold">🔴 LIVE</span>
+          </div>
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
+            <iframe 
+              src={stream.streamUrl} 
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-12 text-center text-white">
+          <Tv className="w-24 h-24 mx-auto mb-6 opacity-30" />
+          <h3 className="text-2xl font-bold mb-3">সম্প্রচার বন্ধ আছে</h3>
+          <p className="text-gray-300 mb-6 max-w-md mx-auto">{stream.offlineMessage}</p>
+        </div>
+      )}
+
+      {stream.upcomingEvents && stream.upcomingEvents.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-orange-500" />
+            আসন্ন লাইভ ইভেন্ট
+          </h3>
+          <div className="space-y-3">
+            {stream.upcomingEvents.map((event: any) => {
+              const dateParts = event.dateEn?.split('-') || [];
+              const day = dateParts[2] || '00';
+              const monthIndex = parseInt(dateParts[1]) - 1;
+              
+              return (
+                <div key={event.id} className="flex items-start gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
+                  <div className="w-16 h-16 bg-orange-500 rounded-xl flex flex-col items-center justify-center text-white flex-shrink-0">
+                    <div className="text-2xl font-bold">{day}</div>
+                    <div className="text-xs">{getBengaliMonth(monthIndex)}</div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-800">{event.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                    <p className="text-sm text-orange-600 font-medium mt-2">⏰ {event.time}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {stream.recentRecordings && stream.recentRecordings.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-4">📹 সাম্প্রতিক রেকর্ডিং</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {stream.recentRecordings.map((video: any) => (
+              <a 
+                key={video.id} 
+                href={video.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition"
+              >
+                <div className="aspect-video bg-gray-200 relative">
+                  <img 
+                    src={video.thumbnail} 
+                    alt={video.title} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225?text=Video';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <Play className="w-16 h-16 text-white" />
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                    {video.duration}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h4 className="font-semibold text-gray-800 group-hover:text-orange-600 transition">{video.title}</h4>
+                  <p className="text-sm text-gray-500 mt-1">{video.views} views • {video.date}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Fund Collection Component
+function FundCollection({ userRole, loggedInUserId }: { userRole: string; loggedInUserId: string }) {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const fundData = dynamicContent.fundCollection || {};
+
+  const visibleMembers = userRole === 'Member' 
+    ? (fundData.members || []).filter((m: any) => m.id === loggedInUserId) 
+    : fundData.members || [];
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'paid': return 'bg-green-100 text-green-600';
+      case 'partial': return 'bg-yellow-100 text-yellow-600';
+      case 'unpaid': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch(status) {
+      case 'paid': return '✓ পরিশোধিত';
+      case 'partial': return '◐ আংশিক';
+      case 'unpaid': return '✕ বকেয়া';
+      default: return '';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <DollarSign className="w-7 h-7" />
+          {fundData.pujaName || 'তহবিল সংগ্রহ'} - চাঁদা তহবিল
+        </h2>
+        <p className="text-orange-100">সর্বশেষ আপডেট: {fundData.lastUpdated || 'N/A'}</p>
+      </div>
+
+      {fundData.message && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+          <p className="text-yellow-800 font-medium mb-2">📢 {fundData.message}</p>
+          {fundData.instructions && (
+            <div className="mt-3 space-y-1 text-sm text-yellow-700">
+              {fundData.instructions.map((inst: string, i: number) => (
+                <p key={i}>{inst}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {userRole !== 'Member' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-blue-600">৳{fundData.totalDue?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট দায্যকৃত</p>
+            </div>
+            <div className="bg-green-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-green-600">৳{fundData.totalPaid?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট জমা</p>
+            </div>
+            <div className="bg-red-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-red-600">৳{fundData.totalRemaining?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট বাকি</p>
+            </div>
+            <div className="bg-orange-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-orange-600">{fundData.paymentStats?.paymentPercentage || 0}%</div>
+              <p className="text-sm text-gray-600 mt-1">সংগ্রহ হয়েছে</p>
+            </div>
+          </div>
+
+          {fundData.paymentStats && (
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <h3 className="font-bold mb-4">📊 পেমেন্ট পরিসংখ্যান</h3>
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div><div className="text-2xl font-bold">{fundData.paymentStats.totalMembers}</div><p className="text-xs text-gray-500">মোট সদস্য</p></div>
+                <div><div className="text-2xl font-bold text-green-600">{fundData.paymentStats.paidMembers}</div><p className="text-xs text-gray-500">পরিশোধিত</p></div>
+                <div><div className="text-2xl font-bold text-yellow-600">{fundData.paymentStats.partialMembers}</div><p className="text-xs text-gray-500">আংশিক</p></div>
+                <div><div className="text-2xl font-bold text-red-600">{fundData.paymentStats.unpaidMembers}</div><p className="text-xs text-gray-500">বকেয়া</p></div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="space-y-3">
+        <h3 className="font-bold text-lg">
+          {userRole === 'Member' ? 'আপনার চাঁদা হিসাব' : 'সদস্যদের চাঁদা তালিকা'}
+        </h3>
+        {visibleMembers.map((member: any) => (
+          <div key={member.id} className="bg-white rounded-xl p-5 shadow-lg">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h4 className="font-bold text-lg">{member.name}</h4>
+                {member.lastPaymentDate && (
+                  <p className="text-sm text-gray-500">শেষ পেমেন্ট: {member.lastPaymentDate}</p>
+                )}
+              </div>
+              <span className={cn("px-3 py-1 rounded-full text-sm font-medium", getStatusColor(member.status))}>
+                {getStatusText(member.status)}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-sm text-gray-500">দায্যকৃত</div>
+                <div className="text-xl font-bold text-blue-600">৳{member.dueAmount}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-500">জমা</div>
+                <div className="text-xl font-bold text-green-600">৳{member.paidAmount}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-500">বাকি</div>
+                <div className={cn("text-xl font-bold", member.remainingAmount > 0 ? "text-red-600" : "text-green-600")}>
+                  ৳{member.remainingAmount}
+                </div>
+              </div>
+            </div>
+
+            {member.transactionId && (
+              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                <span className="text-gray-600">Transaction ID: </span>
+                <span className="font-mono font-semibold">{member.transactionId}</span>
+                <span className="ml-3 text-gray-600">({member.paymentMethod})</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {visibleMembers.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">কোনো তথ্য পাওয়া যায়নি</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// AI Chatbox Component
+function AIChatbox() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const chatbot = dynamicContent.aiChatbot || {};
+  
+  const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatbot.welcomeMessage && messages.length === 0) {
+      setMessages([{ role: 'bot', text: chatbot.welcomeMessage }]);
+    }
+  }, [chatbot.welcomeMessage]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
+  const findAnswer = (question: string) => {
+    const lowerQuestion = question.toLowerCase();
+    const faq = chatbot.faq || [];
+    
+    for (const item of faq) {
+      const keywords = item.keywords || [];
+      if (keywords.some((keyword: string) => lowerQuestion.includes(keyword.toLowerCase()))) {
+        return item.answer;
+      }
+    }
+    
+    const fallbacks = chatbot.fallbackMessages || ['দুঃখিত, আমি বুঝতে পারিনি।'];
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    setMessages(prev => [...prev, { role: 'user', text: input }]);
+    
+    setTimeout(() => {
+      const answer = findAnswer(input);
+      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
+    }, 500);
+    
+    setInput('');
+  };
+
+  const handleQuickReply = (reply: string) => {
+    setInput(reply);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ height: '600px' }}>
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+            🤖
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">আমাকে জানুন</h3>
+            <p className="text-xs text-orange-100">ভার্চুয়াল সহায়ক</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        {messages.map((msg, i) => (
+          <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+            <div className={cn(
+              "max-w-[75%] p-4 rounded-2xl shadow-md",
+              msg.role === 'user' 
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
+                : 'bg-white text-gray-800 rounded-bl-none'
+            )}>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {chatbot.quickReplies && messages.length <= 1 && (
+        <div className="px-4 py-2 border-t bg-gray-50">
+          <p className="text-xs text-gray-500 mb-2">দ্রুত প্রশ্ন:</p>
+          <div className="flex flex-wrap gap-2">
+            {chatbot.quickReplies.map((reply: string, i: number) => (
+              <button 
+                key={i}
+                onClick={() => handleQuickReply(reply)}
+                className="px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-xs hover:bg-orange-50 transition"
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 border-t bg-white rounded-b-2xl">
+        <div className="flex gap-2">
+          <input 
+            value={input} 
+            onChange={e => setInput(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleSend()}
+            placeholder="প্রশ্ন করুন..."
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// JSON Editor Component for Super Admin
+function JSONEditor() {
+  const [jsonContent, setJsonContent] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [selectedFile, setSelectedFile] = useState('dynamicContent');
+
+  useEffect(() => {
+    const fetchJSON = async () => {
+      try {
+        let url = '';
+        switch(selectedFile) {
+          case 'dynamicContent':
+            url = GITHUB_DYNAMIC_CONTENT_URL;
+            break;
+          case 'membersData':
+            url = GITHUB_MEMBERS_DATA_URL;
+            break;
+          case 'loginData':
+            url = GITHUB_LOGIN_URL;
+            break;
+        }
+        const response = await fetch(url, { cache: 'no-cache' });
+        const data = await response.json();
+        setJsonContent(JSON.stringify(data, null, 2));
+      } catch (error) {
+        setJsonContent('// ডেটা লোড করতে সমস্যা হয়েছে');
+      }
+    };
+    fetchJSON();
+  }, [selectedFile]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(jsonContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+          <Settings className="w-7 h-7" />
+          JSON এডিটর (Super Admin)
+        </h2>
+      </div>
+
+      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+        <p className="text-yellow-800 font-medium">⚠️ সতর্কতা:</p>
+        <p className="text-sm text-yellow-700 mt-1">
+          এই JSON ফাইলগুলো GitHub এ সরাসরি এডিট করতে হবে। নিচে থেকে কপি করে GitHub এ পেস্ট করুন।
+        </p>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { id: 'dynamicContent', label: 'Dynamic Content' },
+          { id: 'membersData', label: 'Members Data' },
+          { id: 'loginData', label: 'Login Data' }
+        ].map(file => (
+          <button
+            key={file.id}
+            onClick={() => setSelectedFile(file.id)}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium transition",
+              selectedFile === file.id 
+                ? "bg-orange-500 text-white" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
+            {file.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-gray-900 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
+          <span className="text-gray-400 text-sm">{selectedFile}.json</span>
+          <button 
+            onClick={handleCopy}
+            className="flex items-center gap-2 px-3 py-1 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'কপি হয়েছে!' : 'কপি করুন'}
+          </button>
+        </div>
+        <textarea
+          value={jsonContent}
+          onChange={(e) => setJsonContent(e.target.value)}
+          className="w-full h-96 p-4 bg-gray-900 text-green-400 font-mono text-sm outline-none resize-none"
+          spellCheck={false}
+        />
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-lg">
+        <h3 className="font-bold mb-3">📝 GitHub এ এডিট করার পদ্ধতি:</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+          <li>উপরের JSON কপি করুন</li>
+          <li>GitHub Repository তে যান: <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline">github.com/tkmani91/KHD</a></li>
+          <li>সংশ্লিষ্ট JSON ফাইলটি খুলুন</li>
+          <li>Edit বাটনে (✏️) ক্লিক করুন</li>
+          <li>পরিবর্তন করুন বা নতুন কনটেন্ট পেস্ট করুন</li>
+          <li>"Commit changes" বাটনে ক্লিক করুন</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+// ==================== LOGIN PAGE ====================
+
 function LoginPage() {
-  const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts'>('members');
+  const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('members');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -1143,7 +1729,7 @@ function LoginPage() {
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
-  const [loginData, setLoginData] = useState<any>(null);
+  const [loginData, setLoginData] = useState<{ users: LoginUser[] } | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
   // Load login data
@@ -1153,7 +1739,7 @@ function LoginPage() {
         const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        if (data.normalMembers && data.accountsMembers) { 
+        if (data.users) { 
           setLoginData(data); 
           setDataSource('github'); 
         }
@@ -1214,15 +1800,15 @@ function LoginPage() {
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
-      let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
-      if (loginType === 'general') {
-        foundUser = loginData.normalMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
-      } else {
-        foundUser = loginData.accountsMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
-      }
+      
+      const foundUser = loginData.users.find((u: LoginUser) => 
+        (u.mobile === trimmedUsername || u.email.toLowerCase() === trimmedUsername) && 
+        u.password === trimmedPassword
+      );
+
       if (foundUser) { 
         setIsLoggedIn(true); 
-        setLoggedInUser(foundUser.name); 
+        setLoggedInUser(foundUser);
         setUsernameInput(''); 
         setPasswordInput(''); 
       }
@@ -1231,11 +1817,41 @@ function LoginPage() {
     }, 800);
   };
 
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setLoggedInUser(null);
+    setShowMemberDetails(null);
+    setActiveTab('members');
+  };
+
   const handlePdfDownload = (url: string, filename: string) => {
     if (!url || url === '') { alert('PDF লিংক এখনো যুক্ত হয়নি'); return; }
     const link = document.createElement('a');
     link.href = url; link.download = filename; link.target = '_blank';
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
+
+  // Get available tabs based on role
+  const getAvailableTabs = () => {
+    const baseTabs = [
+      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
+      { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
+      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
+      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
+      { id: 'ai', label: 'আমাকে জানুন', icon: MessageCircle },
+    ];
+
+    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'accounts', label: 'হিসাব', icon: FileText });
+    }
+
+    if (loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'json-editor', label: 'JSON এডিটর', icon: Settings });
+    }
+
+    return baseTabs;
   };
 
   // Member Details Modal
@@ -1333,10 +1949,14 @@ function LoginPage() {
     return acc;
   }, {} as { [key: string]: InvitationList[] });
 
+  // Login Form
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1></div>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1>
+          <p className="text-gray-600 text-sm">একটি অ্যাকাউন্ট দিয়ে সব সুবিধা</p>
+        </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           {dataSource === 'github' && (
             <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
@@ -1344,60 +1964,150 @@ function LoginPage() {
               ✓ সার্ভার থেকে ডেটা লোড হয়েছে
             </div>
           )}
-          <div className="flex gap-2 mb-6">
-            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য</button>
-            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন</button>
-          </div>
-          {loginError && (<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"><AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" /><p className="text-sm text-red-600">{loginError}</p></div>)}
+
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-600">{loginError}</p>
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল / ইমেইল</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="text" value={usernameInput} onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="মোবাইল বা ইমেইল" />
+                <input 
+                  type="text" 
+                  value={usernameInput} 
+                  onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} 
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
+                  placeholder="মোবাইল বা ইমেইল" 
+                />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type={showPassword ? 'text' : 'password'} value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="পাসওয়ার্ড" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={passwordInput} 
+                  onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} 
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
+                  placeholder="পাসওয়ার্ড" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            <button type="submit" disabled={isLoading} className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
-              {isLoading ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>) : (<><LogIn className="w-5 h-5" />লগইন</>)}
+            <button 
+              type="submit" 
+              disabled={isLoading} 
+              className={cn(
+                "w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", 
+                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg"
+              )}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  যাচাই করা হচ্ছে...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  লগইন
+                </>
+              )}
             </button>
           </form>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313</p></div>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs text-yellow-700">
+              🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Dashboard
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl p-4 shadow-lg">
+        <div>
+          <h1 className="text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm text-gray-500">
+              স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
+            </p>
+            <span className={cn(
+              "px-2 py-0.5 rounded-full text-xs font-medium",
+              loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
+              loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
+              'bg-green-100 text-green-600'
+            )}>
+              {loggedInUser?.role}
+            </span>
+          </div>
+        </div>
+        <button 
+          onClick={handleLogout} 
+          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+        >
+          <LogOut className="w-4 h-4" /> লগআউট
+        </button>
       </div>
+
+      {/* Tabs */}
       <div className="flex flex-wrap gap-2">
-        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
-          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedContact(null); }}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
+        {getAvailableTabs().map((tab) => (
+          <button 
+            key={tab.id} 
+            onClick={() => { setActiveTab(tab.id); setSelectedContact(null); }}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
+              activeTab === tab.id 
+                ? "bg-orange-500 text-white shadow-lg" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
-      {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
 
+      {/* Loading */}
+      {isDataLoading && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা</h3><p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p></div>
-            <button onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা
+              </h3>
+              <p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1421,14 +2131,14 @@ function LoginPage() {
                   </div>
                 </div>
 
-               <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-            সদস্য নং: #{member.id.padStart(3, '0')}
-            </span>
-          <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
-            🩸 {member.bloodGroup}
-          </span>
-          </div>
+                <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                    সদস্য নং: #{member.id.padStart(3, '0')}
+                  </span>
+                  <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
+                    🩸 {member.bloodGroup}
+                  </span>
+                </div>
 
                 <button 
                   onClick={() => setShowMemberDetails(member)}
@@ -1440,19 +2150,42 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          {membersData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Users className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p></div>)}
+          {membersData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
+      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Phone className="w-5 h-5" /> যোগাযোগ তালিকা</h3><p className="text-sm text-blue-100">মোট {contactsData.length} জন</p></div>
-            <button onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Phone className="w-5 h-5" /> যোগাযোগ তালিকা
+              </h3>
+              <p className="text-sm text-blue-100">মোট {contactsData.length} জন</p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactsData.map((person) => (
-              <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
+              <div 
+                key={person.id} 
+                onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} 
+                className={cn(
+                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", 
+                  selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50"
+                )}
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
                     <img 
@@ -1470,17 +2203,29 @@ function LoginPage() {
                 </div>
                 {selectedContact?.id === person.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /><a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a></p>
-                    <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{person.address}</span></p>
+                    <p className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-blue-400" />
+                      <a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span>{person.address}</span>
+                    </p>
                   </div>
                 )}
               </div>
             ))}
           </div>
-          {contactsData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p></div>)}
+          {contactsData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
+      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1567,7 +2312,25 @@ function LoginPage() {
         </div>
       )}
 
-      {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
+      {/* Notice Tab */}
+      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+
+      {/* Live Broadcasting Tab */}
+      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
+
+      {/* Fund Collection Tab */}
+      {activeTab === 'fund' && !isDataLoading && (
+        <FundCollection 
+          userRole={loggedInUser?.role || 'Member'} 
+          loggedInUserId={loggedInUser?.id || ''} 
+        />
+      )}
+
+      {/* AI Chatbox Tab */}
+      {activeTab === 'ai' && !isDataLoading && <AIChatbox />}
+
+      {/* Accounts Tab (Admin/Super Admin only) */}
+      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
@@ -1581,7 +2344,7 @@ function LoginPage() {
                 {Object.entries(data.years).map(([year, url]) => (
                   <a 
                     key={year} 
-                    href={url} 
+                    href={url as string} 
                     download 
                     className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
                   >
@@ -1592,9 +2355,20 @@ function LoginPage() {
               </div>
             </div>
           ))}
+          
+          {Object.keys(accountsPDFs).length === 0 && (
+            <div className="col-span-2 text-center py-12 bg-white rounded-2xl shadow-lg">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো হিসাব তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
         </div>
       )}
 
+      {/* JSON Editor Tab (Super Admin only) */}
+      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
+
+      {/* Member Details Modal */}
       {showMemberDetails && (
         <MemberDetailsModal 
           member={showMemberDetails} 
@@ -1605,7 +2379,8 @@ function LoginPage() {
   );
 }
 
-// Main App Component
+// ==================== MAIN APP COMPONENT ====================
+
 function App() {
   return (
     <Router>
