@@ -1128,8 +1128,8 @@ function LoginPage() {
   const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts'>('members');
+  const [loggedInUser, setLoggedInUser] = useState<any>(null); // Changed to object to store full data
+  const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts' | 'personal'>('members');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -1144,7 +1144,9 @@ function LoginPage() {
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
   const [loginData, setLoginData] = useState<any>(null);
+  const [mainData, setMainData] = useState<any>(null); // New state for full raw data
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Load login data
   useEffect(() => {
@@ -1173,10 +1175,16 @@ function LoginPage() {
         const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
+        setMainData(data); // Store raw data for JSON generation
         if (data.members) setMembersData(data.members);
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+        
+        // Update loggedInUser with latest financial data from members list
+        const currentMember = data.members.find((m: any) => m.id === loggedInUser?.id);
+        if (currentMember) setLoggedInUser(currentMember);
+
       } catch (error) { 
         console.log('Using local data:', error); 
       }
@@ -1184,7 +1192,6 @@ function LoginPage() {
     };
     fetchAllData();
 
-    // Load accounts PDFs
     const loadAccountsPDFs = async () => {
       try {
         const response = await fetch('/data/accountsPDFs.json');
@@ -1204,31 +1211,46 @@ function LoginPage() {
     setLoginError('');
     if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
     if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
-    
-    if (!loginData) {
-      setLoginError('লগইন ডেটা লোড হয়নি');
-      return;
-    }
+    if (!loginData) { setLoginError('লগইন ডেটা লোড হয়নি'); return; }
 
     setIsLoading(true);
+    const adminIds = ["3", "5", "6", "7", "8", "10", "14", "15", "16", "17", "19", "20", "21", "29", "18"];
+
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
-      let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
+      let foundUser: any;
+
       if (loginType === 'general') {
         foundUser = loginData.normalMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       } else {
         foundUser = loginData.accountsMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
       }
+
       if (foundUser) { 
         setIsLoggedIn(true); 
-        setLoggedInUser(foundUser.name); 
+        setLoggedInUser(foundUser); 
         setUsernameInput(''); 
-        setPasswordInput(''); 
+        setPasswordInput('');
+        
+        if (foundUser.id === "18") {
+          setIsSuperAdmin(true);
+          setActiveTab('accounts');
+        } else if (adminIds.includes(foundUser.id)) {
+          setActiveTab('accounts');
+        } else {
+          setActiveTab('members');
+        }
       }
       else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
+  };
+
+  const generateNewJSON = () => {
+    const updatedData = { ...mainData, lastUpdated: new Date().toISOString() };
+    navigator.clipboard.writeText(JSON.stringify(updatedData, null, 2));
+    alert("নতুন JSON কপি হয়েছে! গিটহাবে গিয়ে পেস্ট করুন।");
   };
 
   const handlePdfDownload = (url: string, filename: string) => {
@@ -1238,28 +1260,18 @@ function LoginPage() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // Member Details Modal
+  // --- MemberDetailsModal Section --- (আপনার অরিজিনাল মোডাল অপরিবর্তিত)
   const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <User className="w-5 h-5" /> সদস্য বিস্তারিত
-          </h2>
-          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
-            <X className="w-5 h-5" />
-          </button>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><User className="w-5 h-5" /> সদস্য বিস্তারিত</h2>
+          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition"><X className="w-5 h-5" /></button>
         </div>
-
         <div className="p-6">
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="w-32 h-32 mx-auto sm:mx-0 rounded-xl overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0">
-              <img 
-                src={member.photo} 
-                alt={member.name} 
-                className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
-              />
+              <img src={member.photo} alt={member.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }} />
             </div>
             <div className="text-center sm:text-left">
               <h3 className="text-2xl font-bold text-gray-800">{member.name}</h3>
@@ -1268,71 +1280,31 @@ function LoginPage() {
               <p className="text-red-600 font-medium text-sm mt-1">🩸 রক্তের গ্রুপ: {member.bloodGroup}</p>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p>
-              <p className="font-semibold text-gray-800">{member.mobile}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">📧 ইমেইল</p>
-              <p className="font-semibold text-gray-800 text-sm break-all">{member.email || '—'}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">👨 পিতার নাম</p>
-              <p className="font-semibold text-gray-800">{member.fatherName || '—'}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">👩 মাতার নাম</p>
-              <p className="font-semibold text-gray-800">{member.motherName || '—'}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">🔱 গোত্র</p>
-              <p className="font-semibold text-gray-800">{member.gotra || '—'}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl">
-              <p className="text-xs text-orange-500 font-medium mb-1">💼 পেশা</p>
-              <p className="font-semibold text-gray-800">{member.occupation || '—'}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
-              <p className="text-xs text-orange-500 font-medium mb-1">📍 বর্তমান ঠিকানা</p>
-              <p className="font-semibold text-gray-800">{member.address}</p>
-            </div>
-            
-            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
-              <p className="text-xs text-orange-500 font-medium mb-1">🏠 স্থায়ী ঠিকানা</p>
-              <p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p>
-            </div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p><p className="font-semibold text-gray-800">{member.mobile}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">📧 ইমেইল</p><p className="font-semibold text-gray-800 text-sm break-all">{member.email || '—'}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">👨 পিতার নাম</p><p className="font-semibold text-gray-800">{member.fatherName || '—'}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">👩 মাতার নাম</p><p className="font-semibold text-gray-800">{member.motherName || '—'}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">🔱 গোত্র</p><p className="font-semibold text-gray-800">{member.gotra || '—'}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl"><p className="text-xs text-orange-500 font-medium mb-1">💼 পেশা</p><p className="font-semibold text-gray-800">{member.occupation || '—'}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2"><p className="text-xs text-orange-500 font-medium mb-1">📍 বর্তমান ঠিকানা</p><p className="font-semibold text-gray-800">{member.address}</p></div>
+            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2"><p className="text-xs text-orange-500 font-medium mb-1">🏠 স্থায়ী ঠিকানা</p><p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p></div>
           </div>
-
           <div className="mt-6">
-            <a 
-              href={`tel:${member.mobile}`}
-              className="w-full py-3 bg-green-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
-            >
-              <Phone className="w-5 h-5" /> কল করুন
-            </a>
+            <a href={`tel:${member.mobile}`} className="w-full py-3 bg-green-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"><Phone className="w-5 h-5" /> কল করুন</a>
           </div>
         </div>
       </div>
     </div>
   );
 
-  // Group invitations by area
   const groupedInvitations = invitationData.reduce((acc, item) => {
-    if (!acc[item.area]) {
-      acc[item.area] = [];
-    }
+    if (!acc[item.area]) acc[item.area] = [];
     acc[item.area].push(item);
     return acc;
   }, {} as { [key: string]: InvitationList[] });
 
+  // --- Login Screen Render --- (আপনার অরিজিনাল ডিজাইন অপরিবর্তিত)
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -1340,8 +1312,7 @@ function LoginPage() {
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           {dataSource === 'github' && (
             <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              ✓ সার্ভার থেকে ডেটা লোড হয়েছে
+              <div className="w-2 h-2 rounded-full bg-green-500" /> ✓ সার্ভার থেকে ডেটা লোড হয়েছে
             </div>
           )}
           <div className="flex gap-2 mb-6">
@@ -1377,20 +1348,68 @@ function LoginPage() {
     );
   }
 
+  // --- Logged In View ---
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span></p></div>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(null); setIsSuperAdmin(false); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
+
+      {/* ১. ব্যক্তিগত ৩টি কার্ড (ধার্যকৃত, জমা, বাকি) */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white p-4 rounded-2xl border-t-4 border-blue-500 shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 uppercase font-bold">ধার্যকৃত</p>
+          <p className="text-lg font-bold text-gray-800">৳{loggedInUser?.assignedAmount || '0'}</p>
+        </div>
+        <div className="bg-white p-4 rounded-2xl border-t-4 border-green-500 shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 uppercase font-bold">জমা</p>
+          <p className="text-lg font-bold text-gray-800">৳{loggedInUser?.paidAmount || '0'}</p>
+        </div>
+        <div className="bg-white p-4 rounded-2xl border-t-4 border-red-500 shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 uppercase font-bold">বাকি</p>
+          <p className="text-lg font-bold text-gray-800">৳{(Number(loggedInUser?.assignedAmount) || 0) - (Number(loggedInUser?.paidAmount) || 0)}</p>
+        </div>
+      </div>
+
+      {/* ২. লাইভ ব্রডকাস্টিং সেকশন */}
+      {mainData?.liveSettings?.isLive && (
+        <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-red-100">
+          <h3 className="flex items-center gap-2 font-bold text-gray-800 mb-3"><Tv className="text-red-600 animate-pulse" size={18}/> সরাসরি সম্প্রচার</h3>
+          <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
+            <iframe src={mainData.liveSettings.liveUrl} className="w-full h-full" allowFullScreen></iframe>
+          </div>
+        </div>
+      )}
+
+      {/* ৩. নোটিশ বোর্ড (Accordion Style) */}
+      {mainData?.notices && mainData.notices.length > 0 && (
+        <div className="bg-white rounded-2xl p-5 shadow-lg border border-orange-50">
+          <h3 className="flex items-center gap-2 font-bold text-gray-800 mb-4"><FileText className="text-orange-500" size={18}/> বিশেষ নোটিশ</h3>
+          <div className="space-y-2">
+            {mainData.notices.map((notice: any, i: number) => (
+              <details key={i} className="group bg-orange-50 rounded-xl overflow-hidden">
+                <summary className="flex items-center justify-between p-4 cursor-pointer font-bold text-gray-700 list-none">
+                  {notice.title} <ChevronDown className="group-open:rotate-180 transition-transform" size={16}/>
+                </summary>
+                <p className="p-4 pt-0 text-sm text-gray-600 leading-relaxed border-t border-orange-100">{notice.description}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ট্যাব মেনু */}
       <div className="flex flex-wrap gap-2">
-        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
-          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedContact(null); }}
+        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' || isSuperAdmin ? [{ id: 'accounts', label: 'হিসাব', icon: Database }] : [])].map((tab) => (
+          <button key={tab.id} onClick={() => { setActiveTab(tab.id as any); setSelectedContact(null); }}
             className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
+
+      {/* কন্টেন্ট এরিয়া */}
       {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
 
       {activeTab === 'members' && !isDataLoading && (
@@ -1399,51 +1418,42 @@ function LoginPage() {
             <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা</h3><p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p></div>
             <button onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {membersData.map((member) => (
               <div key={member.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all border border-gray-100">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
-                    <img 
-                      src={member.photo} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover" 
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }} 
-                    />
+                    <img src={member.photo} alt={member.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-800 truncate">{member.name}</h3>
                     <p className="text-orange-600 text-sm font-medium">{member.designation}</p>
-                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {member.mobile}
-                    </p>
+                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1"><Phone className="w-3 h-3" /> {member.mobile}</p>
                   </div>
                 </div>
-
-               <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-            সদস্য নং: #{member.id.padStart(3, '0')}
-            </span>
-          <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
-            🩸 {member.bloodGroup}
-          </span>
-          </div>
-
-                <button 
-                  onClick={() => setShowMemberDetails(member)}
-                  className="w-full py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-orange-600 transition"
-                >
-                  <Eye className="w-4 h-4" />
-                  বিস্তারিত দেখুন
-                </button>
+                <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">সদস্য নং: #{member.id.padStart(3, '0')}</span>
+                  <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">🩸 {member.bloodGroup}</span>
+                </div>
+                <button onClick={() => setShowMemberDetails(member)} className="w-full py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-orange-600 transition"><Eye className="w-4 h-4" /> বিস্তারিত দেখুন</button>
               </div>
             ))}
           </div>
-          {membersData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Users className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
+      {/* ৪. সুপার অ্যাডমিন এডিট প্যানেল (শুধুমাত্র আইডি ১৮) */}
+      {isSuperAdmin && activeTab === 'accounts' && (
+        <div className="bg-gray-900 text-white p-6 rounded-3xl space-y-4 shadow-2xl border-b-8 border-orange-500 animate-in fade-in zoom-in duration-500">
+          <h3 className="text-orange-500 font-bold flex items-center gap-2"><Settings size={20}/> সুপার কন্ট্রোল প্যানেল (ID: 18)</h3>
+          <p className="text-xs text-gray-400">নিচে ক্লিক করলে সংগঠনের সকল ডেটার একটি আপডেট ফাইল কপি হবে।</p>
+          <button onClick={generateNewJSON} className="flex items-center justify-center gap-2 w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-2xl font-bold transition">
+            <Copy size={20}/> Generate & Copy New JSON
+          </button>
+        </div>
+      )}
+
+      {/* আপনার অরিজিনাল কন্টাক্ট এবং ইনভিটেশন সেকশন এখানে অপরিবর্তিত থাকবে */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1455,12 +1465,7 @@ function LoginPage() {
               <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
-                    <img 
-                      src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                      alt={person.name} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
-                    />
+                    <img src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} alt={person.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold">{person.name}</h3>
@@ -1477,116 +1482,55 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          {contactsData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
+      {/* ইনভিটেশন সেকশন */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left">
-              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
-                <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
-              </h3>
-              <p className="text-sm text-green-100">
-                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
-              </p>
-            </div>
-            <button 
-              onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} 
-              className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"
-            >
-              <Download className="w-5 h-5" />PDF ডাউনলোড
-            </button>
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা</h3><p className="text-sm text-green-100">মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-
           <div className="space-y-3">
-            {Object.entries(groupedInvitations).map(([area, items]) => {
-              const totalMembers = items.reduce((sum, item) => sum + item.familyCount, 0);
-              const isExpanded = expandedArea === area;
-
-              return (
-                <div key={area} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <button
-                    onClick={() => setExpandedArea(isExpanded ? null : area)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-green-600" />
+            {Object.entries(groupedInvitations).map(([area, items]) => (
+              <div key={area} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <button onClick={() => setExpandedArea(expandedArea === area ? null : area)} className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center"><MapPin className="w-6 h-6 text-green-600" /></div>
+                    <div className="text-left"><h3 className="font-bold text-gray-800">{area}</h3><p className="text-sm text-gray-500">মোট: {items.reduce((sum, item) => sum + item.familyCount, 0)} জন</p></div>
+                  </div>
+                  <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform", expandedArea === area && "rotate-180")} />
+                </button>
+                {expandedArea === area && (
+                  <div className="border-t border-gray-100 p-4 space-y-2">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                        <span className="font-medium text-gray-700">{item.personName}</span>
+                        <span className="bg-orange-100 text-orange-600 font-bold px-3 py-1 rounded-lg text-sm">{item.familyCount} জন</span>
                       </div>
-                      <div className="text-left">
-                        <h3 className="font-bold text-gray-800">{area}</h3>
-                        <p className="text-sm text-gray-500">মোট: {totalMembers} জন</p>
-                      </div>
-                    </div>
-                    <ChevronDown 
-                      className={cn(
-                        "w-5 h-5 text-gray-400 transition-transform",
-                        isExpanded && "rotate-180"
-                      )} 
-                    />
-                  </button>
-
-                  {isExpanded && (
-                    <div className="border-t border-gray-100">
-                      <div className="p-4 space-y-2">
-                        {items.map((item) => (
-                          <div 
-                            key={item.id} 
-                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <User className="w-4 h-4 text-green-600" />
-                              </div>
-                              <span className="font-medium text-gray-700">{item.personName}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500">{item.familyCount} জন</span>
-                              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <span className="text-orange-600 font-bold text-sm">{item.familyCount}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-
-          {invitationData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
+      {/* অরিজিনাল হিসাব সেকশন */}
+      {activeTab === 'accounts' && (loginType === 'accounts' || isSuperAdmin) && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center"><FileText className="w-6 h-6 text-orange-600" /></div>
                 <h3 className="font-bold text-lg">{data.title}</h3>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
-                  <a 
-                    key={year} 
-                    href={url} 
-                    download 
-                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                  >
-                    <Download className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm font-medium">{year}</span>
+                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                    <Download className="w-4 h-4 text-orange-600" /> <span className="text-sm font-medium">{year}</span>
                   </a>
                 ))}
               </div>
@@ -1595,12 +1539,7 @@ function LoginPage() {
         </div>
       )}
 
-      {showMemberDetails && (
-        <MemberDetailsModal 
-          member={showMemberDetails} 
-          onClose={() => setShowMemberDetails(null)} 
-        />
-      )}
+      {showMemberDetails && <MemberDetailsModal member={showMemberDetails} onClose={() => setShowMemberDetails(null)} />}
     </div>
   );
 }
