@@ -1,0 +1,23 @@
+{
+  "noticeBoard": [
+    {
+      "id": 1,
+      "title": "বার্ষিক সভার তারিখ ঘোষণা",
+      "description": "আগামী ২০শে মার্চ আমাদের বার্ষিক সাধারণ সভা অনুষ্ঠিত হবে। সবাইকে উপস্থিত থাকার অনুরোধ রইল।",
+      "date": "2026-03-10"
+    }
+  ],
+  "liveBroadcasting": {
+    "isLive": false,
+    "liveUrl": "https://www.youtube.com/embed/live_stream_id",
+    "customMessage": "পরবর্তী সরাসরি সম্প্রচার আগামী ১৭ই মার্চ দুপুর ২টায়। শ্রী শ্রী রাধাকৃষ্ণের অন্নকূট মহোৎসব।"
+  },
+  "fundCollection": {
+    "title": "শ্রী শ্রী রামনবমী তহবিল ২০২৬",
+    "marqueeMessage": "আগামী ১৫ই এপ্রিলের মধ্যে সকল ধার্যকৃত চাঁদা পরিশোধ করার জন্য সবিনয় অনুরোধ করা হইলো।",
+    "targets": [
+      { "id": 1, "memberId": "18", "assigned": 500, "paid": 500, "due": 0, "status": "পরিশোধিত" },
+      { "id": 2, "memberId": "19", "assigned": 500, "paid": 200, "due": 300, "status": "আংশিক বাকি" }
+    ]
+  }
+}
