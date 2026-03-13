@@ -1809,26 +1809,24 @@ function LoginPage() {
         u.password === trimmedPassword
       );
 
-      if (foundUser) { 
-        // ✅ Role নির্ধারণ
-        let userRole: 'Member' | 'Admin' | 'Super Admin' = 'Member';
-        
-        if (foundUser.role === 'superAdmin') {
-          userRole = 'Super Admin';
-        } else if (loginData.accountsMembers.some(m => m.id === foundUser.id)) {
-          userRole = 'Admin';
-        }
+    if (foundUser) { 
+  // ✅ সরাসরি JSON থেকে role নিন
+  const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
 
-        const userWithRole: LoginUser = {
-          ...foundUser,
-          role: userRole
-        };
+  const userWithRole: LoginUser = {
+    id: foundUser.id,
+    name: foundUser.name,
+    mobile: foundUser.mobile || '',
+    email: foundUser.email || '',
+    password: foundUser.password || '',
+    role: userRole
+  };
 
-        setIsLoggedIn(true); 
-        setLoggedInUser(userWithRole);
-        setUsernameInput(''); 
-        setPasswordInput(''); 
-      }
+  setIsLoggedIn(true); 
+  setLoggedInUser(userWithRole);
+  setUsernameInput(''); 
+  setPasswordInput(''); 
+}
       else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
