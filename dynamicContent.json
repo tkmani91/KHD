@@ -5,7 +5,7 @@
       "title": "🎉 দুর্গাপূজা ২০২৬ এর সময়সূচী ঘোষণা",
       "date": "২০২৬-০৯-১৫",
       "dateEn": "2026-09-15",
-      "details": "এবারের দুর্গাপূজা ৮ অক্টোবর থেকে ১২ অক্টোবর পর্যন্ত অনুষ্ঠিত হবে। স��ল সদস্যদের উপস্থিত থাকার অনুরোধ করা হলো। পূজা মণ্ডপ সাজানোর কাজ ৫ অক্টোবর থেকে শুরু হবে।",
+      "details": "এবারের দুর্গাপূজা ১৬ অক্টোবর থেকে ২১ অক্টোবর পর্যন্ত অনুষ্ঠিত হবে। সকল সদস্যদের উপস্থিত থাকার অনুরোধ করা হলো। পূজা মণ্ডপ সাজানোর কাজ ৫ অক্টোবর থেকে শুরু হবে।",
       "priority": "high",
       "category": "পূজা"
     },
@@ -14,7 +14,7 @@
       "title": "📢 জরুরী সভার আহ্বান",
       "date": "২০২৬-০৯-২০",
       "dateEn": "2026-09-20",
-      "details": "আগামী ২৫ সেপ্টেম্বর সন্ধ্যা ৬টায় মন্দিরে জরুরী সভা অনুষ্ঠিত হবে। সকল কমিটি সদস্যদের উপস্থিত থাকা বাধ্যতামূলক। আলোচ্য বিষয়: পূজার প্রস্তুতি ও চাঁদা সংগ্রহ।",
+      "details": "আগামী ১৫ সেপ্টেম্বর সন্ধ্যা ৬টায় মন্দিরে জরুরী সভা অনুষ্ঠিত হবে। সকল কমিটি সদস্যদের উপস্থিত থাকা বাধ্যতামূলক। আলোচ্য বিষয়: পূজার প্রস্তুতি ও চাঁদা সংগ্রহ।",
       "priority": "medium",
       "category": "সভা"
     },
@@ -26,129 +26,68 @@
       "details": "৩০ সেপ্টেম্বর ২০২৬ এর মধ্যে সকল বকেয়া চাঁদা পরিশোধ করার জন্য অনুরোধ করা হলো। পরিশোধ করতে যোগাযোগ করুন: কোষাধ্যক্ষ - ০১৭৩৩১১৮৩১৩",
       "priority": "high",
       "category": "আর্থিক"
-    },
-    {
-      "id": "4",
-      "title": "🕉️ সরস্বতী পূজা ২০২৭ তারিখ নির্ধারণ",
-      "date": "২০২৬-১২-��১",
-      "dateEn": "2026-12-01",
-      "details": "আগামী বছরের সরস্বতী পূজা ২ ফেব্রুয়ারি ২০২৭ তারিখে অনুষ্ঠিত হবে। ছাত্র-ছাত্রীদের জন্য বিশেষ আয়োজন থাকবে।",
-      "priority": "low",
-      "category": "পূজা"
     }
   ],
 
   "liveStream": {
     "isLive": false,
-    "streamUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "streamUrl": "https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID",
     "streamType": "youtube",
-    "offlineMessage": "🔴 বর্তমানে কোনো সম্প্রচার নেই। পরবর্তী লাইভ: দুর্গাপূজা ২০২৬ - মহাষষ্ঠী (৮ অক্টোবর, সকাল ৮টা)",
-    "offlineBanner": "https://i.ibb.co/placeholder-offline.jpg",
-    "upcomingEvents": [
-      {
-        "id": "1",
-        "name": "দুর্গাপ���জা ২০২৬ - মহাষষ্ঠী",
-        "date": "২০২৬-১০-০৮",
-        "dateEn": "2026-10-08",
-        "time": "সকাল ৮:০০ টা",
-        "description": "বোধন, আমন্ত্রণ ও অধিবাস"
-      },
-      {
-        "id": "2",
-        "name": "দুর্গাপূজা ২০২৬ - মহাসপ্তমী",
-        "date": "২০২৬-১০-০৯",
-        "dateEn": "2026-10-09",
-        "time": "সকাল ৭:০০ টা",
-        "description": "নবপত্রিকা স্থাপন ও সপ্তমী পূজা"
-      },
-      {
-        "id": "3",
-        "name": "দুর্গাপূজা ২০২৬ - মহাষ্টমী",
-        "date": "২০২৬-১০-১০",
-        "dateEn": "2026-10-10",
-        "time": "সকাল ৬:৩০ টা",
-        "description": "সন্ধিপূজা ও কুমারী পূজা"
-      },
-      {
-        "id": "4",
-        "name": "দুর্গাপূজা ২০২৬ - মহানবমী",
-        "date": "২০২৬-১০-১১",
-        "dateEn": "2026-10-11",
-        "time": "সকাল ৮:০০ টা",
-        "description": "মহানবমী পূজা ও হোম"
-      },
-      {
-        "id": "5",
-        "name": "দুর্গাপূজা ২০২৬ - বিজয়া দশমী",
-        "date": "২০২৬-১০-১২",
-        "dateEn": "2026-10-12",
-        "time": "দুপুর ২:০০ টা",
-        "description": "বিসর্জন মিছিল"
-      }
-    ],
-    "recentRecordings": [
-      {
-        "id": "1",
-        "title": "শ্যামাপূজা ২০২৫ - সম্পূর্ণ অনুষ্ঠান",
-        "thumbnail": "https://i.ibb.co/placeholder1.jpg",
-        "url": "https://www.youtube.com/watch?v=example1",
-        "duration": "২ ঘণ্টা ৩০ মিনিট",
-        "views": "১২৫০",
-        "date": "২০২৫-১১-১৪"
-      },
-      {
-        "id": "2",
-        "title": "সরস্বতী পূজা ২০২৬ - পুষ্পাঞ্জলি",
-        "thumbnail": "https://i.ibb.co/placeholder2.jpg",
-        "url": "https://www.youtube.com/watch?v=example2",
-        "duration": "৪৫ মিনিট",
-        "views": "৮৯০",
-        "date": "২০২৬-০২-০৫"
-      }
-    ]
+    "offlineMessage": "🔴 বর্তমানে কোনো সম্প্রচার নেই। পরবর্তী লাইভ: দুর্গাপূজা ২০২৬",
+    "offlineBanner": ""
   },
 
   "fundCollection": {
     "isActive": true,
     "year": "২০২৬",
     "pujaName": "দুর্গাপূজা ২০২৬",
-    "message": "⏰ ৩০ সেপ্টেম্বর ২০২৬ এর মধ্যে সকল চাঁদা পরিশোধ করার জন্য বিনীত অনুরোধ করা হলো। দেরিতে পরিশোধ করলে ১০% জরিমানা প্রযোজ্য হবে।",
+    "message": "⏰ ৩০ সেপ্টেম্বর ২০২৬ এর মধ্যে সকল চাঁদা পরিশোধ করার জন্য বিনীত অনুরোধ করা হলো।",
     "instructions": [
       "💳 বিকাশ: 01733118313 (Personal)",
       "💳 নগদ: 01612118313",
-      "🏦 ব্যাংক: Dutch-Bangla Bank, A/C: 123456789",
       "📞 পেমেন্টের পর SMS করুন: 01733118313"
     ],
-    "totalDue": 250000,
-    "totalPaid": 180000,
-    "totalRemaining": 70000,
+    "totalDue": 185000,
+    "totalPaid": 95000,
+    "totalRemaining": 90000,
     "lastUpdated": "২০২৬-০৯-২০",
     "members": [
       {
-        "id": "1",
-        "name": "রাম কুমার সরকার",
+        "id": "3",
+        "name": "ড. শ্যামল কুমার পাল",
         "dueAmount": 5000,
         "paidAmount": 5000,
         "remainingAmount": 0,
-        "lastPaymentDate": "২০২৬-০৮-১৫",
+        "lastPaymentDate": "২০২৬-০৮-১০",
         "paymentMethod": "বিকাশ",
         "status": "paid",
-        "transactionId": "BKS20260815123"
+        "transactionId": "BKS20260810001"
       },
       {
-        "id": "2",
-        "name": "শ্যাম চন্দ্র দাস",
+        "id": "4",
+        "name": "অচিন্ত্য কুমার পাল",
         "dueAmount": 5000,
         "paidAmount": 3000,
         "remainingAmount": 2000,
-        "lastPaymentDate": "২০২৬-০৯-০১",
+        "lastPaymentDate": "২০২৬-০৮-১৫",
         "paymentMethod": "নগদ",
         "status": "partial",
-        "transactionId": "NGD20260901456"
+        "transactionId": "NGD20260815002"
       },
       {
-        "id": "3",
-        "name": "মোহন লাল পাল",
+        "id": "5",
+        "name": "আশীষ কুমার পাল",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৮-২০",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260820003"
+      },
+      {
+        "id": "6",
+        "name": "তপন কুমার ঘোষ",
         "dueAmount": 5000,
         "paidAmount": 0,
         "remainingAmount": 5000,
@@ -158,34 +97,353 @@
         "transactionId": null
       },
       {
-        "id": "4",
-        "name": "গোপাল কৃষ্ণ ব্যানার্জী",
-        "dueAmount": 7000,
-        "paidAmount": 7000,
-        "remainingAmount": 0,
-        "lastPaymentDate": "২০২৬-০৯-১৮",
-        "paymentMethod": "ব্যাংক",
-        "status": "paid",
-        "transactionId": "DBBL789654321"
+        "id": "7",
+        "name": "নয়ন কুমার ঘোষ",
+        "dueAmount": 5000,
+        "paidAmount": 2500,
+        "remainingAmount": 2500,
+        "lastPaymentDate": "২০২৬-০৯-০১",
+        "paymentMethod": "বিকাশ",
+        "status": "partial",
+        "transactionId": "BKS20260901004"
       },
       {
-        "id": "5",
-        "name": "কৃষ্ণ চন্দ্র রায়",
+        "id": "8",
+        "name": "লিটন কুমার পাল",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৮-২৫",
+        "paymentMethod": "নগদ",
+        "status": "paid",
+        "transactionId": "NGD20260825005"
+      },
+      {
+        "id": "9",
+        "name": "সুজিত কুমার পাল",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "10",
+        "name": "সুমন কুমার পাল",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-০৫",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260905006"
+      },
+      {
+        "id": "11",
+        "name": "চঞ্চল কুমার সাহা",
         "dueAmount": 5000,
         "paidAmount": 1000,
         "remainingAmount": 4000,
-        "lastPaymentDate": "২০২৬-০৮-২৫",
+        "lastPaymentDate": "২০২৬-০৮-১০",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260810007"
+      },
+      {
+        "id": "12",
+        "name": "বাপ্পি কুমার কুন্ডু",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১০",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260910008"
+      },
+      {
+        "id": "13",
+        "name": "সনৎ কুমার পাল",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "14",
+        "name": "পিনাকী কুমার কুন্ডু",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১২",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260912009"
+      },
+      {
+        "id": "15",
+        "name": "শুভ্র জ্যোতি পোদ্দার",
+        "dueAmount": 5000,
+        "paidAmount": 2000,
+        "remainingAmount": 3000,
+        "lastPaymentDate": "২০২৬-০৮-২০",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260820010"
+      },
+      {
+        "id": "16",
+        "name": "অনুপম কুমার মানী",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৫",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260915011"
+      },
+      {
+        "id": "17",
+        "name": "শুভ কুমার ঘোষ",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "18",
+        "name": "তন্ময় কুমার মানী",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৮",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260918012"
+      },
+      {
+        "id": "19",
+        "name": "তন্ময় কুমার কুন্ডু",
+        "dueAmount": 5000,
+        "paidAmount": 3500,
+        "remainingAmount": 1500,
+        "lastPaymentDate": "২০২৬-০৯-��৫",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260905013"
+      },
+      {
+        "id": "20",
+        "name": "পাপ্পু কুমার বিশ্বাস",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১০",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260910014"
+      },
+      {
+        "id": "21",
+        "name": "নিরেন কুমার মানী (মোংলা)",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "22",
+        "name": "বিপুল কুমার পোদ্দার",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১২",
+        "paymentMethod": "নগদ",
+        "status": "paid",
+        "transactionId": "NGD20260912015"
+      },
+      {
+        "id": "23",
+        "name": "নন্দ দুলাল পোদ্দার",
+        "dueAmount": 5000,
+        "paidAmount": 2000,
+        "remainingAmount": 3000,
+        "lastPaymentDate": "২০২৬-০৮-৩০",
         "paymentMethod": "বিকাশ",
         "status": "partial",
-        "transactionId": "BKS20260825789"
+        "transactionId": "BKS20260830016"
+      },
+      {
+        "id": "24",
+        "name": "অসিম কুমার সরকার",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "25",
+        "name": "টনি কুমার ঘোষ",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৫",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260915017"
+      },
+      {
+        "id": "26",
+        "name": "কিরণ কুমার সাহা",
+        "dueAmount": 5000,
+        "paidAmount": 1500,
+        "remainingAmount": 3500,
+        "lastPaymentDate": "২০২৬-০৯-০১",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260901018"
+      },
+      {
+        "id": "27",
+        "name": "পিযুষ পাল",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "28",
+        "name": "অভিজিৎ পাল",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৮",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260918019"
+      },
+      {
+        "id": "29",
+        "name": "সৌরভ সরকার",
+        "dueAmount": 5000,
+        "paidAmount": 3000,
+        "remainingAmount": 2000,
+        "lastPaymentDate": "২০২৬-০৯-১০",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260910020"
+      },
+      {
+        "id": "30",
+        "name": "সঞ্জয় হালদার",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "31",
+        "name": "গোপাল হালদার",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১২",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260912021"
+      },
+      {
+        "id": "32",
+        "name": "মনমত হালদার",
+        "dueAmount": 5000,
+        "paidAmount": 2500,
+        "remainingAmount": 2500,
+        "lastPaymentDate": "২০২৬-০৮-২৫",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260825022"
+      },
+      {
+        "id": "33",
+        "name": "উত্তম কুমার দাস",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "34",
+        "name": "শ্যাম কুমার দাস",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৫",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260915023"
+      },
+      {
+        "id": "35",
+        "name": "সুবল দাস",
+        "dueAmount": 5000,
+        "paidAmount": 1000,
+        "remainingAmount": 4000,
+        "lastPaymentDate": "২০২৬-০৯-০৫",
+        "paymentMethod": "নগদ",
+        "status": "partial",
+        "transactionId": "NGD20260905024"
+      },
+      {
+        "id": "36",
+        "name": "সজীব কুমার সুত্রধর",
+        "dueAmount": 5000,
+        "paidAmount": 0,
+        "remainingAmount": 5000,
+        "lastPaymentDate": null,
+        "paymentMethod": null,
+        "status": "unpaid",
+        "transactionId": null
+      },
+      {
+        "id": "37",
+        "name": "গোপাল কুমার কুন্ডু",
+        "dueAmount": 5000,
+        "paidAmount": 5000,
+        "remainingAmount": 0,
+        "lastPaymentDate": "২০২৬-০৯-১৮",
+        "paymentMethod": "বিকাশ",
+        "status": "paid",
+        "transactionId": "BKS20260918025"
       }
     ],
     "paymentStats": {
-      "totalMembers": 50,
-      "paidMembers": 28,
-      "partialMembers": 12,
+      "totalMembers": 35,
+      "paidMembers": 15,
+      "partialMembers": 10,
       "unpaidMembers": 10,
-      "paymentPercentage": 72
+      "paymentPercentage": 51
     }
   },
 
@@ -202,57 +460,49 @@
         "id": "1",
         "question": "দুর্গা পূজা",
         "keywords": ["দুর্গা", "পূজা", "durga", "puja"],
-        "answer": "দুর্গা পূজা হলো দেবী দুর্গার উপাসনা। এটি শরৎকালে অনুষ্ঠিত হয়। দেবী দুর্গা মহিষাসুরকে বধ করে অসুরের উপর দেবতাদের বিজয়ের প্রতীক। আমাদের মন্দিরে এবছর ৮-১২ অক্টোবর দুর্গা পূজা অনুষ্ঠিত হবে।",
-        "relatedLinks": ["/durga"]
+        "answer": "দুর্গা পূজা হলো দেবী দুর্গার উপাসনা। এটি শরৎকালে অনুষ্ঠিত হয়। দেবী দুর্গা মহিষাসুরকে বধ করে অসুরের উপর দেবতাদের বিজয়ের প্রতীক। আমাদের মন্দিরে প্রতি বছর দুর্গা পূজা অনুষ্ঠিত হয়।"
       },
       {
         "id": "2",
         "question": "কালী পূজা",
         "keywords": ["কালী", "শ্যামা", "kali", "shyama"],
-        "answer": "কালী পূজা দীপাবলির রাতে অনুষ্ঠিত হয়। দেবী কালী শক্তির প্রতীক এবং মা পার্বতীর রুদ্র রূপ। তিনি কৃষ্ণবর্ণা, চতুর্ভুজা ও মুক্তকেশী। আমাদের মন্দিরে প্রতি বছর কালী পূজা ধুমধামের সাথে পালিত হয়।",
-        "relatedLinks": ["/shyama"]
+        "answer": "কালী পূজা দীপাবলির রাতে অনুষ্ঠিত হয়। দেবী কালী শক্তির প্রতীক এবং মা পার্বতীর রুদ্র রূপ। তিনি কৃষ্ণবর্ণা, চতুর্ভুজা ও মুক্তকেশী।"
       },
       {
         "id": "3",
         "question": "সরস্বতী পূজা",
         "keywords": ["সরস্বতী", "বিদ্যা", "saraswati"],
-        "answer": "সরস্বতী মা হলেন বিদ্যা, সংগীত, কলা ও জ্ঞানের দেবী। তিনি শ্বেতবর্ণা, বীণাধারিণী। মাঘ মাসের শুক্লপক্ষের পঞ্চমী তিথিতে সরস্বতী পূজা অনুষ্ঠিত হয়। ছাত্র-ছাত্রীরা বই-খাতা পূজা দেয়।",
-        "relatedLinks": ["/saraswati"]
+        "answer": "সরস্বতী মা হলেন বিদ্যা, সংগীত, কলা ও জ্ঞানের দেবী। মাঘ মাসের শুক্লপক্ষের পঞ্চমী তিথিতে সরস্বতী পূজা অনুষ্ঠিত হয়।"
       },
       {
         "id": "4",
         "question": "রথযাত্রা",
         "keywords": ["রথ", "জগন্নাথ", "rath", "jagannath"],
-        "answer": "রথযাত্রা হলো জগন্নাথ দেবের মহোৎসব। আষাঢ় মাসের শুক্লা দ্বিতীয়া তিথিতে পুরীধামে মহারথযাত্রা অনুষ্ঠিত হয়। আমাদের মন্দিরেও প্রতি বছর রথযাত্রা পালিত হয়।",
-        "relatedLinks": ["/rath"]
+        "answer": "রথযাত্রা হলো জগন্নাথ দেবের মহোৎসব। আষাঢ় মাসের শুক্লা দ্বিতীয়া তিথিতে মহারথযাত্রা অনুষ্ঠিত হয়।"
       },
       {
         "id": "5",
         "question": "মন্দিরের ঠিকানা",
         "keywords": ["ঠিকানা", "কোথায়", "address", "location"],
-        "answer": "📍 কলম হিন্দু ধর্মসভা\nকলম, সিংড়া, নাটোর, রাজশাহী\n📞 মোবাইল: ০১৭৩৩১১৮৩১৩\n✉️ ইমেইল: durgapuja12@gmail.com",
-        "relatedLinks": ["/contact"]
+        "answer": "📍 কলম হিন্দু ধর্মসভা\nকলম, সিংড়া, নাটোর, রাজশাহী\n📞 মোবাইল: ০১৭৩৩১১৮৩১৩\n✉️ ইমেইল: durgapuja12@gmail.com"
       },
       {
         "id": "6",
         "question": "চাঁদা",
         "keywords": ["চাঁদা", "টাকা", "subscription", "fund"],
-        "answer": "দুর্গাপূজা ২০২৬ এর জন্য প্রতি সদস্যের চাঁদা ৫০০০ টাকা। ৩০ সেপ্টেম্বরের মধ্যে পরিশোধ করতে হবে। পেমেন্ট করতে পারেন:\n💳 বিকাশ: 01733118313\n💳 নগদ: 01612118313",
-        "relatedLinks": ["/login"]
+        "answer": "দুর্গাপূজা ২০২৬ এর জন্য প্রতি সদস্যের চাঁদা ৫০০০ টাকা। ৩০ সেপ্টেম্বরের মধ্যে পরিশোধ করতে হবে।\n💳 বিকাশ: 01733118313\n💳 নগদ: 01612118313"
       },
       {
         "id": "7",
         "question": "সদস্য হতে",
         "keywords": ["সদস্য", "member", "join"],
-        "answer": "নতুন সদস্য হতে যোগাযোগ করুন:\n📞 সভাপতি: ০১৭৩৩১১৮৩১৩\n📞 সাধারণ সম্পাদক: ০১৬১২১১৮৩১৩\nসদস্যপদ ফি: ১০০০ টাকা (একবার)",
-        "relatedLinks": ["/contact"]
+        "answer": "নতুন সদস্য হতে যোগাযোগ করুন:\n📞 ০১৭৩৩১১৮৩১৩\n📞 ০১৬১২১১৮৩১৩"
       },
       {
         "id": "8",
-        "question": "পূজার সময়সূচী",
-        "keywords": ["সময়", "schedule", "timing"],
-        "answer": "দুর্গাপূজা ২০২৬:\n📅 মহাষষ্ঠী: ৮ অক্টোবর (সকাল ৮টা)\n📅 মহাসপ্তমী: ৯ অক্টোবর (সকাল ৭টা)\n📅 মহাষ্টমী: ১০ অক্টোবর (সকাল ৬:৩০)\n📅 মহানবমী: ১১ অক্টোবর (সকাল ৮টা)\n📅 দশমী: ১২ অক্টোবর (বিকাল ২টা - বিসর্জন)",
-        "relatedLinks": ["/durga"]
+        "question": "কমিটি",
+        "keywords": ["কমিটি", "সদস্য", "committee"],
+        "answer": "কলম হিন্দু ধর্মসভার কমিটিতে মোট ৩৫ জন সদস্য রয়েছেন। বিস্তারিত জানতে মেম্বার লগইন করুন।"
       }
     ],
     "fallbackMessages": [
