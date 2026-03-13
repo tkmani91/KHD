@@ -1,279 +1,1636 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Image as ImageIcon, Music, FileText, Tv, Phone, LogIn, Menu, X, 
-  ChevronRight, Download, Calendar, MapPin, Users, User, Lock, AlertCircle,
-  Facebook, Mail, PhoneCall, ExternalLink, Send, Info, Play, Pause 
+  Home as HomeIcon,
+  Calendar, 
+  Users, 
+  Image, 
+  Music, 
+  FileText, 
+  Tv, 
+  Phone, 
+  LogIn, 
+  Menu, 
+  X, 
+  Facebook, 
+  ChevronRight,
+  Clock, 
+  Download, 
+  Play, 
+  Pause, 
+  SkipBack, 
+  SkipForward,
+  Volume2, 
+  User, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  AlertCircle,
+  MapPin,
+  ChevronDown
 } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from './utils/cn';
 
-// --- Utilities & Config ---
-function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
+// Types
+interface CountdownTime {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
 
-const GITHUB_BASE = "https://raw.githubusercontent.com/KHDS3/Society-Data/main";
-const GITHUB_MEMBERS_DATA_URL = `${GITHUB_BASE}/membersData.json`;
-const GITHUB_LOGIN_URL = `${GITHUB_BASE}/loginData.json`;
-const GITHUB_GALLERY_URL = `${GITHUB_BASE}/galleryData.json`;
-const GITHUB_LIVE_URL = `${GITHUB_BASE}/liveChannels.json`;
+interface PujaInfo {
+  id: string;
+  name: string;
+  date: string;
+  description: string;
+  image: string;
+  facebookLink: string;
+}
 
-// --- Interfaces ---
+interface Deity {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface GalleryImage {
+  id: string;
+  year: number;
+  pujaType: string;
+  url: string;
+  title: string;
+}
+
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  category: string;
+  url: string;
+  duration: string;
+}
+
+interface PDFFile {
+  id: string;
+  title: string;
+  category: string;
+  url: string;
+  size: string;
+}
+
+interface LiveChannel {
+  id: string;
+  name: string;
+  logo: string;
+  streamUrl: string;
+}
+
 interface Member {
-  id: string; name: string; designation: string; mobile: string; 
-  bloodGroup: string; photo: string; address: string;
-  fatherName?: string; gotra?: string;
-}
-interface ContactPerson { id: string; name: string; occupation: string; mobile: string; address: string; }
-interface InvitationList { id: string; area: string; personName: string; familyCount: number; }
-interface LiveChannel { id: string; name: string; streamUrl: string; logo: string; }
-interface AccountsPDFs { [key: string]: { title: string; years: { [year: string]: string } }; }
-interface GalleryImage { id: string; url: string; title: string; category: string; }
-
-// --- Hooks ---
-function useDataLoader<T>(url: string, initialData: T) {
-  const [data, setData] = useState<T>(initialData);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    fetch(url).then(res => res.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
-  }, [url]);
-  return [data, loading] as const;
+  id: string;
+  name: string;
+  designation: string;
+  photo: string;
+  bloodGroup: string;
+  birthDate: string;
+  address: string;
+  permanentAddress: string;
+  mobile: string;
+  gotra: string;
+  email: string;
+  fatherName: string;
+  motherName: string;
+  occupation: string;
+  pdfUrl: string;
 }
 
-function useCountdown(targetDate: string) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+interface ContactPerson {
+  id: string;
+  name: string;
+  mobile: string;
+  address: string;
+  occupation: string;
+  pdfUrl: string;
+  photo?: string;
+}
+
+interface InvitationList {
+  id: string;
+  area: string;
+  personName: string;
+  familyCount: number;
+  pdfUrl: string;
+}
+
+interface AccountsPDFs {
+  [key: string]: {
+    title: string;
+    years: {
+      [year: string]: string;
+    };
+  };
+}
+
+// Data URLs
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+
+const deities: Deity[] = [
+  {
+    id: 'durga',
+    name: 'দুর্গা মা',
+    title: 'অসুরদমনী, মহিষাসুরমর্দিনী',
+    description: 'দুর্গা মা হলেন শক্তির দেবী। তিনি অসুর রাজা মহিষাসুরকে বধ করেছিলেন। দশভুজা এই দেবী সিংহবাহিনী, ত্রিনয়নী।',
+    image: 'https://i.ibb.co.com/G3dkhLZq/Durga.png'
+  },
+  {
+    id: 'kali',
+    name: 'কালী মা',
+    title: 'মহাকালী, কালিকা',
+    description: 'কালী মা হলেন সময়ের দেবী, মহাশক্তির এক রূপ। কৃষ্ণবর্ণা এই দেবী মা পার্বতীর তান্ত্রিক রূপ।',
+    image: 'https://i.ibb.co.com/YBWdd4wK/Moha-Kali.jpg'
+  },
+  {
+    id: 'shyama',
+    name: 'শ্যামা মা',
+    title: 'কালীর অন্য রূপ, কৃষ্ণবর্ণা',
+    description: 'শ্যামা মা হলেন কালীর আরেক রূপ। কৃষ্ণবর্ণা এই দেবীকে দীপাবলির রাত্রিতে পূজা করা হয়।',
+    image: 'https://i.ibb.co.com/0TXrT0n/Kali-Ma.png'
+  },
+  {
+    id: 'saraswati',
+    name: 'সরস্বতী মা',
+    title: 'বিদ্যাদেবী, বাণীদেবী',
+    description: 'সরস্বতী মা হলেন জ্ঞান, সঙ্গীত, কলা ও বিদ্যার দেবী। স্বয়ং ব্রহ্মার সঙ্গিনী এই দেবী।',
+    image: 'https://i.ibb.co.com/1Jw49LtJ/Saraswati.png'
+  },
+  {
+    id: 'jagannath',
+    name: 'জগন্নাথ দেব',
+    title: 'বিশ্বনাথ, পুরীধাম',
+    description: 'জগন্নাথ দেব হলেন বিষ্ণুর এক রূপ। পুরীধামে এই দেবতার বিশাল রথযাত্রা হয়।',
+    image: 'https://i.ibb.co.com/Xf79K9JZ/jagannath.png'
+  }
+];
+
+const notices = [
+  '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
+  '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
+  '🎉 মেম্বার তথ্য এবং হিসাব বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
+  '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
+];
+
+// Hooks
+function useCountdown(targetDate: string): CountdownTime {
+  const [timeLeft, setTimeLeft] = useState<CountdownTime>({ 
+    days: 0, 
+    hours: 0, 
+    minutes: 0, 
+    seconds: 0 
+  });
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      const distance = new Date(targetDate).getTime() - new Date().getTime();
-      if (distance < 0) clearInterval(timer);
-      else setTimeLeft({
-        days: Math.floor(distance / 86400000),
-        hours: Math.floor((distance % 86400000) / 3600000),
-        mins: Math.floor((distance % 3600000) / 60000),
-        secs: Math.floor((distance % 60000) / 1000)
-      });
-    }, 1000);
+    const calculateTimeLeft = () => {
+      const difference = new Date(targetDate).getTime() - new Date().getTime();
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
+
   return timeLeft;
 }
+// Data Loader Hook
+function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
+  const [data, setData] = useState<T>(fallback);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-// --- Components ---
-const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const loc = useLocation();
-  const nav = [
-    { name: 'হোম', path: '/', icon: Home },
-    { name: 'গ্যালারি', path: '/gallery', icon: ImageIcon },
-    { name: 'লাইভ TV', path: '/live', icon: Tv },
-    { name: 'যোগাযোগ', path: '/contact', icon: Phone },
-    { name: 'লগইন', path: '/login', icon: LogIn },
-  ];
-  return (
-    <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-orange-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl">ॐ</div>
-          <span className="text-lg font-black gradient-text italic">কালিবাড়ী সোসাইটি</span>
-        </Link>
-        <nav className="hidden md:flex gap-1">
-          {nav.map(i => (
-            <Link key={i.path} to={i.path} className={cn("px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2", loc.pathname === i.path ? "bg-orange-500 text-white" : "text-gray-600 hover:bg-orange-50")}>
-              <i.icon size={16} /> {i.name}
-            </Link>
-          ))}
-        </nav>
-        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-orange-600"><Menu size={28}/></button>
-      </div>
-      {isOpen && (
-        <div className="md:hidden bg-white p-4 border-b border-orange-100 space-y-2">
-          {nav.map(i => <Link key={i.path} to={i.path} onClick={() => setIsOpen(false)} className="flex items-center gap-4 p-4 rounded-xl font-bold bg-gray-50">{i.icon && <i.icon size={20}/>} {i.name}</Link>)}
-        </div>
-      )}
-    </header>
-  );
-};
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to load');
+        const jsonData = await response.json();
+        setData(jsonData);
+        setError('');
+      } catch {
+        setError('ডেটা লোড করতে সমস্যা হয়েছে');
+        setData(fallback);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [url]);
 
-const HomePage = () => {
-  const t = useCountdown('2026-10-20T00:00:00');
+  return [data, isLoading, error];
+}
+
+// Components
+function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
+  const time = useCountdown(targetDate);
+  const isUpcoming = new Date(targetDate) > new Date();
+
   return (
-    <div className="space-y-12">
-      <section className="relative h-[400px] md:h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl">
-        <img src="https://images.unsplash.com/photo-1561488132-b753f53b3472" className="w-full h-full object-cover" alt="Hero" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 flex flex-col justify-end p-8 text-white">
-          <h1 className="text-4xl md:text-6xl font-black mb-6">শারদীয়া দুর্গাপূজা ২০২৬</h1>
-          <div className="flex gap-4">
-            {[{l:'দিন',v:t.days},{l:'ঘণ্টা',v:t.hours},{l:'মিনিট',v:t.mins}].map(x => (
-              <div key={x.l} className="bg-white/20 backdrop-blur-md p-4 rounded-2xl text-center min-w-[80px]">
-                <div className="text-2xl font-bold">{x.v}</div>
-                <div className="text-[10px] uppercase font-bold">{x.l}</div>
-              </div>
-            ))}
+    <div className="countdown-pulse bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white text-center">
+      <h4 className="text-sm font-medium mb-2">{title}</h4>
+      {isUpcoming ? (
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-white/20 rounded-lg p-2">
+            <div className="text-xl font-bold">{time.days}</div>
+            <div className="text-xs">দিন</div>
+          </div>
+          <div className="bg-white/20 rounded-lg p-2">
+            <div className="text-xl font-bold">{time.hours}</div>
+            <div className="text-xs">ঘণ্টা</div>
+          </div>
+          <div className="bg-white/20 rounded-lg p-2">
+            <div className="text-xl font-bold">{time.minutes}</div>
+            <div className="text-xs">মিনিট</div>
+          </div>
+          <div className="bg-white/20 rounded-lg p-2">
+            <div className="text-xl font-bold">{time.seconds}</div>
+            <div className="text-xs">সেকেন্ড</div>
           </div>
         </div>
-      </section>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {[
-          { t: 'গ্যালারি', i: ImageIcon, c: 'bg-red-500', l: '/gallery' },
-          { t: 'লাইভ TV', i: Tv, c: 'bg-green-600', l: '/live' },
-          { t: 'যোগাযোগ', i: Phone, c: 'bg-blue-500', l: '/contact' },
-          { t: 'লগইন', i: LogIn, c: 'bg-orange-500', l: '/login' },
-        ].map(f => (
-          <Link key={f.t} to={f.l} className="p-8 bg-white rounded-[2rem] shadow-sm border border-orange-50 hover:shadow-xl transition-all">
-            <div className={cn("w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-white", f.c)}><f.i size={24}/></div>
-            <h3 className="font-bold">{f.t}</h3>
-          </Link>
+      ) : (
+        <div className="text-lg font-bold">পূজা সম্পন্ন হয়েছে</div>
+      )}
+    </div>
+  );
+}
+
+function NoticeMarquee() {
+  return (
+    <div className="bg-gradient-to-r from-orange-600 via-red-500 to-orange-600 text-white py-2 overflow-hidden">
+      <div className="marquee whitespace-nowrap flex items-center gap-8">
+        {notices.map((notice, index) => (
+          <span key={index} className="flex items-center gap-2 text-sm">
+            <span className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
+            {notice}
+          </span>
+        ))}
+        {notices.map((notice, index) => (
+          <span key={`dup-${index}`} className="flex items-center gap-2 text-sm">
+            <span className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
+            {notice}
+          </span>
         ))}
       </div>
     </div>
   );
-};
+}
 
-const LiveTVPage = () => {
-  const [channels] = useDataLoader<LiveChannel[]>(GITHUB_LIVE_URL, []);
-  const [active, setActive] = useState<LiveChannel | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
-  useEffect(() => { if (channels.length > 0 && !active) setActive(channels[0]); }, [channels, active]);
-
-  useEffect(() => {
-    if (!active || !videoRef.current) return;
-    import('hls.js').then(Hls => {
-      if (Hls.default.isSupported()) {
-        const hls = new Hls.default();
-        hls.loadSource(active.streamUrl);
-        hls.attachMedia(videoRef.current!);
-      }
-    });
-  }, [active]);
+  const navItems = [
+    { path: '/', label: 'হোম', icon: HomeIcon },
+    { path: '/durga', label: 'দূর্গাপূজা', icon: Calendar },
+    { path: '/shyama', label: 'শ্যামাপূজা', icon: Calendar },
+    { path: '/saraswati', label: 'সরস্বতী পূজা', icon: Calendar },
+    { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
+    { path: '/deities', label: 'দেব-দেবী', icon: Users },
+    { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
+    { path: '/music', label: 'ধর্মীয় গান', icon: Music },
+    { path: '/pdf', label: 'PDF', icon: FileText },
+    { path: '/live', label: 'লাইভ TV', icon: Tv },
+    { path: '/contact', label: 'যোগাযোগ', icon: Phone },
+    { path: '/login', label: 'মেম্বার লগইন', icon: LogIn },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl">
-        <video ref={videoRef} className="w-full h-full" controls autoPlay />
+    <header className="sticky top-0 z-50">
+      <NoticeMarquee />
+      <div className="glass shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white text-xl">
+                🕉️
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold gradient-text">কলম হিন্দু ধর্মসভা</h1>
+                <p className="text-xs text-gray-600">কলম, সিংড়া, নাটোর</p>
+              </div>
+            </Link>
+
+            <nav className="hidden lg:flex items-center gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "px-2 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1 whitespace-nowrap",
+                    location.pathname === item.path
+                      ? "bg-orange-100 text-orange-600"
+                      : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                  )}
+                >
+                  <item.icon className="w-3.5 h-3.5" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-orange-50"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {isMenuOpen && (
+          <div className="lg:hidden border-t bg-white">
+            <div className="px-4 py-2 space-y-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                    location.pathname === item.path
+                      ? "bg-orange-100 text-orange-600"
+                      : "text-gray-700 hover:bg-orange-50"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {channels.map(c => (
-          <button key={c.id} onClick={() => setActive(c)} className={cn("p-4 rounded-2xl border-2 transition-all", active?.id === c.id ? "border-orange-500 bg-orange-50" : "border-transparent bg-white")}>
-            <div className="text-3xl mb-1">{c.logo}</div>
-            <p className="font-bold text-sm">{c.name}</p>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="bg-gradient-to-r from-orange-900 to-red-900 text-white py-8 mt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              🕉️ কলম হিন্দু ধর্মসভা
+            </h3>
+            <p className="text-orange-200 text-sm leading-relaxed">
+              কলম, সিংড়া, নাটোর, রাজশাহী<br />
+              স্থাপিত: ২০১৭ সাল
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">দ্রুত লিংক</h4>
+            <ul className="space-y-2 text-sm text-orange-200">
+              <li><Link to="/durga" className="hover:text-white">দূর্গাপূজা</Link></li>
+              <li><Link to="/shyama" className="hover:text-white">শ্যামাপূজা</Link></li>
+              <li><Link to="/gallery" className="hover:text-white">ফটো গ্যালারি</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">সোশ্যাল মিডিয়া</h4>
+            <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer"
+              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
+              <Facebook className="w-5 h-5" />
+            </a>
+            <p className="mt-4 text-xs text-orange-300">
+              © ২০২৬ কলম হিন্দু ধর্মসভা
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function HomePage() {
+  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  
+  return (
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-2xl">
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(135deg, #FFD700 0%, #E6B800 100%)'
+        }}></div>
+        <div className="absolute inset-0 sacred-pattern opacity-30"></div>
+        <div className="relative px-6 py-8 text-center">
+          <img 
+            src="https://raw.githubusercontent.com/tkmani91/Dharmasaba/main/hader%20Banner.png"
+            alt="কলম হিন্দু ধর্মসভা"
+            className="max-w-full h-auto max-h-48 mx-auto"
+          />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold text-center mb-6 gradient-text">আসন্ন পূজার কাউন্টডাউন</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {pujaData.map((puja) => (
+            <CountdownDisplay key={puja.id} targetDate={puja.date} title={puja.name} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold text-center mb-6 gradient-text">আমাদের পূজাসমূহ</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {pujaData.map((puja) => (
+            <Link key={puja.id} to={`/${puja.id}`} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
+              <div className="h-48 overflow-hidden">
+                <img src={puja.image} alt={puja.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">{puja.name}</h3>
+                <p className="text-gray-600 text-sm mb-4">{puja.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-orange-600 font-medium">
+                    {new Date(puja.date).toLocaleDateString('bn-BD')}
+                  </span>
+                  <ChevronRight className="w-5 h-5 text-orange-500" />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-white rounded-2xl p-6 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center gap-2">
+          <Clock className="w-6 h-6" />
+          সর্বশেষ আপডেট
+        </h2>
+        <div className="space-y-4">
+          {[
+            { title: 'নতুন কমিটি গঠন সম্পন্ন', date: '৪ অক্টোবর ২০২৫', type: 'সংবাদ' },
+          ].map((item, index) => (
+            <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-orange-50 transition">
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 font-bold text-xs">
+                {item.type}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                <p className="text-sm text-gray-500">{item.date}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PujaPage({ pujaId }: { pujaId: string }) {
+  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  const puja = pujaData.find(p => p.id === pujaId);
+
+  // ✅ JSON থেকে schedules লোড করুন
+  const [schedulesData] = useDataLoader<{ [key: string]: any[] }>('/data/schedules.json', {});
+  const schedule = schedulesData[pujaId] || [];
+
+  if (!puja) {
+    return <div className="text-center py-12">পূজার তথ্য পাওয়া যায়নি</div>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="relative rounded-2xl overflow-hidden">
+        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
+          <p className="text-orange-200">{puja.description}</p>
+        </div>
+      </div>
+      
+      <CountdownDisplay targetDate={puja.date} title={`${puja.name} শুরু হতে বাকি`} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">পূজার তাৎপর্য</h2>
+            <p className="text-gray-700 leading-relaxed">{puja.description}</p>
+          </div>
+          
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 gradient-text">সময়সূচি</h2>
+            {schedule.length > 0 ? (
+              <div className="space-y-3">
+                {schedule.map((item, index) => (
+                  <div key={index} className="flex items-center gap-4 p-3 rounded-xl bg-orange-50">
+                    <div className="w-16 text-center">
+                      <div className="text-sm font-bold text-orange-600">{item.day}</div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{item.event}</div>
+                      <div className="text-sm text-gray-500">{item.date}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">সময়সূচি শীঘ্রই যুক্ত করা হবে</p>
+            )}
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <h3 className="font-bold mb-4">ফেসবুক পেজ</h3>
+            <a href={puja.facebookLink} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-lg font-medium">
+              <Facebook className="w-5 h-5" />
+              ফেসবুক পেজ দেখুন
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DurgaPujaPage() { return <PujaPage pujaId="durga" />; }
+function ShyamaPujaPage() { return <PujaPage pujaId="shyama" />; }
+function SaraswatiPujaPage() { return <PujaPage pujaId="saraswati" />; }
+function RathYatraPage() { return <PujaPage pujaId="rath" />; }
+
+function DeitiesPage() {
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">দেব-দেবী</h1>
+        <p className="text-gray-600">আমাদের পূজিত দেবতাদের পরিচিতি</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {deities.map((deity) => (
+          <div key={deity.id} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
+            <div className="h-56 overflow-hidden">
+              <img src={deity.image} alt={deity.name} className="w-full h-full object-cover" />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-1">{deity.name}</h3>
+              <p className="text-orange-600 text-sm font-medium mb-3">{deity.title}</p>
+              <p className="text-gray-600 text-sm leading-relaxed">{deity.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GalleryPage() {
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [selectedPuja, setSelectedPuja] = useState<string>('সব');
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+
+  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2008];
+  const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
+
+ useEffect(() => {
+  const fetchImages = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const cacheBuster = `?t=${new Date().getTime()}`;
+      const response = await fetch(
+        `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
+        { cache: 'no-store' }
+      );
+
+      if (!response.ok) {
+        throw new Error('নেটওয়ার্ক রেসপন্স সঠিক নয়');
+      }
+      
+      const data = await response.json();
+      setGalleryImages(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setError('ছবি লোড করতে সমস্যা হয়েছে।');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchImages();
+}, []); // Dependency array ঠিক আছে
+
+  const filteredImages = galleryImages.filter(img => {
+    const yearMatch = img.year === selectedYear;
+    const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
+    return yearMatch && pujaMatch;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">ফটো গ্যালারি</h1>
+        <p className="text-gray-600">পূজার ছবি সংগ্রহ</p>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">সাল</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">পূজার ধরন</label>
+            <select
+              value={selectedPuja}
+              onChange={(e) => setSelectedPuja(e.target.value)}
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
+            >
+              {pujaTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ছবি লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {error && !isLoading && (
+        <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
+          <p className="text-red-500 text-lg mb-2">⚠️ {error}</p>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+            🔄 আবার চেষ্টা করুন
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <>
+          {filteredImages.length > 0 && (
+            <p className="text-sm text-gray-500 text-right">মোট {filteredImages.length}টি ছবি</p>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredImages.map((img) => (
+              <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
+<img 
+  src={img.url} 
+  alt={img.title} 
+  className="w-full h-48 object-cover" 
+  loading="lazy"
+  onError={(e) => {
+    const target = e.target as HTMLImageElement;
+    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
+  }} 
+/>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                    <p className="text-sm font-medium">{img.title}</p>
+                    <p className="text-xs text-gray-300">{img.pujaType} • {img.year}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredImages.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <div className="text-5xl mb-4">🖼️</div>
+              <p className="text-gray-500 text-lg">এই সালের ছবি এখনো যুক্ত হয়নি</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
+          <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedImage(null)} className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400">✕</button>
+            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
+            <div className="mt-3 text-center text-white">
+              <p className="font-bold text-lg">{selectedImage.title}</p>
+              <p className="text-gray-400 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MusicPage() {
+  const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('সব');
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentIndexRef = useRef<number>(-1);
+
+  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
+
+  const filteredSongs = selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory);
+
+  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+
+  useEffect(() => {
+    const audio = new Audio();
+    audio.volume = volume;
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const handleLoadedMetadata = () => { setDuration(audio.duration); setIsLoading(false); };
+
+    const handleEnded = () => {
+      const idx = currentIndexRef.current;
+      const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
+      const nextSong = songs[nextIndex];
+      if (nextSong && audioRef.current) {
+        setCurrentSong(nextSong); setCurrentIndex(nextIndex); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
+        audioRef.current.src = nextSong.url; audioRef.current.load();
+        audioRef.current.play().then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
+      }
+    };
+
+    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.pause(); audio.src = '';
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [songs]);
+
+  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
+
+  const playSong = useCallback((song: Song, index: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    setCurrentSong(song); setCurrentIndex(index); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
+    audio.src = song.url; audio.load();
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
+    }
+  }, []);
+
+  const togglePlayPause = () => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+    if (isPlaying) { audio.pause(); setIsPlaying(false); }
+    else { audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
+  };
+
+  const handleSkipBack = () => {
+    if (filteredSongs.length === 0) return;
+    const audio = audioRef.current;
+    if (audio && audio.currentTime > 3) { audio.currentTime = 0; return; }
+    let newIndex = currentIndex - 1;
+    if (newIndex < 0) newIndex = filteredSongs.length - 1;
+    playSong(filteredSongs[newIndex], newIndex);
+  };
+
+  const handleSkipForward = () => {
+    if (filteredSongs.length === 0) return;
+    let newIndex = currentIndex + 1;
+    if (newIndex >= filteredSongs.length) newIndex = 0;
+    playSong(filteredSongs[newIndex], newIndex);
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !duration || isNaN(duration)) return;
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const barWidth = rect.width;
+    const newTime = (clickX / barWidth) * duration;
+    audio.currentTime = newTime;
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleDownload = (e: React.MouseEvent, song: Song) => {
+    e.stopPropagation();
+    if (!song.url || song.url === '#') { alert('ডাউনলোড লিংক নেই'); return; }
+    setDownloadingId(song.id);
+    const link = document.createElement('a');
+    link.href = song.url; link.download = `${song.title} - ${song.artist}.mp3`; link.target = '_blank';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    setTimeout(() => setDownloadingId(null), 1000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">ধর্মীয় গান</h1>
+        <p className="text-gray-600">পবিত্র ভজন ও সংগীত</p>
+      </div>
+
+      {currentSong && (
+        <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+              {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
+                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
+                : (<Music className="w-8 h-8" />)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
+              <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
+              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={handleSkipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipBack className="w-5 h-5" /></button>
+              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
+                {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
+              </button>
+              <button onClick={handleSkipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipForward className="w-5 h-5" /></button>
+            </div>
+            <div className="hidden md:flex items-center gap-2">
+              <Volume2 className="w-5 h-5" />
+              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
+            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
+              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+            </div>
+            <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        {categories.map(cat => (
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredSongs.map((song, index) => (
+          <div key={song.id} onClick={() => playSong(song, index)}
+            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
+              {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
+                : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
+                : (<Music className="w-6 h-6 text-orange-600" />)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold truncate">{song.title}</h4>
+              <p className="text-sm text-gray-500 truncate">{song.artist}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-400">{song.duration}</span>
+              <button onClick={(e) => handleDownload(e, song)} disabled={downloadingId === song.id} className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
+                {downloadingId === song.id ? (<div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : (<Download className="w-4 h-4" />)}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredSongs.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <Music className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">এই ক্যাটাগরিতে গান নেই</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PDFPage() {
+  const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
+  const [selectedCategory, setSelectedCategory] = useState('সব');
+  const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
+  const filteredFiles = selectedCategory === 'সব' ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">PDF ডাউনলোড</h1>
+        <p className="text-gray-600">প্রয়োজনীয় ফাইল</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {categories.map(cat => (
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+            {cat}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredFiles.map((file) => (
+          <div key={file.id} className="card-hover bg-white rounded-xl p-6 shadow-lg">
+            <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+              <FileText className="w-7 h-7 text-red-600" />
+            </div>
+            <h4 className="font-semibold mb-1">{file.title}</h4>
+            <p className="text-sm text-gray-500 mb-4">{file.category} • {file.size}</p>
+            <a href={file.url} download className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+              <Download className="w-4 h-4" />ডাউনলোড
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LiveTVPage() {
+  const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
+  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (liveChannels.length > 0 && !activeChannel) {
+      setActiveChannel(liveChannels[0]);
+    }
+  }, [liveChannels, activeChannel]);
+
+  useEffect(() => {
+    if (!activeChannel) return;
+
+    const loadStream = async () => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+      setIsLoading(true); setHasError(false);
+
+      try {
+        const Hls = (await import('hls.js')).default;
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hlsRef.current = hls;
+          hls.loadSource(activeChannel.streamUrl);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setIsLoading(false);
+            video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+          });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setHasError(true); setIsLoading(false); } });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = activeChannel.streamUrl;
+          video.addEventListener('loadedmetadata', () => { setIsLoading(false); video.play().catch(() => {}); });
+        }
+      } catch { setHasError(true); setIsLoading(false); }
+    };
+    loadStream();
+    return () => { if (hlsRef.current) hlsRef.current.destroy(); };
+  }, [activeChannel]);
+
+  if (!activeChannel) {
+    return <div className="text-center py-12">লোড হচ্ছে...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
+        <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
+      </div>
+      <div className="bg-black rounded-2xl overflow-hidden relative">
+        <div className="aspect-video relative">
+          <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
+          {isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="text-center text-white">
+                <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p>লোড হচ্ছে...</p>
+              </div>
+            </div>
+          )}
+          {hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90">
+              <div className="text-center text-white">
+                <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
+                <button onClick={() => setActiveChannel({...activeChannel})} className="px-6 py-2 bg-orange-500 rounded-lg">আবার চেষ্টা করুন</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {liveChannels.map((channel) => (
+          <button key={channel.id} onClick={() => setActiveChannel(channel)}
+            className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
+            <div className="text-3xl mb-2">{channel.logo}</div>
+            <p className="font-medium text-sm">{channel.name}</p>
           </button>
         ))}
       </div>
     </div>
   );
-};
+}
 
-const GalleryPage = () => {
-  const [data] = useDataLoader<GalleryImage[]>(GITHUB_GALLERY_URL, []);
+function ContactPage() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {data.map(img => (
-        <div key={img.id} className="h-64 rounded-3xl overflow-hidden shadow-sm border-4 border-white">
-          <img src={img.url} className="w-full h-full object-cover" alt={img.title} />
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">যোগাযোগ</h1>
+        <p className="text-gray-600">আমাদের সাথে যোগাযোগ করুন</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-6 gradient-text">যোগাযোগের ঠিকানা</h3>
+          <div className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">📍</div>
+              <div><p className="font-medium">ঠিকানা</p><p className="text-gray-600 text-sm">কলম, সিংড়া, নাটোর</p></div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">📞</div>
+              <div><p className="font-medium">ফোন</p><p className="text-gray-600 text-sm">০১৭৩৩১১৮৩১৩</p></div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">✉️</div>
+              <div><p className="font-medium">ইমেইল</p><p className="text-gray-600 text-sm">durgapuja12@gmail.com</p></div>
+            </div>
+          </div>
         </div>
-      ))}
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-6 gradient-text">সোশ্যাল মিডিয়া</h3>
+          <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100">
+            <Facebook className="w-8 h-8 text-blue-600" />
+            <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
+          </a>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
-const ContactPage = () => (
-  <div className="max-w-2xl mx-auto bg-white p-10 rounded-[3rem] shadow-sm border border-orange-50 text-center">
-    <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-600"><PhoneCall size={32}/></div>
-    <h1 className="text-3xl font-black mb-4">যোগাযোগ</h1>
-    <p className="font-bold text-gray-700">সিংড়া কালিবাড়ী মন্দির রোড, নাটোর</p>
-    <p className="text-orange-600 font-black text-xl mt-4">০১৭৩৩১১৮৩১৩</p>
-    <div className="flex justify-center gap-4 mt-8">
-      <a href="https://facebook.com/KHDS3" className="p-4 bg-blue-50 text-blue-600 rounded-2xl"><Facebook/></a>
-      <a href="mailto:khds3@gmail.com" className="p-4 bg-red-50 text-red-600 rounded-2xl"><Mail/></a>
-    </div>
-  </div>
-);
+function LoginPage() {
+  const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts'>('members');
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
+  const [membersData, setMembersData] = useState<Member[]>([]);
+  const [contactsData, setContactsData] = useState<ContactPerson[]>([]);
+  const [invitationData, setInvitationData] = useState<InvitationList[]>([]);
+  const [accountsPDFs, setAccountsPDFs] = useState<AccountsPDFs>({});
+  const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
+  const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
+  const [loginData, setLoginData] = useState<any>(null);
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
-const LoginPage = () => {
-  const [isLogged, setIsLogged] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [tab, setTab] = useState('members');
-  const [uIn, setUIn] = useState('');
-  const [pIn, setPIn] = useState('');
-  const [loginData] = useDataLoader<any>(GITHUB_LOGIN_URL, null);
-  const [mD, setMD] = useState<{members: Member[], contacts: ContactPerson[], invitations: InvitationList[], accounts: AccountsPDFs}>({members:[], contacts:[], invitations:[], accounts:{}});
+  // Load login data
+  useEffect(() => {
+    const fetchLoginData = async () => {
+      try {
+        const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed');
+        const data = await response.json();
+        if (data.normalMembers && data.accountsMembers) { 
+          setLoginData(data); 
+          setDataSource('github'); 
+        }
+      } catch { 
+        setDataSource('local');
+      }
+    };
+    fetchLoginData();
+  }, []);
+
+  // Load member data after login
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const fetchAllData = async () => {
+      setIsDataLoading(true);
+      try {
+        const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        if (data.members) setMembersData(data.members);
+        if (data.contacts) setContactsData(data.contacts);
+        if (data.invitations) setInvitationData(data.invitations);
+        if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+      } catch (error) { 
+        console.log('Using local data:', error); 
+      }
+      finally { setIsDataLoading(false); }
+    };
+    fetchAllData();
+
+    // Load accounts PDFs
+    const loadAccountsPDFs = async () => {
+      try {
+        const response = await fetch('/data/accountsPDFs.json');
+        if (response.ok) {
+          const data = await response.json();
+          setAccountsPDFs(data);
+        }
+      } catch (error) {
+        console.log('Failed to load accounts PDFs:', error);
+      }
+    };
+    loadAccountsPDFs();
+  }, [isLoggedIn]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const found = loginData?.normalMembers?.find((u: any) => u.mobile === uIn && u.password === pIn) || loginData?.accountsMembers?.find((u: any) => u.mobile === uIn && u.password === pIn);
-    if (found) {
-      setIsLogged(true); setUser(found);
-      fetch(GITHUB_MEMBERS_DATA_URL).then(res => res.json()).then(setMD);
+    setLoginError('');
+    if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
+    if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
+    
+    if (!loginData) {
+      setLoginError('লগইন ডেটা লোড হয়নি');
+      return;
     }
+
+    setIsLoading(true);
+    setTimeout(() => {
+      const trimmedUsername = usernameInput.trim().toLowerCase();
+      const trimmedPassword = passwordInput.trim();
+      let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
+      if (loginType === 'general') {
+        foundUser = loginData.normalMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
+      } else {
+        foundUser = loginData.accountsMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
+      }
+      if (foundUser) { 
+        setIsLoggedIn(true); 
+        setLoggedInUser(foundUser.name); 
+        setUsernameInput(''); 
+        setPasswordInput(''); 
+      }
+      else { setLoginError('ভুল তথ্য দিয়েছেন'); }
+      setIsLoading(false);
+    }, 800);
   };
 
-  if (!isLogged) return (
-    <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] shadow-2xl border border-orange-50">
-      <h2 className="text-3xl font-black text-center mb-8">সদস্য লগইন</h2>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input type="text" placeholder="মোবাইল নম্বর" value={uIn} onChange={e => setUIn(e.target.value)} className="w-full p-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-orange-500" />
-        <input type="password" placeholder="পাসওয়ার্ড" value={pIn} onChange={e => setPIn(e.target.value)} className="w-full p-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-orange-500" />
-        <button className="w-full py-4 bg-orange-600 text-white rounded-2xl font-bold">লগইন করুন</button>
-      </form>
+  const handlePdfDownload = (url: string, filename: string) => {
+    if (!url || url === '') { alert('PDF লিংক এখনো যুক্ত হয়নি'); return; }
+    const link = document.createElement('a');
+    link.href = url; link.download = filename; link.target = '_blank';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
+
+  // Member Details Modal
+  const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 flex justify-between items-center rounded-t-2xl">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <User className="w-5 h-5" /> সদস্য বিস্তারিত
+          </h2>
+          <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="w-32 h-32 mx-auto sm:mx-0 rounded-xl overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0">
+              <img 
+                src={member.photo} 
+                alt={member.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+              />
+            </div>
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl font-bold text-gray-800">{member.name}</h3>
+              <p className="text-orange-600 font-semibold text-lg">{member.designation}</p>
+              <p className="text-gray-500 text-sm mt-1">সদস্য নং: #{member.id.padStart(3, '0')}</p>
+              <p className="text-red-600 font-medium text-sm mt-1">🩸 রক্তের গ্রুপ: {member.bloodGroup}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p>
+              <p className="font-semibold text-gray-800">{member.mobile}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">📧 ইমেইল</p>
+              <p className="font-semibold text-gray-800 text-sm break-all">{member.email || '—'}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">👨 পিতার নাম</p>
+              <p className="font-semibold text-gray-800">{member.fatherName || '—'}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">👩 মাতার নাম</p>
+              <p className="font-semibold text-gray-800">{member.motherName || '—'}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">🔱 গোত্র</p>
+              <p className="font-semibold text-gray-800">{member.gotra || '—'}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <p className="text-xs text-orange-500 font-medium mb-1">💼 পেশা</p>
+              <p className="font-semibold text-gray-800">{member.occupation || '—'}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
+              <p className="text-xs text-orange-500 font-medium mb-1">📍 বর্তমান ঠিকানা</p>
+              <p className="font-semibold text-gray-800">{member.address}</p>
+            </div>
+            
+            <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
+              <p className="text-xs text-orange-500 font-medium mb-1">🏠 স্থায়ী ঠিকানা</p>
+              <p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <a 
+              href={`tel:${member.mobile}`}
+              className="w-full py-3 bg-green-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-green-600 transition"
+            >
+              <Phone className="w-5 h-5" /> কল করুন
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
+
+  // Group invitations by area
+  const groupedInvitations = invitationData.reduce((acc, item) => {
+    if (!acc[item.area]) {
+      acc[item.area] = [];
+    }
+    acc[item.area].push(item);
+    return acc;
+  }, {} as { [key: string]: InvitationList[] });
+
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-md mx-auto">
+        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1></div>
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          {dataSource === 'github' && (
+            <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              ✓ সার্ভার থেকে ডেটা লোড হয়েছে
+            </div>
+          )}
+          <div className="flex gap-2 mb-6">
+            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য</button>
+            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন</button>
+          </div>
+          {loginError && (<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"><AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" /><p className="text-sm text-red-600">{loginError}</p></div>)}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল / ইমেইল</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input type="text" value={usernameInput} onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="মোবাইল বা ইমেইল" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input type={showPassword ? 'text' : 'password'} value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="পাসওয়ার্ড" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            <button type="submit" disabled={isLoading} className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
+              {isLoading ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>) : (<><LogIn className="w-5 h-5" />লগইন</>)}
+            </button>
+          </form>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313</p></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white p-8 rounded-[2.5rem] flex justify-between items-center shadow-sm">
-        <h2 className="text-2xl font-bold italic">নমস্কার, {user?.name}</h2>
-        <button onClick={() => setIsLogged(false)} className="px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold">লগআউট</button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
+        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
       </div>
-      <div className="flex gap-2">
-        {['members','contacts','invitations','accounts'].map(t => (
-          <button key={t} onClick={() => setTab(t)} className={cn("px-6 py-3 rounded-xl font-bold capitalize", tab === t ? "bg-orange-500 text-white" : "bg-white text-gray-500")}>{t}</button>
+      <div className="flex flex-wrap gap-2">
+        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
+          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedContact(null); }}
+            className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
+            <tab.icon className="w-4 h-4" />{tab.label}
+          </button>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {tab === 'members' && mD.members.map(m => (
-          <div key={m.id} className="bg-white p-6 rounded-3xl shadow-sm border border-orange-50 flex gap-4">
-            <img src={m.photo} className="w-16 h-16 rounded-xl object-cover" alt="" />
-            <div><p className="font-bold">{m.name}</p><p className="text-xs text-orange-600">{m.designation}</p></div>
+      {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
+
+      {activeTab === 'members' && !isDataLoading && (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা</h3><p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
           </div>
-        ))}
-        {tab === 'contacts' && mD.contacts.map(c => <div key={c.id} className="bg-white p-6 rounded-3xl shadow-sm font-bold">{c.name} - {c.mobile}</div>)}
-        {tab === 'invitations' && mD.invitations.map(i => <div key={i.id} className="bg-white p-6 rounded-3xl shadow-sm font-bold">{i.personName} ({i.area})</div>)}
-        {tab === 'accounts' && Object.entries(mD.accounts).map(([k, v]) => (
-          <div key={k} className="bg-white p-6 rounded-3xl shadow-sm">
-            <h4 className="font-bold mb-4">{v.title}</h4>
-            {Object.entries(v.years).map(([y, u]) => <a key={y} href={u} className="block p-2 bg-gray-50 rounded-lg mb-2 text-sm">Download {y} Report</a>)}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {membersData.map((member) => (
+              <div key={member.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all border border-gray-100">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
+                    <img 
+                      src={member.photo} 
+                      alt={member.name} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }} 
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-800 truncate">{member.name}</h3>
+                    <p className="text-orange-600 text-sm font-medium">{member.designation}</p>
+                    <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {member.mobile}
+                    </p>
+                  </div>
+                </div>
+
+               <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+            সদস্য নং: #{member.id.padStart(3, '0')}
+            </span>
+          <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
+            🩸 {member.bloodGroup}
+          </span>
           </div>
-        ))}
-      </div>
+
+                <button 
+                  onClick={() => setShowMemberDetails(member)}
+                  className="w-full py-2.5 bg-orange-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-orange-600 transition"
+                >
+                  <Eye className="w-4 h-4" />
+                  বিস্তারিত দেখুন
+                </button>
+              </div>
+            ))}
+          </div>
+          {membersData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Users className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p></div>)}
+        </div>
+      )}
+
+      {activeTab === 'contacts' && !isDataLoading && (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Phone className="w-5 h-5" /> যোগাযোগ তালিকা</h3><p className="text-sm text-blue-100">মোট {contactsData.length} জন</p></div>
+            <button onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {contactsData.map((person) => (
+              <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
+                    <img 
+                      src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                      alt={person.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold">{person.name}</h3>
+                    <p className="text-blue-600 text-sm">{person.occupation}</p>
+                  </div>
+                  <ChevronRight className={cn("w-5 h-5 text-gray-400 transition-transform", selectedContact?.id === person.id && "rotate-90")} />
+                </div>
+                {selectedContact?.id === person.id && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /><a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a></p>
+                    <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{person.address}</span></p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {contactsData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p></div>)}
+        </div>
+      )}
+
+      {activeTab === 'invitation' && !isDataLoading && (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <FileText className="w-5 h-5" /> নিমন্ত্রণ তালিকা
+              </h3>
+              <p className="text-sm text-green-100">
+                মোট {invitationData.reduce((acc, item) => acc + item.familyCount, 0)} জন সদস্য
+              </p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.invitationList, 'নিমন্ত্রণ-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-green-600 rounded-lg font-medium flex items-center gap-2 hover:bg-green-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {Object.entries(groupedInvitations).map(([area, items]) => {
+              const totalMembers = items.reduce((sum, item) => sum + item.familyCount, 0);
+              const isExpanded = expandedArea === area;
+
+              return (
+                <div key={area} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedArea(isExpanded ? null : area)}
+                    className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-gray-800">{area}</h3>
+                        <p className="text-sm text-gray-500">মোট: {totalMembers} জন</p>
+                      </div>
+                    </div>
+                    <ChevronDown 
+                      className={cn(
+                        "w-5 h-5 text-gray-400 transition-transform",
+                        isExpanded && "rotate-180"
+                      )} 
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-gray-100">
+                      <div className="p-4 space-y-2">
+                        {items.map((item) => (
+                          <div 
+                            key={item.id} 
+                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <User className="w-4 h-4 text-green-600" />
+                              </div>
+                              <span className="font-medium text-gray-700">{item.personName}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500">{item.familyCount} জন</span>
+                              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <span className="text-orange-600 font-bold text-sm">{item.familyCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {invitationData.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(accountsPDFs).map(([key, data]) => (
+            <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg">{data.title}</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(data.years).map(([year, url]) => (
+                  <a 
+                    key={year} 
+                    href={url} 
+                    download 
+                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+                  >
+                    <Download className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">{year}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showMemberDetails && (
+        <MemberDetailsModal 
+          member={showMemberDetails} 
+          onClose={() => setShowMemberDetails(null)} 
+        />
+      )}
     </div>
   );
-};
+}
 
-const Footer = () => (
-  <footer className="mt-20 py-10 border-t border-orange-100 text-center text-gray-400 text-xs font-bold">
-    <p>© ২০২৬ কালিবাড়ী ডিজিটাল সোসাইটি। Powered by KHDS3</p>
-  </footer>
-);
-
-export default function App() {
+// Main App Component
+function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-[#FFFCF7] text-gray-900 selection:bg-orange-200">
+      <div className="min-h-screen sacred-pattern">
         <Header />
-        <main className="max-w-7xl mx-auto px-4 py-10">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/durga" element={<DurgaPujaPage />} />
+            <Route path="/shyama" element={<ShyamaPujaPage />} />
+            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+            <Route path="/rath" element={<RathYatraPage />} />
+            <Route path="/deities" element={<DeitiesPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/music" element={<MusicPage />} />
+            <Route path="/pdf" element={<PDFPage />} />
             <Route path="/live" element={<LiveTVPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
-        <div className="fixed bottom-6 right-6">
-          <button className="w-16 h-16 bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all"><Send/></button>
-        </div>
         <Footer />
       </div>
     </Router>
   );
 }
+
+export default App;
