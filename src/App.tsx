@@ -1729,7 +1729,7 @@ function LoginPage() {
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
-  const [loginData, setLoginData] = useState<{ users: LoginUser[] } | null>(null);
+  const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
   // Load login data
@@ -1739,7 +1739,7 @@ function LoginPage() {
         const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        if (data.users) { 
+        if (data.accountsMembers && data.normalMembers) { 
           setLoginData(data); 
           setDataSource('github'); 
         }
@@ -1801,14 +1801,31 @@ function LoginPage() {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
       
-      const foundUser = loginData.users.find((u: LoginUser) => 
-        (u.mobile === trimmedUsername || u.email.toLowerCase() === trimmedUsername) && 
+      // ✅ নতুন লজিক: accountsMembers এবং normalMembers থেকে খুঁজুন
+      const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
+      
+      const foundUser = allUsers.find((u: LoginUser) => 
+        (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
         u.password === trimmedPassword
       );
 
       if (foundUser) { 
+        // ✅ Role নির্ধারণ
+        let userRole: 'Member' | 'Admin' | 'Super Admin' = 'Member';
+        
+        if (foundUser.role === 'superAdmin') {
+          userRole = 'Super Admin';
+        } else if (loginData.accountsMembers.some(m => m.id === foundUser.id)) {
+          userRole = 'Admin';
+        }
+
+        const userWithRole: LoginUser = {
+          ...foundUser,
+          role: userRole
+        };
+
         setIsLoggedIn(true); 
-        setLoggedInUser(foundUser);
+        setLoggedInUser(userWithRole);
         setUsernameInput(''); 
         setPasswordInput(''); 
       }
