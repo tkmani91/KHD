@@ -820,19 +820,9 @@ function GalleryPage() {
                 }}
                 aria-label={`${img.title} দেখুন`}
               >
-                {/* Loading Skeleton */}
-                {!imageLoadStates[img.id] && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
-                )}
-                
+                                
                 {/* Image */}
-                <OptimizedImage
-  src={img.url}
-  alt={img.title}
-  className="w-full h-48"
-  width={400}
-  height={300}
-/>
+                <OptimizedImage src={img.url} alt={img.title} className="w-full h-48" width={400} height={300} />
                 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
