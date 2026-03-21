@@ -1,35 +1,19 @@
 {
   "id": "/",
-  "name": "কলম হিন্দু ধর্মসভা - দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা",
+  "name": "কলম হিন্দু ধর্মসভা",
   "short_name": "কলম ধর্মসভা",
-  "description": "কলম হিন্দু ধর্মসভার অফিসিয়াল অ্যাপ",
+  "description": "দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা ও রথযাত্রার সব তথ্য",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFF8E7",
   "theme_color": "#FF6B35",
-  "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
     {
-      "src": "https://i.ibb.co/G3dkhLZq/Durga.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://i.ibb.co/G3dkhLZq/Durga.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://i.ibb.co/G3dkhLZq/Durga.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "src": "https://raw.githubusercontent.com/tkmani91/Dharmasaba/main/download.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
     }
   ],
-  "categories": ["lifestyle"],
-  "lang": "bn",
-  "dir": "ltr"
+  "lang": "bn"
 }
