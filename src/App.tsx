@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Home as HomeIcon,
@@ -679,7 +679,7 @@ function GalleryPage() {
     if (!selectedImage) return;
 
     const handleKeyPress = (e: KeyboardEvent) => {
-      const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id);
+      const currentIndex = filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id);
       
       switch(e.key) {
         case 'Escape':
@@ -704,7 +704,7 @@ function GalleryPage() {
 
   // Optimized filtering with useMemo
   const filteredImages = useMemo(() => {
-    return galleryImages.filter(img => {
+    return galleryImages.filter((img: GalleryImage) => {
       const yearMatch = img.year === selectedYear;
       const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
       return yearMatch && pujaMatch;
@@ -715,7 +715,7 @@ function GalleryPage() {
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return;
     
-    const currentIndex = filteredImages.findIndex(img => img.id === selectedImage.id);
+    const currentIndex = filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id);
     
     if (direction === 'prev' && currentIndex > 0) {
       setSelectedImage(filteredImages[currentIndex - 1]);
@@ -886,11 +886,11 @@ function GalleryPage() {
             
             {/* Image Counter */}
             <div className="absolute -top-12 left-0 bg-black/50 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm">
-              {filteredImages.findIndex(img => img.id === selectedImage.id) + 1} / {filteredImages.length}
+              {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) + 1} / {filteredImages.length}
             </div>
             
             {/* Previous Button */}
-            {filteredImages.findIndex(img => img.id === selectedImage.id) > 0 && (
+            {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) > 0 && (
               <button 
                 onClick={() => navigateImage('prev')}
                 className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 transition-colors bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
@@ -902,7 +902,7 @@ function GalleryPage() {
             )}
             
             {/* Next Button */}
-            {filteredImages.findIndex(img => img.id === selectedImage.id) < filteredImages.length - 1 && (
+            {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) < filteredImages.length - 1 && (
               <button 
                 onClick={() => navigateImage('next')}
                 className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 transition-colors bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
