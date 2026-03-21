@@ -323,7 +323,7 @@ function Header() {
     { path: '/saraswati', label: 'সরস্বতী পূজা', icon: Calendar },
     { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
-    { path: '/', label: 'ফটো গ্যালারি', icon: Image },
+    { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
     { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
