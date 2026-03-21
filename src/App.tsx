@@ -530,7 +530,7 @@ function PujaPage({ pujaId }: { pujaId: string }) {
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
-        <OptimizedImage src={puja.image} alt={puja.name} className="w-full h-64 md:h-80" width={1200} height={400} />
+        <OptimizedImage src={puja.image} alt={puja.name} className="w-full h-64 md:h-80"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
@@ -600,7 +600,7 @@ function DeitiesPage() {
         {deities.map((deity) => (
           <div key={deity.id} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
             <div className="h-56 overflow-hidden">
-              <OptimizedImage src={deity.image} alt={deity.name} className="w-full h-56" width={400} height={350} />
+              <OptimizedImage src={deity.image} alt={deity.name} className="w-full h-56"/> 
             </div>
             <div className="p-6">
               <h3 className="text-xl font-bold mb-1">{deity.name}</h3>
@@ -822,7 +822,7 @@ function GalleryPage() {
               >
                                 
                 {/* Image */}
-                <OptimizedImage src={img.url} alt={img.title} className="w-full h-48" width={400} height={300} />
+                <OptimizedImage src={img.url} alt={img.title} className="w-full h-48"/> 
                 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
