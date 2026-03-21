@@ -323,6 +323,7 @@ function Header() {
     { path: '/saraswati', label: 'সরস্বতী পূজা', icon: Calendar },
     { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
+    { path: '/quiz', label: 'কুইজ', icon: FileText },
     { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
     { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/pdf', label: 'PDF', icon: FileText },
@@ -933,6 +934,226 @@ function GalleryPage() {
     </div>
   );
 }
+
+function QuizArchivePage() {
+  const [quizData, setQuizData] = useState<any[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [visibleAnswers, setVisibleAnswers] = useState<Record<number, boolean>>({});
+
+  const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
+
+  // Fetch Quiz Data
+  useEffect(() => {
+    const fetchQuizData = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        const response = await fetch(
+          `https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json${cacheBuster}`,
+          { cache: 'no-store' }
+        );
+
+        if (!response.ok) throw new Error('Failed to load');
+        const data = await response.json();
+        setQuizData(data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError('কুইজ লোড করতে সমস্যা হয়েছে।');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuizData();
+  }, []);
+
+  // Reset answers when year changes
+  useEffect(() => {
+    setVisibleAnswers({});
+    setShowAllAnswers(false);
+  }, [selectedYear]);
+
+  // Get current year's quiz
+  const currentYearQuiz = useMemo(() => {
+    return quizData.find(q => q.year === selectedYear);
+  }, [quizData, selectedYear]);
+
+  // Toggle single answer
+  const toggleAnswer = (questionId: number) => {
+    setVisibleAnswers(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
+    }));
+  };
+
+  // Toggle all answers
+  const toggleAllAnswers = () => {
+    if (showAllAnswers) {
+      setVisibleAnswers({});
+    } else {
+      const allVisible: Record<number, boolean> = {};
+      currentYearQuiz?.questions.forEach((q: any) => {
+        allVisible[q.id] = true;
+      });
+      setVisibleAnswers(allVisible);
+    }
+    setShowAllAnswers(!showAllAnswers);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">📚 দূর্গাপূজা কুইজ</h1>
+        <p className="text-gray-600">প্রতিবছর মহানবমীতে অনুষ্ঠিত কুইজ প্রতিযোগিতার প্রশ্ন-উত্তর</p>
+      </div>
+
+      {/* Year Filter & Info */}
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="w-full sm:w-64">
+            <label className="block text-sm font-medium text-gray-700 mb-2">বছর নির্বাচন করুন</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-lg font-medium"
+            >
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          
+          {currentYearQuiz && (
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="text-center px-4 py-2 bg-orange-50 rounded-xl">
+                <p className="text-xs text-gray-500">মোট প্রশ্ন</p>
+                <p className="text-2xl font-bold text-orange-600">{currentYearQuiz.questions.length}টি</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-green-50 rounded-xl">
+                <p className="text-xs text-gray-500">তারিখ</p>
+                <p className="text-sm font-bold text-green-600">{currentYearQuiz.eventDate}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Loading */}
+      {isLoading && (
+        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">কুইজ লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && !isLoading && (
+        <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
+          <div className="text-5xl mb-4">⚠️</div>
+          <p className="text-red-500 text-lg mb-4">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+            🔄 আবার চেষ্টা করুন
+          </button>
+        </div>
+      )}
+
+      {/* Quiz Content */}
+      {!isLoading && !error && currentYearQuiz && (
+        <>
+          {/* Event Info Banner */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold mb-1">{currentYearQuiz.title}</h2>
+                <p className="text-orange-100">📅 {currentYearQuiz.eventDate} • 📍 {currentYearQuiz.venue || 'কলম দূর্গা মন্দির'}</p>
+              </div>
+              <button
+                onClick={toggleAllAnswers}
+                className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition flex items-center gap-2"
+              >
+                {showAllAnswers ? (
+                  <><EyeOff className="w-5 h-5" /> সব উত্তর লুকান</>
+                ) : (
+                  <><Eye className="w-5 h-5" /> সব উত্তর দেখুন</>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Questions Grid - 3/4 Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {currentYearQuiz.questions.map((q: any, index: number) => (
+              <div 
+                key={q.id} 
+                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all"
+              >
+                {/* Question Number Badge */}
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 flex items-center justify-between">
+                  <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">
+                    প্রশ্ন {index + 1}
+                  </span>
+                </div>
+
+                {/* Question Text */}
+                <div className="p-4">
+                  <p className="font-medium text-gray-800 leading-relaxed min-h-[60px]">
+                    {q.question}
+                  </p>
+
+                  {/* Answer Toggle Button */}
+                  <button
+                    onClick={() => toggleAnswer(q.id)}
+                    className="w-full mt-4 py-2.5 bg-orange-50 text-orange-600 rounded-xl font-medium text-sm hover:bg-orange-100 transition flex items-center justify-center gap-2"
+                  >
+                    {visibleAnswers[q.id] ? (
+                      <><EyeOff className="w-4 h-4" /> উত্তর লুকান</>
+                    ) : (
+                      <><Eye className="w-4 h-4" /> উত্তর দেখুন</>
+                    )}
+                  </button>
+
+                  {/* Answer Section */}
+                  {visibleAnswers[q.id] && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl animate-fadeIn">
+                      <p className="text-xs text-green-600 font-medium mb-1 flex items-center gap-1">
+                        <Check className="w-4 h-4" /> সঠিক উত্তর
+                      </p>
+                      <p className="text-green-800 font-semibold">{q.answer}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && !currentYearQuiz && (
+        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+          <div className="text-6xl mb-4">📝</div>
+          <p className="text-gray-500 text-lg mb-2">
+            {selectedYear} সালের কুইজ এখনো যুক্ত হয়নি
+          </p>
+          <p className="text-gray-400 text-sm">অন্য বছর নির্বাচন করুন</p>
+        </div>
+      )}
+
+      {/* Footer Info */}
+      <div className="bg-orange-50 rounded-2xl p-4 text-center">
+        <p className="text-sm text-orange-700">
+          🎯 প্রতিবছর দূর্গাপূজার <strong>মহানবমী</strong>তে কুইজ প্রতিযোগিতা অনুষ্ঠিত হয়
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -2579,6 +2800,7 @@ function App() {
             <Route path="/saraswati" element={<SaraswatiPujaPage />} />
             <Route path="/rath" element={<RathYatraPage />} />
             <Route path="/deities" element={<DeitiesPage />} />
+            <Route path="/quiz" element={<QuizArchivePage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/pdf" element={<PDFPage />} />
