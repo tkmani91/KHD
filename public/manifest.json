@@ -2,7 +2,7 @@
   "id": "/",
   "name": "কলম হিন্দু ধর্মসভা",
   "short_name": "কলম ধর্মসভা",
-  "description": "দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা ও রথযাত্রার সব তথ্য",
+  "description": "দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা ও রথযাত্রা",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFF8E7",
@@ -10,9 +10,10 @@
   "scope": "/",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/tkmani91/Dharmasaba/main/download.ico",
+      "src": "https://i.ibb.co/G3dkhLZq/Durga.png",
       "sizes": "any",
-      "type": "image/x-icon"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "lang": "bn"
