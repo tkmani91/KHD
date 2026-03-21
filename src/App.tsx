@@ -38,6 +38,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { cn } from './utils/cn';
+import { OptimizedImage } from './components/OptimizedImage';
 
 // Types
 interface CountdownTime {
@@ -529,7 +530,7 @@ function PujaPage({ pujaId }: { pujaId: string }) {
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
-        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
+        <OptimizedImage src={puja.image} alt={puja.name} className="w-full h-64 md:h-80" width={1200} height={400} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
@@ -599,7 +600,7 @@ function DeitiesPage() {
         {deities.map((deity) => (
           <div key={deity.id} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
             <div className="h-56 overflow-hidden">
-              <img src={deity.image} alt={deity.name} className="w-full h-full object-cover" />
+              <OptimizedImage src={deity.image} alt={deity.name} className="w-full h-56" width={400} height={350} />
             </div>
             <div className="p-6">
               <h3 className="text-xl font-bold mb-1">{deity.name}</h3>
@@ -826,20 +827,13 @@ function GalleryPage() {
                 )}
                 
                 {/* Image */}
-                <img 
-                  src={img.url} 
-                  alt={img.title} 
-                  className={`w-full h-48 object-cover transition-all duration-300 ${
-                    imageLoadStates[img.id] ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                  }`}
-                  loading="lazy"
-                  onLoad={() => setImageLoadStates(prev => ({ ...prev, [img.id]: true }))}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
-                    setImageLoadStates(prev => ({ ...prev, [img.id]: true }));
-                  }} 
-                />
+                <OptimizedImage
+  src={img.url}
+  alt={img.title}
+  className="w-full h-48"
+  width={400}
+  height={300}
+/>
                 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
