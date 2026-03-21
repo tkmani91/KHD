@@ -1,7 +1,7 @@
 {
   "id": "/",
   "name": "কলম হিন্দু ধর্মসভা",
-  "short_name": "কলম ধর্মসভা",
+  "short_name": "কলম হিন্দু ধর্মসভা",
   "description": "দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা ও রথযাত্রা",
   "start_url": "/",
   "display": "standalone",
@@ -10,11 +10,39 @@
   "scope": "/",
   "icons": [
     {
-      "src": "https://i.ibb.co/G3dkhLZq/Durga.png",
-      "sizes": "any",
+      "src": "https://i.ibb.co.com/XxZRdBTB/192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://i.ibb.co.com/Fbn3CSJF/512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://i.ibb.co.com/Fbn3CSJF/512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "lang": "bn"
+  "screenshots": [
+    {
+      "src": "https://i.ibb.co.com/twZg0k9M/screenshots-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "কলম হিন্দু ধর্মসভা - হোম পেজ"
+    },
+    {
+      "src": "https://i.ibb.co.com/tP4rMTBg/M-Viwe.jpg",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "label": "মোবাইল ভিউ"
+    }
+  ],
+  "lang": "bn",
+  "dir": "ltr"
 }
