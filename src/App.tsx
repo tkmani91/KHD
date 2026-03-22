@@ -1957,6 +1957,7 @@ function AIChatbox() {
 }
 
 // JSON Editor Component for Super Admin
+// JSON Editor Component for Super Admin with Dynamic Form
 function JSONEditor() {
   const [selectedFile, setSelectedFile] = useState('dynamicContent');
   const [jsonData, setJsonData] = useState([]);
@@ -1965,20 +1966,78 @@ function JSONEditor() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // All available JSON files
+  // All available JSON files with GitHub raw URLs
   const JSON_FILES = [
-    { id: 'dynamicContent', label: '📰 ঘোষণা ও খবর', url: GITHUB_DYNAMIC_CONTENT_URL },
-    { id: 'membersData', label: '👥 সদস্য তথ্য', url: GITHUB_MEMBERS_DATA_URL },
-    { id: 'loginData', label: '🔐 সদস্য লগইন', url: GITHUB_LOGIN_URL },
-    { id: 'chatbotData', label: '💬 চ্যাটবট ডেটা', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/chatbot-data.json' },
-    { id: 'galleryImages', label: '🖼️ গ্যালারি ছবি', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/gallery-images.json' },
-    { id: 'accountsPDFs', label: '📊 হিসাব PDF', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json' },
-    { id: 'liveChannels', label: '📺 লাইভ চ্যানেল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json' },
-    { id: 'pdfFiles', label: '📄 PDF ফাইল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json' },
-    { id: 'pujaData', label: '🙏 পূজা তথ্য', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json' },
-    { id: 'schedules', label: '📅 সময়সূচী', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json' },
-    { id: 'songs', label: '🎵 গান', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json' },
+    { 
+      id: 'dynamicContent', 
+      label: '📰 ঘোষণা ও খবর', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/dynamicContent.json',
+      path: 'public/data/dynamicContent.json'
+    },
+    { 
+      id: 'chatbotData', 
+      label: '💬 চ্যাটবট ডেটা', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/chatbot-data.json',
+      path: 'public/data/chatbot-data.json'
+    },
+    { 
+      id: 'galleryImages', 
+      label: '🖼️ গ্যালারি ছবি', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/gallery-images.json',
+      path: 'public/data/gallery-images.json'
+    },
+    { 
+      id: 'membersData', 
+      label: '👥 সদস্য তথ্য', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-data.json',
+      path: 'public/data/members-data.json'
+    },
+    { 
+      id: 'loginData', 
+      label: '🔐 সদস্য লগইন', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-login.json',
+      path: 'public/data/members-login.json'
+    },
+    { 
+      id: 'accountsPDFs', 
+      label: '📊 হিসাব PDF', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json',
+      path: 'public/data/accountsPDFs.json'
+    },
+    { 
+      id: 'liveChannels', 
+      label: '📺 লাইভ চ্যানেল', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json',
+      path: 'public/data/liveChannels.json'
+    },
+    { 
+      id: 'pdfFiles', 
+      label: '📄 PDF ফাইল', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json',
+      path: 'public/data/pdfFiles.json'
+    },
+    { 
+      id: 'pujaData', 
+      label: '🙏 পূজা তথ্য', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json',
+      path: 'public/data/pujaData.json'
+    },
+    { 
+      id: 'schedules', 
+      label: '📅 সময়সূচী', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json',
+      path: 'public/data/schedules.json'
+    },
+    { 
+      id: 'songs', 
+      label: '🎵 গান', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json',
+      path: 'public/data/songs.json'
+    },
   ];
+
+  // বর্তমান ফাইলের তথ্য
+  const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
   // Load JSON file
   useEffect(() => {
@@ -2216,7 +2275,7 @@ function JSONEditor() {
       {/* File Selector */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন করুন:</label>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mb-3">
           {JSON_FILES.map(file => (
             <button
               key={file.id}
@@ -2232,6 +2291,15 @@ function JSONEditor() {
             </button>
           ))}
         </div>
+        {/* ফাইল পাথ দেখানো */}
+        {currentFile && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p className="text-xs text-gray-600 mb-1">📂 ফাইল পাথ:</p>
+            <code className="text-xs bg-gray-800 text-green-400 px-2 py-1 rounded block">
+              {currentFile.path}
+            </code>
+          </div>
+        )}
       </div>
 
       {/* Item Selector */}
@@ -2295,7 +2363,7 @@ function JSONEditor() {
           </pre>
           <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
             <p className="text-xs text-yellow-800">
-              ⚠️ এই JSON কপি করে GitHub এর সংশ্লিষ্ট ফাইলে পেস্ট করুন
+              ⚠️ এই JSON কপি করে GitHub এর <code className="bg-yellow-200 px-1 rounded">{currentFile?.path}</code> ফাইলে পেস্ট করুন
             </p>
           </div>
         </div>
@@ -2303,15 +2371,27 @@ function JSONEditor() {
 
       {/* GitHub Instructions */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
-        <h3 className="font-bold mb-3">📝 GitHub এ এডিট করার পদ্ধতি:</h3>
+        <h3 className="font-bold mb-3 text-lg">📝 GitHub এ এডিট করার পদ্ধতি:</h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
           <li>উপরের "📋 সম্পূর্ণ JSON কপি করুন" বাটনে ক্লিক করুন</li>
-          <li>GitHub Repository তে যান: <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline font-semibold">github.com/tkmani91/KHD</a></li>
-          <li><code className="bg-gray-100 px-2 py-1 rounded">public/data/{selectedFile}.json</code> ফাইলটি খুলুন</li>
-          <li>Edit বাটনে (✏️) ক্লিক করুন</li>
+          <li>
+            GitHub Repository তে যান: 
+            <a 
+              href="https://github.com/tkmani91/KHD" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-orange-600 underline font-semibold ml-1"
+            >
+              github.com/tkmani91/KHD
+            </a>
+          </li>
+          <li>
+            <code className="bg-gray-100 px-2 py-1 rounded font-mono text-xs">{currentFile?.path}</code> ফাইলটি খুলুন
+          </li>
+          <li>Edit বাটনে (✏️ পেন্সিল আইকন) ক্লিক করুন</li>
           <li>পুরো কনটেন্ট মুছে কপি করা JSON পেস্ট করুন</li>
-          <li>"Commit changes" বাটনে ক্লিক করুন</li>
-          <li>কিছুক্ষণ পর ওয়েবসাইটে রিফ্রেশ করলে পরিবর্তন দেখবেন</li>
+          <li>"Commit changes" সবুজ বাটনে ক্লিক করুন</li>
+          <li>২-৩ মিনিট পর ওয়েবসাইটে রিফ্রেশ করলে পরিবর্তন দেখবেন ✅</li>
         </ol>
       </div>
     </div>
