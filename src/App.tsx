@@ -1969,33 +1969,33 @@ function JSONEditor() {
   const JSON_FILES = [
     { 
       id: 'dynamicContent', 
-      label: '📰 ঘোষণা ও খবর', 
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/dynamicContent.json',
-      path: 'public/data/dynamicContent.json'
+      label: '📰 চাঁদা ঘোষণা ও খবর', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json',
+      path: 'dynamicContent.json'
     },
     { 
       id: 'chatbotData', 
       label: '💬 চ্যাটবট ডেটা', 
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/chatbot-data.json',
-      path: 'public/data/chatbot-data.json'
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json',
+      path: 'chatbot-data.json'
     },
     { 
       id: 'galleryImages', 
       label: '🖼️ গ্যালারি ছবি', 
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/gallery-images.json',
-      path: 'public/data/gallery-images.json'
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json',
+      path: 'gallery-images.json'
     },
     { 
       id: 'membersData', 
       label: '👥 সদস্য তথ্য', 
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-data.json',
-      path: 'public/data/members-data.json'
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json',
+      path: 'members-login.json'
     },
     { 
       id: 'loginData', 
       label: '🔐 সদস্য লগইন', 
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-login.json',
-      path: 'public/data/members-login.json'
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json',
+      path: 'members-login.json'
     },
     { 
       id: 'accountsPDFs', 
