@@ -729,7 +729,11 @@ function Footer() {
 }
 function HomePage() {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
   
+  // Notices থেকে সর্বশেষ ৫টা নিবে
+  const latestNotices = (dynamicContent.notices || []).slice(0, 5);
+
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-2xl">
@@ -778,26 +782,76 @@ function HomePage() {
         </div>
       </section>
 
+      {/* সর্বশেষ আপডেট - Dynamic from notices */}
       <section className="bg-white rounded-2xl p-6 shadow-lg">
         <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center gap-2">
           <Clock className="w-6 h-6" />
           সর্বশেষ আপডেট
         </h2>
-        <div className="space-y-4">
-          {[
-            { title: 'নতুন কমিটি গঠন সম্পন্ন', date: '৪ অক্টোবর ২০২৫', type: 'সংবাদ' },
-          ].map((item, index) => (
-            <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-orange-50 transition">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 font-bold text-xs">
-                {item.type}
+        
+        {latestNotices.length > 0 ? (
+          <div className="space-y-4">
+            {latestNotices.map((notice: any, index: number) => (
+              <div 
+                key={notice.id || index} 
+                className={cn(
+                  "flex items-start gap-4 p-4 rounded-xl hover:shadow-md transition border-l-4",
+                  notice.priority === 'high' ? 'border-red-500 bg-red-50/50' : 
+                  notice.priority === 'medium' ? 'border-yellow-500 bg-yellow-50/50' : 
+                  'border-blue-500 bg-blue-50/50'
+                )}
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0",
+                  notice.priority === 'high' ? 'bg-red-500' : 
+                  notice.priority === 'medium' ? 'bg-yellow-500' : 
+                  'bg-blue-500'
+                )}>
+                  {notice.category === 'পূজা' ? '🙏' : 
+                   notice.category === 'সভা' ? '👥' : 
+                   notice.category === 'অনুষ্ঠান' ? '🎉' : 
+                   notice.category === 'জরুরী' ? '🚨' : '📢'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-semibold text-gray-900">{notice.title}</h4>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0",
+                      notice.priority === 'high' ? 'bg-red-100 text-red-600' : 
+                      notice.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
+                      'bg-blue-100 text-blue-600'
+                    )}>
+                      {notice.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
+                  {notice.details && (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">{notice.details}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                <p className="text-sm text-gray-500">{item.date}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p>কোনো আপডেট নেই</p>
+          </div>
+        )}
+
+        {/* সব দেখুন বাটন */}
+        {latestNotices.length > 0 && (
+          <div className="mt-6 text-center">
+            <Link 
+              to="/login" 
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition"
+            >
+              <Bell className="w-4 h-4" />
+              সব বিজ্ঞপ্তি দেখুন
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );
