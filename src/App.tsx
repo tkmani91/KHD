@@ -1836,18 +1836,20 @@ function FundCollection({ userRole, loggedInUserId }: { userRole: string; logged
 
 // AI Chatbox Component
 function AIChatbox() {
-  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
-  const chatbot = dynamicContent.aiChatbot || {};
-  
-  const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
+  const [messages, setMessages] = useState<{role: string; text: string; time: string}[]>([
+    {
+      role: 'bot',
+      text: 'নমস্কার! 🙏 আমি ধর্ম সহায়ক - কলম হিন্দু ধর্মসভার AI ভার্চুয়াল সহায়ক।\n\nআমি আপনাকে সাহায্য করতে পারি:\n• পূজার তারিখ ও সময়সূচি\n• হিন্দু ধর্ম ও সংস্কৃতি\n• মন্ত্র, শ্লোক, স্তোত্র\n• দেব-দেবীর তথ্য\n• ধর্মসভার তথ্য\n\nযেকোনো প্রশ্ন করুন! 😊',
+      time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
   const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (chatbot.welcomeMessage && messages.length === 0) {
-      setMessages([{ role: 'bot', text: chatbot.welcomeMessage }]);
-    }
-  }, [chatbot.welcomeMessage]);
+  const getCurrentTime = () => {
+    return new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1855,77 +1857,169 @@ function AIChatbox() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const findAnswer = (question: string) => {
-    const lowerQuestion = question.toLowerCase();
-    const faq = chatbot.faq || [];
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
     
-    for (const item of faq) {
-      const keywords = item.keywords || [];
-      if (keywords.some((keyword: string) => lowerQuestion.includes(keyword.toLowerCase()))) {
-        return item.answer;
-      }
-    }
-    
-    const fallbacks = chatbot.fallbackMessages || ['দুঃখিত, আমি বুঝতে পারিনি।'];
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, { role: 'user', text: input }]);
-    
-    setTimeout(() => {
-      const answer = findAnswer(input);
-      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
-    }, 500);
-    
+    const userMessage = input.trim();
     setInput('');
+    
+    // Add user message
+    const newUserMsg = { role: 'user', text: userMessage, time: getCurrentTime() };
+    setMessages(prev => [...prev, newUserMsg]);
+    setIsTyping(true);
+
+    try {
+      // Prepare history for context (exclude first welcome message)
+      const history = messages.slice(1).map(m => ({
+        role: m.role === 'bot' ? 'model' : 'user',
+        text: m.text
+      }));
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, history })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessages(prev => [...prev, { 
+          role: 'bot', 
+          text: data.reply,
+          time: getCurrentTime()
+        }]);
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: '🙏 দুঃখিত, আমি এই মুহূর্তে উত্তর দিতে পারছি না।\n\nসরাসরি যোগাযোগ করুন:\n📞 ০১৭৩৩১১৮৩১৩\n📞 ০১৬১২১১৮৩১৩',
+        time: getCurrentTime()
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
-  const handleQuickReply = (reply: string) => {
-    setInput(reply);
+  const quickReplies = [
+    'দূর্গাপূজা কবে?',
+    'গায়ত্রী মন্ত্র বলো',
+    'কালী মা কে?',
+    'মহাভারত কী?',
+    'ধর্মসভা সম্পর্কে বলো',
+    'সদস্য হতে চাই'
+  ];
+
+  const clearChat = () => {
+    setMessages([{
+      role: 'bot',
+      text: 'চ্যাট রিসেট হয়েছে। 🙏 নতুন করে প্রশ্ন করুন!',
+      time: getCurrentTime()
+    }]);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ height: '600px' }}>
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-            🤖
+    <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ height: '700px' }}>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-3xl relative">
+              🙏
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+            </div>
+            <div>
+              <h3 className="font-bold text-xl">ধর্ম সহায়ক AI</h3>
+              <p className="text-xs text-orange-100 flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                Powered by Google Gemini • ২৪/৭ সক্রিয়
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-lg">আমাকে জানুন</h3>
-            <p className="text-xs text-orange-100">ভার্চুয়াল সহায়ক</p>
-          </div>
+          <button 
+            onClick={clearChat}
+            className="p-2 hover:bg-white/20 rounded-lg transition"
+            title="চ্যাট রিসেট করুন"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-orange-50 via-white to-orange-50">
         {messages.map((msg, i) => (
           <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div className={cn(
-              "max-w-[75%] p-4 rounded-2xl shadow-md",
-              msg.role === 'user' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
-                : 'bg-white text-gray-800 rounded-bl-none'
-            )}>
-              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+            <div className={cn("flex items-end gap-2 max-w-[85%]", msg.role === 'user' && 'flex-row-reverse')}>
+              <div className={cn(
+                "w-9 h-9 rounded-full flex items-center justify-center text-lg flex-shrink-0 shadow-md",
+                msg.role === 'user' 
+                  ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white' 
+                  : 'bg-white border-2 border-orange-200'
+              )}>
+                {msg.role === 'user' ? '👤' : '🙏'}
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <div className={cn(
+                  "p-4 rounded-2xl shadow-md",
+                  msg.role === 'user' 
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-sm' 
+                    : 'bg-white text-gray-800 rounded-bl-sm border border-orange-100'
+                )}>
+                  <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+                </div>
+                <p className={cn(
+                  "text-xs text-gray-400 px-2",
+                  msg.role === 'user' ? 'text-right' : 'text-left'
+                )}>
+                  {msg.time}
+                </p>
+              </div>
             </div>
           </div>
         ))}
+
+        {/* Typing Indicator */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="flex items-end gap-2">
+              <div className="w-9 h-9 rounded-full bg-white border-2 border-orange-200 flex items-center justify-center text-lg shadow-md">
+                🙏
+              </div>
+              <div className="bg-white p-4 rounded-2xl rounded-bl-sm border border-orange-100 shadow-md">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="text-xs text-gray-400 ml-2">চিন্তা করছি...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
-      {chatbot.quickReplies && messages.length <= 1 && (
-        <div className="px-4 py-2 border-t bg-gray-50">
-          <p className="text-xs text-gray-500 mb-2">দ্রুত প্রশ্ন:</p>
-          <div className="flex flex-wrap gap-2">
-            {chatbot.quickReplies.map((reply: string, i: number) => (
+      {/* Quick Replies */}
+      {messages.length <= 2 && !isTyping && (
+        <div className="px-4 py-3 border-t bg-gradient-to-r from-orange-50 to-red-50">
+          <p className="text-xs text-gray-600 mb-2 font-semibold">💡 জনপ্রিয় প্রশ্ন:</p>
+          <div className="grid grid-cols-2 gap-2">
+            {quickReplies.map((reply, i) => (
               <button 
                 key={i}
-                onClick={() => handleQuickReply(reply)}
-                className="px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-xs hover:bg-orange-50 transition"
+                onClick={() => setInput(reply)}
+                className="px-3 py-2 bg-white border border-orange-200 text-orange-600 rounded-lg text-xs hover:bg-orange-50 hover:shadow-md transition text-left"
               >
                 {reply}
               </button>
@@ -1934,23 +2028,32 @@ function AIChatbox() {
         </div>
       )}
 
-      <div className="p-4 border-t bg-white rounded-b-2xl">
+      {/* Input */}
+      <div className="p-4 border-t bg-white">
         <div className="flex gap-2">
           <input 
             value={input} 
             onChange={e => setInput(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSend()}
-            placeholder="প্রশ্ন করুন..."
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition"
+            onKeyPress={e => e.key === 'Enter' && !isTyping && handleSend()}
+            placeholder="বাংলা বা ইংরেজিতে প্রশ্ন করুন..."
+            disabled={isTyping}
+            className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-orange-500 transition disabled:bg-gray-50"
           />
           <button 
             onClick={handleSend}
-            disabled={!input.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!input.trim() || isTyping}
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 flex items-center gap-2"
           >
-            <Send className="w-5 h-5" />
+            {isTyping ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </button>
         </div>
+        <p className="text-xs text-gray-400 text-center mt-2">
+          Powered by Google Gemini AI • সম্পূর্ণ বিনামূল্যে
+        </p>
       </div>
     </div>
   );
