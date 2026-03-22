@@ -205,6 +205,7 @@ const notices = [
 // ==================== GLOBAL MEDIA CONTEXT ====================
 
 interface MediaContextType {
+  // Music
   currentSong: Song | null;
   currentIndex: number;
   isPlaying: boolean;
@@ -221,6 +222,8 @@ interface MediaContextType {
   skipBack: () => void;
   seekTo: (percent: number) => void;
   playlist: Song[];
+  
+  // Live TV
   activeChannel: LiveChannel | null;
   setActiveChannel: (channel: LiveChannel | null) => void;
   closeLiveTV: () => void;
@@ -229,6 +232,7 @@ interface MediaContextType {
 const MediaContext = createContext<MediaContextType | null>(null);
 
 function MediaProvider({ children }: { children: React.ReactNode }) {
+  // ===== MUSIC STATE =====
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [playlist, setPlaylist] = useState<Song[]>([]);
@@ -238,16 +242,21 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentIndexRef = useRef<number>(-1);
   const playlistRef = useRef<Song[]>([]);
+
+  // ===== LIVE TV STATE =====
   const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
 
+  // Refs sync
   useEffect(() => {
     currentIndexRef.current = currentIndex;
     playlistRef.current = playlist;
   }, [currentIndex, playlist]);
 
+  // ===== AUDIO INITIALIZATION =====
   useEffect(() => {
     const audio = new Audio();
     audio.volume = volume;
@@ -269,15 +278,18 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     const handleEnded = () => {
       const idx = currentIndexRef.current;
       const songs = playlistRef.current;
+      
       if (songs.length > 0) {
         const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
         const nextSong = songs[nextIndex];
+        
         if (nextSong && audioRef.current) {
           setCurrentSong(nextSong);
           setCurrentIndex(nextIndex);
           setProgress(0);
           setCurrentTime(0);
           setIsLoading(true);
+          
           audioRef.current.src = nextSong.url;
           audioRef.current.load();
           audioRef.current.play()
@@ -287,8 +299,14 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
-    const handleCanPlay = () => { setIsLoading(false); };
+    const handleError = () => { 
+      setIsLoading(false); 
+      setIsPlaying(false); 
+    };
+    
+    const handleCanPlay = () => { 
+      setIsLoading(false); 
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -307,13 +325,20 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Volume sync
   useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
   }, [volume]);
 
+  // ===== MUSIC FUNCTIONS =====
+  
+  // Play Song - এটা call হলে TV তে কিছু হবে না, শুধু music চালু হবে
   const playSong = useCallback((song: Song, index: number, newPlaylist: Song[]) => {
     const audio = audioRef.current;
     if (!audio) return;
+
     audio.pause();
     setCurrentSong(song);
     setCurrentIndex(index);
@@ -322,55 +347,77 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     setCurrentTime(0);
     setDuration(0);
     setIsLoading(true);
+
     audio.src = song.url;
     audio.load();
+    
     const playPromise = audio.play();
     if (playPromise !== undefined) {
-      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); })
+      playPromise
+        .then(() => { setIsPlaying(true); setIsLoading(false); })
         .catch(() => { setIsPlaying(false); setIsLoading(false); });
     }
   }, []);
 
+  // Toggle Play/Pause
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
+
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
     } else {
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
   }, [currentSong, isPlaying]);
 
+  // Skip Forward
   const skipForward = useCallback(() => {
     const songs = playlistRef.current;
     if (songs.length === 0) return;
+
     let newIndex = currentIndexRef.current + 1;
     if (newIndex >= songs.length) newIndex = 0;
+
     const nextSong = songs[newIndex];
-    if (nextSong) playSong(nextSong, newIndex, songs);
+    if (nextSong) {
+      playSong(nextSong, newIndex, songs);
+    }
   }, [playSong]);
 
+  // Skip Back
   const skipBack = useCallback(() => {
     const audio = audioRef.current;
     const songs = playlistRef.current;
+
+    // 3 সেকেন্ডের বেশি চললে restart
     if (audio && audio.currentTime > 3) {
       audio.currentTime = 0;
       return;
     }
+
     if (songs.length === 0) return;
+
     let newIndex = currentIndexRef.current - 1;
     if (newIndex < 0) newIndex = songs.length - 1;
+
     const prevSong = songs[newIndex];
-    if (prevSong) playSong(prevSong, newIndex, songs);
+    if (prevSong) {
+      playSong(prevSong, newIndex, songs);
+    }
   }, [playSong]);
 
+  // Seek To
   const seekTo = useCallback((percent: number) => {
     const audio = audioRef.current;
     if (!audio || !duration || isNaN(duration)) return;
     audio.currentTime = (percent / 100) * duration;
   }, [duration]);
 
+  // Close Music Player
   const closeMusicPlayer = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -386,16 +433,28 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     setDuration(0);
   }, []);
 
+  // ===== LIVE TV FUNCTIONS =====
+  
+  // Set Active Channel - Music বন্ধ করে TV চালু
   const setActiveChannel = useCallback((channel: LiveChannel | null) => {
+    if (channel) {
+      // Music চালু থাকলে pause করি
+      if (audioRef.current && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
     setActiveChannelState(channel);
-  }, []);
+  }, [isPlaying]);
 
+  // Close Live TV
   const closeLiveTV = useCallback(() => {
     setActiveChannelState(null);
   }, []);
 
   return (
     <MediaContext.Provider value={{
+      // Music
       currentSong,
       currentIndex,
       isPlaying,
@@ -412,6 +471,7 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
       skipBack,
       seekTo,
       playlist,
+      // Live TV
       activeChannel,
       setActiveChannel,
       closeLiveTV
@@ -423,7 +483,9 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
 
 function useMedia() {
   const context = useContext(MediaContext);
-  if (!context) throw new Error('useMedia must be used within MediaProvider');
+  if (!context) {
+    throw new Error('useMedia must be used within MediaProvider');
+  }
   return context;
 }
 
@@ -2604,34 +2666,48 @@ function GlobalMusicPlayer() {
 }
 
 function GlobalLiveTVPlayer() {
-  const { activeChannel, closeLiveTV } = useMedia();
+  const { activeChannel, closeLiveTV, isPlaying: isMusicPlaying, togglePlayPause } = useMedia();
   const location = useLocation();
   const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
+  const loadedChannelIdRef = useRef<string | null>(null);
 
+  // LiveTV page এ থাকলে popup দেখাবে না
+  const shouldShow = activeChannel && location.pathname !== '/live';
+
+  // Stream load - শুধু নতুন channel হলে
   useEffect(() => {
-    if (!activeChannel || location.pathname === '/live') return;
+    if (!activeChannel || location.pathname === '/live') {
+      return;
+    }
+
+    // একই channel আবার load করবে না
+    if (loadedChannelIdRef.current === activeChannel.id) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    // আগের HLS destroy
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    loadedChannelIdRef.current = activeChannel.id;
+    setIsLoading(true);
+    setHasError(false);
 
     const loadStream = async () => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-
-      setIsLoading(true);
-      setHasError(false);
-
       try {
         const Hls = (await import('hls.js')).default;
         
         if (Hls.isSupported()) {
-          const hls = new Hls();
+          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
           hlsRef.current = hls;
           
           hls.loadSource(activeChannel.streamUrl);
@@ -2639,42 +2715,53 @@ function GlobalLiveTVPlayer() {
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             setIsLoading(false);
-            video.play().catch(() => {
-              video.muted = true;
-              video.play().catch(() => {});
-            });
+            if (!isMusicPlaying) {
+              video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+            }
           });
           
           hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-            if (data.fatal) {
-              setHasError(true);
-              setIsLoading(false);
-            }
+            if (data.fatal) { setHasError(true); setIsLoading(false); }
           });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
           video.addEventListener('loadedmetadata', () => {
             setIsLoading(false);
-            video.play().catch(() => {});
-          });
+            if (!isMusicPlaying) video.play().catch(() => {});
+          }, { once: true });
         }
-      } catch {
-        setHasError(true);
-        setIsLoading(false);
-      }
+      } catch { setHasError(true); setIsLoading(false); }
     };
 
     loadStream();
+  }, [activeChannel?.id, location.pathname, isMusicPlaying]);
 
+  // Music চালু/বন্ধ হলে video control
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || isLoading || hasError || !activeChannel || location.pathname === '/live') return;
+
+    if (isMusicPlaying) {
+      video.pause();
+    } else {
+      video.play().catch(() => {});
+    }
+  }, [isMusicPlaying, isLoading, hasError, activeChannel, location.pathname]);
+
+  // Cleanup
+  useEffect(() => {
     return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
     };
-  }, [activeChannel, location.pathname]);
+  }, []);
 
-  if (!activeChannel || location.pathname === '/live') return null;
+  const handleRetry = () => {
+    loadedChannelIdRef.current = null;
+    setHasError(false);
+    setIsLoading(true);
+  };
+
+  if (!shouldShow) return null;
 
   return (
     <div className={cn(
@@ -2682,39 +2769,50 @@ function GlobalLiveTVPlayer() {
       isMinimized ? "bottom-16 right-4 w-64" : "bottom-16 right-4 w-80 md:w-96"
     )}>
       <div className="bg-black rounded-2xl overflow-hidden border-2 border-red-500">
+        {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-white flex-1 min-w-0">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse flex-shrink-0" />
-            <span className="font-bold text-xs truncate">🔴 {activeChannel.name}</span>
+            <div className={cn("w-2 h-2 rounded-full flex-shrink-0", isMusicPlaying ? "bg-yellow-400" : "bg-white animate-pulse")} />
+            <span className="font-bold text-xs truncate">{isMusicPlaying ? "⏸️ " : "🔴 "}{activeChannel.name}</span>
           </div>
-          
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button onClick={() => setIsMinimized(!isMinimized)} className="text-white hover:bg-white/20 p-1 rounded transition">
+            <button onClick={() => setIsMinimized(!isMinimized)} className="text-white hover:bg-white/20 p-1.5 rounded transition">
               <ChevronDown className={cn("w-4 h-4 transition-transform", isMinimized && "rotate-180")} />
             </button>
-            <button onClick={closeLiveTV} className="text-white hover:bg-red-800 p-1 rounded transition">
+            <button onClick={closeLiveTV} className="text-white hover:bg-red-800 p-1.5 rounded transition">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
+        {/* Video */}
         {!isMinimized && (
           <div className="aspect-video bg-gray-900 relative">
             <video ref={videoRef} autoPlay playsInline controls className="w-full h-full" />
             
             {isLoading && !hasError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+                <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            
+            {isMusicPlaying && !isLoading && !hasError && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <div className="text-center text-white">
+                  <Music className="w-10 h-10 mx-auto mb-2" />
+                  <p className="text-sm">মিউজিক চালু আছে</p>
+                  <button onClick={togglePlayPause} className="mt-2 px-4 py-1.5 bg-orange-500 rounded-lg text-xs hover:bg-orange-600">
+                    মিউজিক বন্ধ করুন
+                  </button>
+                </div>
               </div>
             )}
             
             {hasError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white text-center p-4">
-                <div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white">
+                <div className="text-center">
                   <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
-                  <button onClick={() => { setHasError(false); setIsLoading(true); }} className="text-xs bg-orange-500 px-3 py-1 rounded">
-                    পুনরায় চেষ্টা
-                  </button>
+                  <button onClick={handleRetry} className="px-4 py-1.5 bg-orange-500 rounded-lg text-xs">আবার চেষ্টা</button>
                 </div>
               </div>
             )}
@@ -2724,7 +2822,6 @@ function GlobalLiveTVPlayer() {
     </div>
   );
 }
-
 // ==================== MAIN APP COMPONENT ====================
 
 function App() {
