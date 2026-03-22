@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Send } from 'lucide-react';
-import { cn } from './utils';
+import { cn } from './utils/cn';
 import { InstallPrompt } from './components/InstallPrompt';
 import { 
   Home as HomeIcon,
