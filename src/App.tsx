@@ -1837,158 +1837,102 @@ function FundCollection({ userRole, loggedInUserId }: { userRole: string; logged
 
 // AI Chatbox Component
 function AIChatbox() {
-  const [chatbotData, setChatbotData] = useState<any>(null);
-  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [chatbotData, setChatbotData] = React.useState<any>(null);
+  const [messages, setMessages] = React.useState<{ role: string; text: string }[]>([]);
+  const [input, setInput] = React.useState('');
+  const [isTyping, setIsTyping] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
-  // API Key - সরাসরি Environment Variable থেকে নেবে
+  const GITHUB_CHATBOT_URL = "https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json";
   const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
-  // FAQ ডেটা লোড করা
   useEffect(() => {
-    const fetchChatbotData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${GITHUB_CHATBOT_URL}?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setChatbotData(data);
-        }
+        const res = await fetch(`${GITHUB_CHATBOT_URL}?t=${Date.now()}`);
+        if (res.ok) setChatbotData(await res.json());
       } catch (err) {
-        console.error('Data load error:', err);
+        console.error('Data error:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchChatbotData();
+    fetchData();
   }, []);
 
-  const welcomeMessage = chatbotData?.welcomeMessage || 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার AI সহায়ক।';
-  const quickReplies = chatbotData?.quickReplies || ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য'];
-  const faq = chatbotData?.faq || [];
+  const welcomeMessage = chatbotData?.welcomeMessage || 'নমস্কার! 🙏 কলম হিন্দু ধর্মসভার AI সহায়ক।';
+  const quickReplies = chatbotData?.quickReplies || ['দূর্গাপূজা কবে?', 'যোগাযোগ'];
 
-  // ওয়েলকাম মেসেজ সেট করা
   useEffect(() => {
     if (!isLoading && messages.length === 0) {
       setMessages([{ role: 'bot', text: welcomeMessage }]);
     }
-  }, [isLoading, welcomeMessage]);
+  }, [isLoading, welcomeMessage, messages.length]);
 
-  // অটো স্ক্রল
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // FAQ চেক ফাংশন
-  const findInFAQ = (question: string): string | null => {
-    const q = question.toLowerCase().trim();
-    for (const item of faq) {
-      if (item.keywords?.some((k: string) => k.toLowerCase().trim() === q)) {
-        return item.answer;
-      }
-    }
-    return null;
-  };
-
-  // Gemini AI কল (Fixed URL & Model)
-  const askGeminiAI = async (question: string): Promise<string> => {
+  const askAI = async (question: string) => {
     try {
-      const systemPrompt = `তুমি "কলম হিন্দু ধর্মসভা" এর AI সহায়ক "ধর্ম সহায়ক"। তুমি হিন্দু ধর্ম ও পূজা সম্পর্কে জানো। বাংলায় ছোট করে উত্তর দাও।`;
-      
-      // সঠিক API URL এবং Model: gemini-1.5-flash
-      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-      const response = await fetch(API_URL, {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            role: "user",
-            parts: [{ text: `${systemPrompt}\n\nপ্রশ্ন: ${question}` }]
-          }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
+          contents: [{ role: "user", parts: [{ text: question }] }]
         })
       });
-
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "দুঃখিত, আমি উত্তর দিতে পারছি না।";
-    } catch (error) {
-      return "সার্ভারে সমস্যা হচ্ছে। সরাসরি কল করুন: ০১৭৩৩১১৮৩১৩";
+      const data = await res.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "দুঃখিত, উত্তর পাওয়া যায়নি।";
+    } catch (err) {
+      return "সার্ভার সমস্যা। সরাসরি যোগাযোগ করুন: ০১৭৩৩১১৮৩১৩";
     }
   };
 
-  const handleSend = async (forcedInput?: string) => {
-    const userText = forcedInput || input.trim();
-    if (!userText || isTyping) return;
+  const handleSend = async (forcedText?: string) => {
+    const text = forcedText || input.trim();
+    if (!text || isTyping) return;
 
-    setMessages(prev => [...prev, { role: 'user', text: userText }]);
+    setMessages(prev => [...prev, { role: 'user', text: text }]);
     setInput('');
     setIsTyping(true);
 
-    const faqAnswer = findInFAQ(userText);
-    const finalAnswer = faqAnswer ? faqAnswer : await askGeminiAI(userText);
-
-    setMessages(prev => [...prev, { role: 'bot', text: finalAnswer }]);
+    const reply = await askAI(text);
+    setMessages(prev => [...prev, { role: 'bot', text: reply }]);
     setIsTyping(false);
   };
 
-  if (isLoading) return <div className="h-[500px] flex items-center justify-center">অপেক্ষা করুন...</div>;
+  if (isLoading) return <div className="p-10 text-center">লোড হচ্ছে...</div>;
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-gray-100" style={{ height: '600px' }}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-red-600 p-4 text-white flex items-center gap-3">
-        <div className="bg-white/20 p-2 rounded-full"><Bot size={24} /></div>
-        <div>
-          <h3 className="font-bold">ধর্ম সহায়ক (AI)</h3>
-          <p className="text-[10px] opacity-80 font-mono">Powered by Gemini 1.5 Flash</p>
-        </div>
+    <div className="bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border" style={{ height: '600px' }}>
+      <div className="bg-orange-600 p-4 text-white">
+        <h3 className="font-bold">ধর্ম সহায়ক (AI)</h3>
       </div>
-
-      {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
-              msg.role === 'user' ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
-            }`}>
+            <div className={`max-w-[85%] p-3 rounded-xl text-sm ${msg.role === 'user' ? 'bg-orange-500 text-white' : 'bg-white border'}`}>
               {msg.text}
             </div>
           </div>
         ))}
-        {isTyping && <div className="text-[10px] text-gray-400 animate-pulse ml-2">ধর্ম সহায়ক লিখছে...</div>}
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Quick Replies */}
       {messages.length <= 1 && (
-        <div className="p-3 flex flex-wrap gap-2 bg-white">
-          {quickReplies.map((q, i) => (
-            <button key={i} onClick={() => handleSend(q)} className="text-xs border border-orange-300 px-3 py-1.5 rounded-full text-orange-700 hover:bg-orange-50 transition">
+        <div className="p-2 flex flex-wrap gap-2 bg-white border-t">
+          {quickReplies.map((q: string, i: number) => (
+            <button key={i} onClick={() => handleSend(q)} className="text-xs border border-orange-200 px-3 py-1 rounded-full text-orange-600">
               {q}
             </button>
           ))}
         </div>
       )}
-
-      {/* Input Area */}
-      <div className="p-3 border-t bg-white flex gap-2">
-        <input 
-          value={input} 
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="এখানে প্রশ্ন লিখুন..." 
-          className="flex-1 bg-gray-100 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-        />
-        <button 
-          onClick={() => handleSend()} 
-          disabled={!input.trim() || isTyping}
-          className="bg-orange-600 text-white p-2 rounded-xl disabled:opacity-50"
-        >
-          <Send size={20} />
-        </button>
+      <div className="p-3 border-t flex gap-2">
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="প্রশ্ন লিখুন..." className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none" />
+        <button onClick={() => handleSend()} className="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm">Send</button>
       </div>
     </div>
   );
