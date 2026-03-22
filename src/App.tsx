@@ -156,6 +156,7 @@ interface LoginUser {
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
+const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json';
 
 const deities: Deity[] = [
   {
@@ -1836,20 +1837,53 @@ function FundCollection({ userRole, loggedInUserId }: { userRole: string; logged
 
 // AI Chatbox Component
 function AIChatbox() {
-  const [messages, setMessages] = useState<{role: string; text: string; time: string}[]>([
-    {
-      role: 'bot',
-      text: 'নমস্কার! 🙏 আমি ধর্ম সহায়ক - কলম হিন্দু ধর্মসভার AI ভার্চুয়াল সহায়ক।\n\nআমি আপনাকে সাহায্য করতে পারি:\n• পূজার তারিখ ও সময়সূচি\n• হিন্দু ধর্ম ও সংস্কৃতি\n• মন্ত্র, শ্লোক, স্তোত্র\n• দেব-দেবীর তথ্য\n• ধর্মসভার তথ্য\n\nযেকোনো প্রশ্ন করুন! 😊',
-      time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  const [chatbotData, setChatbotData] = useState<any>(null);
+  const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const getCurrentTime = () => {
-    return new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
-  };
+  // ✅ নতুন JSON ফাইল থেকে data load
+  useEffect(() => {
+    const fetchChatbotData = async () => {
+      setIsLoading(true);
+      try {
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        const response = await fetch(
+          `${GITHUB_CHATBOT_URL}${cacheBuster}`,
+          { cache: 'no-store' }
+        );
+        if (!response.ok) throw new Error('Failed to load');
+        const data = await response.json();
+        setChatbotData(data);
+      } catch (err) {
+        console.error('Chatbot data load error:', err);
+        setChatbotData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchChatbotData();
+  }, []);
+
+  // Default data (fallback)
+  const defaultWelcome = 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার ভার্চুয়াল সহায়ক।';
+  const defaultQuickReplies = ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য', 'সদস্য হতে চাই'];
+  const defaultFallbacks = ['দুঃখিত, আমি বুঝতে পারিনি। 📞 কল করুন: 01733118313'];
+
+  // Get data from JSON or defaults
+  const welcomeMessage = chatbotData?.welcomeMessage || defaultWelcome;
+  const quickReplies = chatbotData?.quickReplies || defaultQuickReplies;
+  const faq = chatbotData?.faq || [];
+  const fallbackMessages = chatbotData?.fallbackMessages || defaultFallbacks;
+
+  // Welcome message
+  useEffect(() => {
+    if (!isLoading && messages.length === 0) {
+      setMessages([{ role: 'bot', text: welcomeMessage }]);
+    }
+  }, [isLoading, welcomeMessage]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1857,169 +1891,125 @@ function AIChatbox() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const handleSend = async () => {
+  const findAnswer = (question: string) => {
+    const lowerQuestion = question.toLowerCase();
+    
+    for (const item of faq) {
+      const keywords = item.keywords || [];
+      const matched = keywords.some((keyword: string) => {
+        const lowerKeyword = keyword.toLowerCase();
+        return lowerQuestion.includes(lowerKeyword) || lowerKeyword.includes(lowerQuestion);
+      });
+      
+      if (matched) {
+        return item.answer;
+      }
+    }
+    
+    return fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
+  };
+
+  const handleSend = () => {
     if (!input.trim() || isTyping) return;
     
     const userMessage = input.trim();
+    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setInput('');
-    
-    // Add user message
-    const newUserMsg = { role: 'user', text: userMessage, time: getCurrentTime() };
-    setMessages(prev => [...prev, newUserMsg]);
     setIsTyping(true);
-
-    try {
-      // Prepare history for context (exclude first welcome message)
-      const history = messages.slice(1).map(m => ({
-        role: m.role === 'bot' ? 'model' : 'user',
-        text: m.text
-      }));
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, history })
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        setMessages(prev => [...prev, { 
-          role: 'bot', 
-          text: data.reply,
-          time: getCurrentTime()
-        }]);
-      } else {
-        throw new Error(data.error || 'Unknown error');
-      }
-
-    } catch (err) {
-      console.error('Chat error:', err);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: '🙏 দুঃখিত, আমি এই মুহূর্তে উত্তর দিতে পারছি না।\n\nসরাসরি যোগাযোগ করুন:\n📞 ০১৭৩৩১১৮৩১৩\n📞 ০১৬১২১১৮৩১৩',
-        time: getCurrentTime()
-      }]);
-    } finally {
+    
+    setTimeout(() => {
+      const answer = findAnswer(userMessage);
+      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
       setIsTyping(false);
-    }
+    }, 800);
   };
 
-  const quickReplies = [
-    'দূর্গাপূজা কবে?',
-    'গায়ত্রী মন্ত্র বলো',
-    'কালী মা কে?',
-    'মহাভারত কী?',
-    'ধর্মসভা সম্পর্কে বলো',
-    'সদস্য হতে চাই'
-  ];
-
-  const clearChat = () => {
-    setMessages([{
-      role: 'bot',
-      text: 'চ্যাট রিসেট হয়েছে। 🙏 নতুন করে প্রশ্ন করুন!',
-      time: getCurrentTime()
-    }]);
+  const handleQuickReply = (reply: string) => {
+    setMessages(prev => [...prev, { role: 'user', text: reply }]);
+    setIsTyping(true);
+    
+    setTimeout(() => {
+      const answer = findAnswer(reply);
+      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
+      setIsTyping(false);
+    }, 800);
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl shadow-2xl flex items-center justify-center" style={{ height: '600px' }}>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">চ্যাটবট লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ height: '700px' }}>
+    <div className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ height: '600px' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 p-4 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-3xl relative">
-              🙏
-              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
-            </div>
-            <div>
-              <h3 className="font-bold text-xl">ধর্ম সহায়ক AI</h3>
-              <p className="text-xs text-orange-100 flex items-center gap-1">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                Powered by Google Gemini • ২৪/৭ সক্রিয়
-              </p>
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+            🤖
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">আমাকে জানুন</h3>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <p className="text-xs text-orange-100">অনলাইন • ভার্চুয়াল সহায়ক</p>
             </div>
           </div>
-          <button 
-            onClick={clearChat}
-            className="p-2 hover:bg-white/20 rounded-lg transition"
-            title="চ্যাট রিসেট করুন"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-orange-50 via-white to-orange-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
         {messages.map((msg, i) => (
           <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-            <div className={cn("flex items-end gap-2 max-w-[85%]", msg.role === 'user' && 'flex-row-reverse')}>
-              <div className={cn(
-                "w-9 h-9 rounded-full flex items-center justify-center text-lg flex-shrink-0 shadow-md",
-                msg.role === 'user' 
-                  ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white' 
-                  : 'bg-white border-2 border-orange-200'
-              )}>
-                {msg.role === 'user' ? '👤' : '🙏'}
+            {msg.role === 'bot' && (
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0 mt-1">
+                🤖
               </div>
-              
-              <div className="flex flex-col gap-1">
-                <div className={cn(
-                  "p-4 rounded-2xl shadow-md",
-                  msg.role === 'user' 
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-sm' 
-                    : 'bg-white text-gray-800 rounded-bl-sm border border-orange-100'
-                )}>
-                  <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
-                </div>
-                <p className={cn(
-                  "text-xs text-gray-400 px-2",
-                  msg.role === 'user' ? 'text-right' : 'text-left'
-                )}>
-                  {msg.time}
-                </p>
-              </div>
+            )}
+            <div className={cn(
+              "max-w-[75%] p-4 rounded-2xl shadow-md",
+              msg.role === 'user' 
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
+                : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+            )}>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
             </div>
           </div>
         ))}
-
-        {/* Typing Indicator */}
+        
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="flex items-end gap-2">
-              <div className="w-9 h-9 rounded-full bg-white border-2 border-orange-200 flex items-center justify-center text-lg shadow-md">
-                🙏
-              </div>
-              <div className="bg-white p-4 rounded-2xl rounded-bl-sm border border-orange-100 shadow-md">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
-                  <span className="text-xs text-gray-400 ml-2">চিন্তা করছি...</span>
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">🤖</div>
+            <div className="bg-white p-3 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
         )}
-
+        
         <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Replies */}
-      {messages.length <= 2 && !isTyping && (
-        <div className="px-4 py-3 border-t bg-gradient-to-r from-orange-50 to-red-50">
-          <p className="text-xs text-gray-600 mb-2 font-semibold">💡 জনপ্রিয় প্রশ্ন:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {quickReplies.map((reply, i) => (
+      {messages.length <= 1 && (
+        <div className="px-4 py-2 border-t bg-gray-50">
+          <p className="text-xs text-gray-500 mb-2">💡 দ্রুত প্রশ্ন:</p>
+          <div className="flex flex-wrap gap-2">
+            {quickReplies.map((reply: string, i: number) => (
               <button 
                 key={i}
-                onClick={() => setInput(reply)}
-                className="px-3 py-2 bg-white border border-orange-200 text-orange-600 rounded-lg text-xs hover:bg-orange-50 hover:shadow-md transition text-left"
+                onClick={() => handleQuickReply(reply)}
+                className="px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-xs hover:bg-orange-50 transition font-medium"
               >
                 {reply}
               </button>
@@ -2029,31 +2019,29 @@ function AIChatbox() {
       )}
 
       {/* Input */}
-      <div className="p-4 border-t bg-white">
+      <div className="p-4 border-t bg-white rounded-b-2xl">
         <div className="flex gap-2">
           <input 
             value={input} 
             onChange={e => setInput(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && !isTyping && handleSend()}
-            placeholder="বাংলা বা ইংরেজিতে প্রশ্ন করুন..."
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="প্রশ্ন লিখুন..."
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition text-sm"
             disabled={isTyping}
-            className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl outline-none focus:border-orange-500 transition disabled:bg-gray-50"
           />
           <button 
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isTyping ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
+            <Send className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-xs text-gray-400 text-center mt-2">
-          Powered by Google Gemini AI • সম্পূর্ণ বিনামূল্যে
-        </p>
       </div>
     </div>
   );
