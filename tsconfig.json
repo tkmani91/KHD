@@ -10,7 +10,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vite/client"],
+    /* Vite এবং Node.js এর টাইপ সাপোর্ট যোগ করা হয়েছে */
+    "types": ["vite/client", "node"], 
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -26,5 +27,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
- }
+  /* এখানে "api" ফোল্ডারটি যোগ করা হয়েছে যাতে chat.ts এর এরর চলে যায় */
+  "include": ["src", "api"] 
+}
