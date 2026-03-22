@@ -41,6 +41,187 @@ import {
 import { cn } from './utils/cn';
 import { OptimizedImage } from './components/OptimizedImage';
 
+// ==================== GLOBAL MEDIA CONTEXT ====================
+import { createContext, useContext } from 'react';
+
+interface MediaContextType {
+  // Music Player
+  currentSong: Song | null;
+  currentIndex: number;
+  isPlaying: boolean;
+  audioRef: React.RefObject<HTMLAudioElement>;
+  playSong: (song: Song, index: number, playlist: Song[]) => void;
+  togglePlayPause: () => void;
+  closeMusicPlayer: () => void;
+  skipForward: (playlist: Song[]) => void;
+  skipBack: (playlist: Song[]) => void;
+  
+  // Live TV
+  activeChannel: LiveChannel | null;
+  setActiveChannel: (channel: LiveChannel | null) => void;
+  closeLiveTV: () => void;
+}
+
+const MediaContext = createContext<MediaContextType | null>(null);
+
+function MediaProvider({ children }: { children: React.ReactNode }) {
+  // Music State
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentPlaylist, setCurrentPlaylist] = useState<Song[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Live TV State
+  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
+
+  // Initialize Audio
+  useEffect(() => {
+    const audio = new Audio();
+    audio.volume = 0.7;
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const handleEnded = () => {
+      // Auto play next song
+      if (currentPlaylist.length > 0) {
+        const nextIndex = currentIndex + 1 >= currentPlaylist.length ? 0 : currentIndex + 1;
+        const nextSong = currentPlaylist[nextIndex];
+        if (nextSong && audioRef.current) {
+          setCurrentSong(nextSong);
+          setCurrentIndex(nextIndex);
+          audioRef.current.src = nextSong.url;
+          audioRef.current.load();
+          audioRef.current.play()
+            .then(() => setIsPlaying(true))
+            .catch(() => setIsPlaying(false));
+        }
+      }
+    };
+
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [currentIndex, currentPlaylist]);
+
+  // Play Song Function
+  const playSong = useCallback((song: Song, index: number, playlist: Song[]) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    setCurrentSong(song);
+    setCurrentIndex(index);
+    setCurrentPlaylist(playlist);
+    
+    audio.src = song.url;
+    audio.load();
+    
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch(() => setIsPlaying(false));
+  }, []);
+
+  // Toggle Play/Pause
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+    
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    }
+  }, [currentSong, isPlaying]);
+
+  // Skip Forward
+  const skipForward = useCallback((playlist: Song[]) => {
+    if (playlist.length === 0) return;
+    
+    let newIndex = currentIndex + 1;
+    if (newIndex >= playlist.length) newIndex = 0;
+    
+    const nextSong = playlist[newIndex];
+    if (nextSong) {
+      playSong(nextSong, newIndex, playlist);
+    }
+  }, [currentIndex, playSong]);
+
+  // Skip Back
+  const skipBack = useCallback((playlist: Song[]) => {
+    const audio = audioRef.current;
+    
+    // If more than 3 seconds played, restart current song
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+    
+    if (playlist.length === 0) return;
+    
+    let newIndex = currentIndex - 1;
+    if (newIndex < 0) newIndex = playlist.length - 1;
+    
+    const prevSong = playlist[newIndex];
+    if (prevSong) {
+      playSong(prevSong, newIndex, playlist);
+    }
+  }, [currentIndex, playSong]);
+
+  // Close Music Player
+  const closeMusicPlayer = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.src = '';
+    }
+    setCurrentSong(null);
+    setCurrentIndex(-1);
+    setIsPlaying(false);
+    setCurrentPlaylist([]);
+  }, []);
+
+  // Close Live TV
+  const closeLiveTV = useCallback(() => {
+    setActiveChannel(null);
+  }, []);
+
+  return (
+    <MediaContext.Provider value={{
+      currentSong,
+      currentIndex,
+      isPlaying,
+      audioRef: audioRef as React.RefObject<HTMLAudioElement>,
+      playSong,
+      togglePlayPause,
+      closeMusicPlayer,
+      skipForward,
+      skipBack,
+      activeChannel,
+      setActiveChannel,
+      closeLiveTV
+    }}>
+      {children}
+    </MediaContext.Provider>
+  );
+}
+
+// Custom Hook
+function useMedia() {
+  const context = useContext(MediaContext);
+  if (!context) {
+    throw new Error('useMedia must be used within MediaProvider');
+  }
+  return context;
+}
+
 // Types
 interface CountdownTime {
   days: number;
@@ -1140,31 +1321,24 @@ function QuizArchivePage() {
 
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { currentSong, isPlaying, playSong, togglePlayPause } = useMedia();
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentIndexRef = useRef<number>(-1);
 
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
-
   const filteredSongs = selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory);
 
-  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+  // Get audio element from context for progress tracking
+  const { audioRef, skipForward, skipBack } = useMedia();
 
+  // Progress tracking
   useEffect(() => {
-    const audio = new Audio();
-    audio.volume = volume;
-    audio.preload = 'metadata';
-    audioRef.current = audio;
+    const audio = audioRef?.current;
+    if (!audio) return;
 
     const handleTimeUpdate = () => {
       if (audio.duration && !isNaN(audio.duration)) {
@@ -1173,74 +1347,27 @@ function MusicPage() {
       }
     };
 
-    const handleLoadedMetadata = () => { setDuration(audio.duration); setIsLoading(false); };
-
-    const handleEnded = () => {
-      const idx = currentIndexRef.current;
-      const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
-      const nextSong = songs[nextIndex];
-      if (nextSong && audioRef.current) {
-        setCurrentSong(nextSong); setCurrentIndex(nextIndex); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
-        audioRef.current.src = nextSong.url; audioRef.current.load();
-        audioRef.current.play().then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
-      }
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
     };
-
-    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
 
     return () => {
-      audio.pause(); audio.src = '';
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
     };
-  }, [songs]);
+  }, [audioRef, currentSong]);
 
-  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
-
-  const playSong = useCallback((song: Song, index: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    setCurrentSong(song); setCurrentIndex(index); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
-    audio.src = song.url; audio.load();
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
-    }
-  }, []);
-
-  const togglePlayPause = () => {
-    const audio = audioRef.current;
-    if (!audio || !currentSong) return;
-    if (isPlaying) { audio.pause(); setIsPlaying(false); }
-    else { audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
-  };
-
-  const handleSkipBack = () => {
-    if (filteredSongs.length === 0) return;
-    const audio = audioRef.current;
-    if (audio && audio.currentTime > 3) { audio.currentTime = 0; return; }
-    let newIndex = currentIndex - 1;
-    if (newIndex < 0) newIndex = filteredSongs.length - 1;
-    playSong(filteredSongs[newIndex], newIndex);
-  };
-
-  const handleSkipForward = () => {
-    if (filteredSongs.length === 0) return;
-    let newIndex = currentIndex + 1;
-    if (newIndex >= filteredSongs.length) newIndex = 0;
-    playSong(filteredSongs[newIndex], newIndex);
-  };
+  // Volume control
+  useEffect(() => {
+    const audio = audioRef?.current;
+    if (audio) audio.volume = volume;
+  }, [volume, audioRef]);
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const audio = audioRef.current;
+    const audio = audioRef?.current;
     if (!audio || !duration || isNaN(duration)) return;
     const bar = e.currentTarget;
     const rect = bar.getBoundingClientRect();
@@ -1259,12 +1386,23 @@ function MusicPage() {
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
-    if (!song.url || song.url === '#') { alert('ডাউনলোড লিংক নেই'); return; }
+    if (!song.url || song.url === '#') {
+      alert('ডাউনলোড লিংক নেই');
+      return;
+    }
     setDownloadingId(song.id);
     const link = document.createElement('a');
-    link.href = song.url; link.download = `${song.title} - ${song.artist}.mp3`; link.target = '_blank';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    link.href = song.url;
+    link.download = `${song.title} - ${song.artist}.mp3`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setTimeout(() => setDownloadingId(null), 1000);
+  };
+
+  const handlePlaySong = (song: Song, index: number) => {
+    playSong(song, index, filteredSongs);
   };
 
   return (
@@ -1274,67 +1412,146 @@ function MusicPage() {
         <p className="text-gray-600">পবিত্র ভজন ও সংগীত</p>
       </div>
 
+      {/* Now Playing Card */}
       {currentSong && (
         <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
-                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
-                : (<Music className="w-8 h-8" />)}
+              {isPlaying ? (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              ) : (
+                <Music className="w-8 h-8" />
+              )}
             </div>
+            
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
-              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
+            
             <div className="flex items-center gap-3">
-              <button onClick={handleSkipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipBack className="w-5 h-5" /></button>
-              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
-                {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
+              <button 
+                onClick={() => skipBack(filteredSongs)} 
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+              >
+                <SkipBack className="w-5 h-5" />
               </button>
-              <button onClick={handleSkipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipForward className="w-5 h-5" /></button>
+              
+              <button 
+                onClick={togglePlayPause} 
+                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition"
+              >
+                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+              </button>
+              
+              <button 
+                onClick={() => skipForward(filteredSongs)} 
+                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+              >
+                <SkipForward className="w-5 h-5" />
+              </button>
             </div>
+            
             <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
-              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value={volume} 
+                onChange={(e) => setVolume(parseFloat(e.target.value))} 
+                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" 
+              />
             </div>
           </div>
+          
+          {/* Progress Bar */}
           <div className="mt-4 flex items-center gap-3">
             <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
-            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
-              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+            <div 
+              className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" 
+              onClick={handleProgressClick}
+            >
+              <div 
+                className="h-full bg-white rounded-full transition-all" 
+                style={{ width: `${progress}%` }} 
+              />
             </div>
             <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
           </div>
         </div>
       )}
 
+      {/* Category Filter */}
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
+          <button 
+            key={cat} 
+            onClick={() => setSelectedCategory(cat)}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium transition", 
+              selectedCategory === cat 
+                ? "bg-orange-500 text-white" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
             {cat}
           </button>
         ))}
       </div>
 
+      {/* Songs List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSongs.map((song, index) => (
-          <div key={song.id} onClick={() => playSong(song, index)}
-            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
-            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
-              {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
-                : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
-                : (<Music className="w-6 h-6 text-orange-600" />)}
+          <div 
+            key={song.id} 
+            onClick={() => handlePlaySong(song, index)}
+            className={cn(
+              "card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", 
+              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50"
+            )}
+          >
+            <div 
+              className={cn(
+                "w-14 h-14 rounded-xl flex items-center justify-center transition-all", 
+                currentSong?.id === song.id && isPlaying 
+                  ? "bg-gradient-to-br from-orange-500 to-red-500" 
+                  : "bg-orange-100"
+              )}
+            >
+              {currentSong?.id === song.id && isPlaying ? (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
+                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              ) : (
+                <Music className="w-6 h-6 text-orange-600" />
+              )}
             </div>
+            
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{song.title}</h4>
               <p className="text-sm text-gray-500 truncate">{song.artist}</p>
             </div>
+            
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button onClick={(e) => handleDownload(e, song)} disabled={downloadingId === song.id} className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
-                {downloadingId === song.id ? (<div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : (<Download className="w-4 h-4" />)}
+              <button 
+                onClick={(e) => handleDownload(e, song)} 
+                disabled={downloadingId === song.id} 
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200"
+              >
+                {downloadingId === song.id ? (
+                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -1350,7 +1567,6 @@ function MusicPage() {
     </div>
   );
 }
-
 function PDFPage() {
   const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
@@ -2768,36 +2984,194 @@ function LoginPage() {
     </div>
   );
 }
+// ==================== GLOBAL MINI PLAYERS ====================
 
+function GlobalMusicPlayer() {
+  const { 
+    currentSong, 
+    isPlaying, 
+    togglePlayPause, 
+    closeMusicPlayer,
+    skipForward,
+    skipBack,
+    audioRef
+  } = useMedia();
+  const location = useLocation();
+  const [progress, setProgress] = useState(0);
+
+  // Progress tracking for mini player
+  useEffect(() => {
+    const audio = audioRef?.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    return () => audio.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [audioRef, currentSong]);
+
+  // MusicPage এ থাকলে mini player দেখাবে না
+  if (!currentSong || location.pathname === '/music') return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40 animate-slideUp">
+      {/* Progress Bar */}
+      <div className="h-1 bg-orange-200">
+        <div 
+          className="h-full bg-white transition-all duration-200" 
+          style={{ width: `${progress}%` }} 
+        />
+      </div>
+      
+      <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-3 shadow-2xl">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          {/* Song Info */}
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            {isPlaying ? (
+              <div className="flex items-center gap-0.5">
+                <div className="w-0.5 h-3 bg-white rounded-full animate-bounce" />
+                <div className="w-0.5 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-0.5 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            ) : (
+              <Music className="w-5 h-5" />
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm truncate">{currentSong.title}</p>
+            <p className="text-xs text-orange-100 truncate">{currentSong.artist}</p>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => skipBack([])}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+            >
+              <SkipBack className="w-4 h-4" />
+            </button>
+            
+            <button 
+              onClick={togglePlayPause}
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition"
+            >
+              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+            </button>
+            
+            <button 
+              onClick={() => skipForward([])}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
+            >
+              <SkipForward className="w-4 h-4" />
+            </button>
+            
+            <button 
+              onClick={closeMusicPlayer}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500 transition ml-2"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+function GlobalLiveTVPlayer() {
+  const { activeChannel, closeLiveTV } = useMedia();
+  const location = useLocation();
+  const [isMinimized, setIsMinimized] = useState(false);
+
+  if (!activeChannel || location.pathname === '/live') return null;
+
+  return (
+    <div 
+      className={cn(
+        "fixed z-40 transition-all duration-300",
+        isMinimized 
+          ? "bottom-4 right-4 w-64" 
+          : "bottom-0 left-0 right-0 max-w-md mx-auto"
+      )}
+    >
+      <div className="bg-black rounded-t-2xl overflow-hidden shadow-2xl">
+        <div className="bg-gradient-to-r from-orange-600 to-red-600 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="font-bold text-sm">LIVE: {activeChannel.name}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="text-white hover:bg-white/20 p-1 rounded transition"
+            >
+              {isMinimized ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4 rotate-90" />}
+            </button>
+            
+            <button 
+              onClick={closeLiveTV}
+              className="text-white hover:bg-white/20 p-1 rounded transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {!isMinimized && (
+          <div className="aspect-video bg-black">
+            <video 
+              src={activeChannel.streamUrl} 
+              autoPlay 
+              playsInline 
+              controls 
+              className="w-full h-full"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 // ==================== MAIN APP COMPONENT ====================
 
 function App() {
   return (
-    <Router>
-      <InstallPrompt /> 
-      <div className="min-h-screen sacred-pattern">
-        <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/durga" element={<DurgaPujaPage />} />
-            <Route path="/shyama" element={<ShyamaPujaPage />} />
-            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
-            <Route path="/rath" element={<RathYatraPage />} />
-            <Route path="/deities" element={<DeitiesPage />} />
-            <Route path="/quiz" element={<QuizArchivePage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/music" element={<MusicPage />} />
-            <Route path="/pdf" element={<PDFPage />} />
-            <Route path="/live" element={<LiveTVPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <MediaProvider>
+      <Router>
+        <InstallPrompt /> 
+        <div className="min-h-screen sacred-pattern">
+          <Header />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/durga" element={<DurgaPujaPage />} />
+              <Route path="/shyama" element={<ShyamaPujaPage />} />
+              <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+              <Route path="/rath" element={<RathYatraPage />} />
+              <Route path="/deities" element={<DeitiesPage />} />
+              <Route path="/quiz" element={<QuizArchivePage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/music" element={<MusicPage />} />
+              <Route path="/pdf" element={<PDFPage />} />
+              <Route path="/live" element={<LiveTVPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </main>
+          
+          {/* Global Mini Players */}
+          <GlobalMusicPlayer />
+          <GlobalLiveTVPlayer />
+          
+          <Footer />
+        </div>
+      </Router>
+    </MediaProvider>
   );
 }
-
 export default App;
