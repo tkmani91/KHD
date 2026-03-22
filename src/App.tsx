@@ -147,16 +147,16 @@ interface LoginUser {
   id: string;
   name: string;
   mobile: string;
-  email: string;
+  eml: string;
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
 }
 
 // Data URLs
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
-const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
-const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json';
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/mn/members-data.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/mn/members-login.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/mn/dynamicContent.json';
+const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/mn/chatbot-data.json';
 
 const deities: Deity[] = [
   {
@@ -529,9 +529,9 @@ function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(url, { cache: 'no-cache' });
-        if (!response.ok) throw new Error('Failed to load');
-        const jsonData = await response.json();
+        const response = awt fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Fled to load');
+        const jsonData = awt response.json();
         setData(jsonData);
         setError('');
       } catch {
@@ -729,7 +729,7 @@ function Footer() {
   );
 }
 function HomePage() {
-  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  const [pujaData] = useDataLoader<Pujnfo[]>('/data/pujaData.json', []);
   const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
   
   // Notices থেকে সর্বশেষ ৫টা নিবে
@@ -744,7 +744,7 @@ function HomePage() {
         <div className="absolute inset-0 sacred-pattern opacity-30"></div>
         <div className="relative px-6 py-8 text-center">
           <img 
-            src="https://raw.githubusercontent.com/tkmani91/Dharmasaba/main/hader%20Banner.png"
+            src="https://raw.githubusercontent.com/tkmani91/Dharmasaba/mn/hader%20Banner.png"
             alt="কলম হিন্দু ধর্মসভা"
             className="max-w-full h-auto max-h-48 mx-auto"
           />
@@ -826,8 +826,8 @@ function HomePage() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
-                  {notice.details && (
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">{notice.details}</p>
+                  {notice.detls && (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">{notice.detls}</p>
                   )}
                 </div>
               </div>
@@ -858,11 +858,11 @@ function HomePage() {
   );
 }
 
-function PujaPage({ pujaId }: { pujaId: string }) {
-  const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
-  const puja = pujaData.find(p => p.id === pujaId);
+function PujaPage({ pujd }: { pujd: string }) {
+  const [pujaData] = useDataLoader<Pujnfo[]>('/data/pujaData.json', []);
+  const puja = pujaData.find(p => p.id === pujd);
   const [schedulesData] = useDataLoader<{ [key: string]: any[] }>('/data/schedules.json', {});
-  const schedule = schedulesData[pujaId] || [];
+  const schedule = schedulesData[pujd] || [];
 
   if (!puja) {
     return <div className="text-center py-12">পূজার তথ্য পাওয়া যায়নি</div>;
@@ -925,10 +925,10 @@ function PujaPage({ pujaId }: { pujaId: string }) {
   );
 }
 
-function DurgaPujaPage() { return <PujaPage pujaId="durga" />; }
-function ShyamaPujaPage() { return <PujaPage pujaId="shyama" />; }
-function SaraswatiPujaPage() { return <PujaPage pujaId="saraswati" />; }
-function RathYatraPage() { return <PujaPage pujaId="rath" />; }
+function DurgaPujaPage() { return <PujaPage pujd="durga" />; }
+function ShyamaPujaPage() { return <PujaPage pujd="shyama" />; }
+function SaraswatiPujaPage() { return <PujaPage pujd="saraswati" />; }
+function RathYatraPage() { return <PujaPage pujd="rath" />; }
 
 function DeitiesPage() {
   return (
@@ -971,12 +971,12 @@ function GalleryPage() {
       setError('');
       try {
         const cacheBuster = `?t=${new Date().getTime()}`;
-        const response = await fetch(
-          `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
+        const response = awt fetch(
+          `https://raw.githubusercontent.com/tkmani91/KHD/mn/gallery-images.json${cacheBuster}`,
           { cache: 'no-store' }
         );
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
+        const data = awt response.json();
         if (!Array.isArray(data)) throw new Error('Invalid data format');
         setGalleryImages(data);
       } catch (err) {
@@ -1099,7 +1099,7 @@ function GalleryPage() {
             {filteredImages.findIndex((img) => img.id === selectedImage.id) < filteredImages.length - 1 && (
               <button onClick={() => navigateImage('next')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">›</button>
             )}
-            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
+            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contn" />
             <div className="mt-4 text-center text-white">
               <p className="font-bold text-lg">{selectedImage.title}</p>
               <p className="text-gray-300 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
@@ -1125,7 +1125,7 @@ function QuizArchivePage() {
     const fetchQuizData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json?t=${Date.now()}`, { cache: 'no-store' });
+        const response = awt fetch(`https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json?t=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed');
         setQuizData(await response.json());
       } catch { setError('কুইজ লোড করতে সমস্যা হয়েছে।'); }
@@ -1838,31 +1838,26 @@ function FundCollection({ userRole, loggedInUserId }: { userRole: string; logged
 // AI Chatbox Component
 function AIChatbox() {
   const [chatbotData, setChatbotData] = useState<any>(null);
-  const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Gemini API Key (Environment Variable + Fallback)
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyCZaZXmde1xKyX5Cn8fng_Pj_aIxrRmo6Q';
+  // API Key - সরাসরি Environment Variable থেকে নেবে
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
-  // ✅ Load custom FAQ from JSON
+  // FAQ ডেটা লোড করা
   useEffect(() => {
     const fetchChatbotData = async () => {
-      setIsLoading(true);
       try {
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        const response = await fetch(
-          `${GITHUB_CHATBOT_URL}${cacheBuster}`,
-          { cache: 'no-store' }
-        );
-        if (!response.ok) throw new Error('Failed to load');
-        const data = await response.json();
-        setChatbotData(data);
+        const response = await fetch(`${GITHUB_CHATBOT_URL}?t=${Date.now()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setChatbotData(data);
+        }
       } catch (err) {
-        console.error('Chatbot data load error:', err);
-        setChatbotData(null);
+        console.error('Data load error:', err);
       } finally {
         setIsLoading(false);
       }
@@ -1870,315 +1865,130 @@ function AIChatbox() {
     fetchChatbotData();
   }, []);
 
-  // Defaults
-  const welcomeMessage = chatbotData?.welcomeMessage || 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার AI সহায়ক। যেকোনো ধর্মীয় প্রশ্ন করতে পারেন!';
-  const quickReplies = chatbotData?.quickReplies || ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য', 'সদস্য হতে চাই'];
+  const welcomeMessage = chatbotData?.welcomeMessage || 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার AI সহায়ক।';
+  const quickReplies = chatbotData?.quickReplies || ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য'];
   const faq = chatbotData?.faq || [];
 
-  // Welcome message
+  // ওয়েলকাম মেসেজ সেট করা
   useEffect(() => {
     if (!isLoading && messages.length === 0) {
       setMessages([{ role: 'bot', text: welcomeMessage }]);
     }
   }, [isLoading, welcomeMessage]);
 
-  const scrollToBottom = () => {
+  // অটো স্ক্রল
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, [messages]);
 
-  useEffect(scrollToBottom, [messages]);
-
-  // ✅ IMPROVED: শুধু Quick Replies এর জন্য FAQ check
+  // FAQ চেক ফাংশন
   const findInFAQ = (question: string): string | null => {
-    const lowerQuestion = question.toLowerCase().trim();
-    
-    // ✅ Quick replies list তৈরি করো
-    const quickRepliesLower = quickReplies.map((q: string) => q.toLowerCase().trim());
-    
-    // ✅ শুধু quick reply হলেই FAQ check করো
-    if (quickRepliesLower.includes(lowerQuestion)) {
-      for (const item of faq) {
-        const keywords = item.keywords || [];
-        const matched = keywords.some((keyword: string) => {
-          return keyword.toLowerCase().trim() === lowerQuestion;
-        });
-        
-        if (matched) {
-          console.log('✅ FAQ match found:', item.answer.substring(0, 50) + '...');
-          return item.answer;
-        }
+    const q = question.toLowerCase().trim();
+    for (const item of faq) {
+      if (item.keywords?.some((k: string) => k.toLowerCase().trim() === q)) {
+        return item.answer;
       }
     }
-    
-    // ✅ অন্য সব প্রশ্ন AI এর কাছে পাঠাও
-    console.log('🤖 No FAQ match, sending to AI...');
     return null;
   };
 
-  // ✅ IMPROVED: Gemini AI call with better settings
+  // Gemini AI কল (Fixed URL & Model)
   const askGeminiAI = async (question: string): Promise<string> => {
-    console.log('🤖 Gemini AI called for question:', question);
-    
     try {
-      const systemPrompt = `তুমি কলম হিন্দু ধর্মসভার (KHDS) ভার্চুয়াল সহায়ক। 
-তুমি হিন্দু ধর্ম, পূজা, দেব-দেবী, মন্ত্র, উৎসব সম্পর্কে জ্ঞানী।
-তুমি বাংলায় উত্তর দেবে।
-তুমি সংক্ষেপে কিন্তু তথ্যবহুল উত্তর দেবে।
-তুমি emoji ব্যবহার করবে।
+      const systemPrompt = `তুমি "কলম হিন্দু ধর্মসভা" এর AI সহায়ক "ধর্ম সহায়ক"। তুমি হিন্দু ধর্ম ও পূজা সম্পর্কে জানো। বাংলায় ছোট করে উত্তর দাও।`;
+      
+      // সঠিক API URL এবং Model: gemini-1.5-flash
+      const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-কলম হিন্দু ধর্মসভা সম্পর্কে তথ্য:
-- অবস্থান: কলম, সিংড়া, নাটোর, বাংলাদেশ
-- প্রতিষ্ঠিত: ২০১৭
-- যোগাযোগ: 01733118313
-- Facebook: facebook.com/KHDS3
-- Website: durgpuja12.vercel.app
-- প্রধান পূজা: দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা, রথযাত্রা
-
-ব্যবহারকারীর প্রশ্ন: ${question}
-
-দয়া করে সুন্দর বাংলায় এবং emoji সহ উত্তর দাও।`;
-
-      const response = await fetch(
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: systemPrompt
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 800,
-              topP: 0.8,
-              topK: 40
-            },
-            safetySettings: [
-              {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_NONE"
-              },
-              {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_NONE"
-              },
-              {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_NONE"
-              },
-              {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_NONE"
-              }
-            ]
-          })
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ Gemini API Error:', errorData);
-        throw new Error(`API Error: ${response.status}`);
-      }
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: [{ text: `${systemPrompt}\n\nপ্রশ্ন: ${question}` }]
+          }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
+        })
+      });
 
       const data = await response.json();
-      console.log('✅ Gemini API Response received');
-      
-      const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (aiResponse) {
-        return aiResponse;
-      }
-      
-      throw new Error('No response text from AI');
-      
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "দুঃখিত, আমি উত্তর দিতে পারছি না।";
     } catch (error) {
-      console.error('❌ Gemini AI error:', error);
-      
-      // ✅ Better fallback message
-      return `দুঃখিত, এই মুহূর্তে AI সেবা পাওয়া যাচ্ছে না। 😔
-
-তবে আপনি আমাদের সাথে সরাসরি যোগাযোগ করতে পারেন:
-
-📞 ফোন: +88 01733118313
-📘 Facebook: facebook.com/KHDS3
-🌐 Website: durgpuja12.vercel.app
-
-আমরা শীঘ্রই আপনার সাহায্য করব! 🙏`;
+      return "সার্ভারে সমস্যা হচ্ছে। সরাসরি কল করুন: ০১৭৩৩১১৮৩১৩";
     }
   };
 
-  // ✅ Main handler - FAQ first (শুধু quick replies), then AI
-  const getAnswer = async (question: string): Promise<string> => {
-    // Step 1: শুধু Quick Replies এর জন্য FAQ check
-    const faqAnswer = findInFAQ(question);
-    if (faqAnswer) {
-      return faqAnswer;
-    }
+  const handleSend = async (forcedInput?: string) => {
+    const userText = forcedInput || input.trim();
+    if (!userText || isTyping) return;
 
-    // Step 2: বাকি সব প্রশ্ন AI কে পাঠাও
-    const aiAnswer = await askGeminiAI(question);
-    return aiAnswer;
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
-    
-    const userMessage = input.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setInput('');
     setIsTyping(true);
-    
-    try {
-      const answer = await getAnswer(userMessage);
-      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
-    } catch (error) {
-      console.error('Error getting answer:', error);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: '❌ দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।\n\nসমস্যা বার বার হলে আমাদের সাথে যোগাযোগ করুন: 01733118313' 
-      }]);
-    } finally {
-      setIsTyping(false);
-    }
+
+    const faqAnswer = findInFAQ(userText);
+    const finalAnswer = faqAnswer ? faqAnswer : await askGeminiAI(userText);
+
+    setMessages(prev => [...prev, { role: 'bot', text: finalAnswer }]);
+    setIsTyping(false);
   };
 
-  const handleQuickReply = async (reply: string) => {
-    setMessages(prev => [...prev, { role: 'user', text: reply }]);
-    setIsTyping(true);
-    
-    try {
-      const answer = await getAnswer(reply);
-      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
-    } catch (error) {
-      console.error('Error with quick reply:', error);
-      setMessages(prev => [...prev, { role: 'bot', text: '❌ দুঃখিত, সমস্যা হয়েছে। আবার চেষ্টা করুন।' }]);
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-2xl shadow-2xl flex items-center justify-center" style={{ height: '600px' }}>
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">AI সহায়ক লোড হচ্ছে...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="h-[500px] flex items-center justify-center">অপেক্ষা করুন...</div>;
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ height: '600px' }}>
+    <div className="bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-gray-100" style={{ height: '600px' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-            🤖
-          </div>
-          <div>
-            <h3 className="font-bold text-lg">AI সহায়ক</h3>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <p className="text-xs text-orange-100">অনলাইন • AI Powered • যেকোনো প্রশ্ন করুন</p>
-            </div>
-          </div>
+      <div className="bg-gradient-to-r from-orange-600 to-red-600 p-4 text-white flex items-center gap-3">
+        <div className="bg-white/20 p-2 rounded-full"><Bot size={24} /></div>
+        <div>
+          <h3 className="font-bold">ধর্ম সহায়ক (AI)</h3>
+          <p className="text-[10px] opacity-80 font-mono">Powered by Gemini 1.5 Flash</p>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {messages.map((msg, i) => (
-          <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-            {msg.role === 'bot' && (
-              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-2 flex-shrink-0 mt-1">
-                🤖
-              </div>
-            )}
-            <div className={cn(
-              "max-w-[80%] p-4 rounded-2xl shadow-md",
-              msg.role === 'user' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
-                : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
-            )}>
-              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
+              msg.role === 'user' ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
+            }`}>
+              {msg.text}
             </div>
           </div>
         ))}
-        
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">🤖</div>
-            <div className="bg-white p-3 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-                <span className="text-xs text-gray-400">AI চিন্তা করছে...</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
+        {isTyping && <div className="text-[10px] text-gray-400 animate-pulse ml-2">ধর্ম সহায়ক লিখছে...</div>}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Replies */}
       {messages.length <= 1 && (
-        <div className="px-4 py-2 border-t bg-gray-50">
-          <p className="text-xs text-gray-500 mb-2">💡 দ্রুত প্রশ্ন:</p>
-          <div className="flex flex-wrap gap-2">
-            {quickReplies.map((reply: string, i: number) => (
-              <button 
-                key={i}
-                onClick={() => handleQuickReply(reply)}
-                className="px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-xs hover:bg-orange-50 transition font-medium"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
+        <div className="p-3 flex flex-wrap gap-2 bg-white">
+          {quickReplies.map((q, i) => (
+            <button key={i} onClick={() => handleSend(q)} className="text-xs border border-orange-300 px-3 py-1.5 rounded-full text-orange-700 hover:bg-orange-50 transition">
+              {q}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Input */}
-      <div className="p-4 border-t bg-white rounded-b-2xl">
-        <div className="flex gap-2">
-          <input 
-            value={input} 
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="যেকোনো প্রশ্ন লিখুন..."
-            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition text-sm"
-            disabled={isTyping}
-          />
-          <button 
-            onClick={handleSend}
-            disabled={!input.trim() || isTyping}
-            className="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="text-xs text-gray-400 mt-2 text-center">
-          🤖 AI powered by Google Gemini • যেকোনো ধর্মীয় প্রশ্ন করতে পারেন
-        </p>
+      {/* Input Area */}
+      <div className="p-3 border-t bg-white flex gap-2">
+        <input 
+          value={input} 
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          placeholder="এখানে প্রশ্ন লিখুন..." 
+          className="flex-1 bg-gray-100 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+        />
+        <button 
+          onClick={() => handleSend()} 
+          disabled={!input.trim() || isTyping}
+          className="bg-orange-600 text-white p-2 rounded-xl disabled:opacity-50"
+        >
+          <Send size={20} />
+        </button>
       </div>
     </div>
   );
