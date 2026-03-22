@@ -1956,15 +1956,14 @@ function AIChatbox() {
   );
 }
 
-// JSON Editor Component for Super Admin
 // JSON Editor Component for Super Admin with Dynamic Form
 function JSONEditor() {
-  const [selectedFile, setSelectedFile] = useState('dynamicContent');
-  const [jsonData, setJsonData] = useState([]);
-  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
-  const [formData, setFormData] = useState({});
-  const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
+  const [jsonData, setJsonData] = useState<any[]>([]);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number>(0);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [copied, setCopied] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // All available JSON files with GitHub raw URLs
   const JSON_FILES = [
@@ -2045,6 +2044,8 @@ function JSONEditor() {
       setLoading(true);
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
+        if (!file) return;
+        
         const response = await fetch(file.url, { cache: 'no-cache' });
         const data = await response.json();
         const dataArray = Array.isArray(data) ? data : [data];
@@ -2066,9 +2067,9 @@ function JSONEditor() {
     if (jsonData[selectedItemIndex]) {
       setFormData({ ...jsonData[selectedItemIndex] });
     }
-  }, [selectedItemIndex]);
+  }, [selectedItemIndex, jsonData]);
 
-  const handleFieldChange = (key, value) => {
+  const handleFieldChange = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -2082,7 +2083,7 @@ function JSONEditor() {
   };
 
   // বাংলা লেবেল ম্যাপিং
-  const labelMap = {
+  const labelMap: Record<string, string> = {
     id: 'আইডি',
     title: 'শিরোনাম',
     date: 'তারিখ (বাংলা)',
@@ -2115,7 +2116,7 @@ function JSONEditor() {
     password: 'পাসওয়ার্ড',
   };
 
-  const renderFormField = (key, value) => {
+  const renderFormField = (key: string, value: any) => {
     const label = labelMap[key] || key;
 
     // ID field - readonly
@@ -2224,7 +2225,7 @@ function JSONEditor() {
           <input
             type="text"
             value={formData[key]?.join(', ') || ''}
-            onChange={(e) => handleFieldChange(key, e.target.value.split(',').map(s => s.trim()))}
+            onChange={(e) => handleFieldChange(key, e.target.value.split(',').map((s: string) => s.trim()))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           />
         </div>
@@ -2313,7 +2314,7 @@ function JSONEditor() {
             onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
-            {jsonData.map((item, index) => (
+            {jsonData.map((item: any, index: number) => (
               <option key={index} value={index}>
                 #{index + 1} - {item.title || item.name || item.question || item.channelName || `আইটেম ${index + 1}`}
               </option>
@@ -2397,6 +2398,7 @@ function JSONEditor() {
     </div>
   );
 }
+
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
