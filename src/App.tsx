@@ -2671,28 +2671,24 @@ function GlobalLiveTVPlayer() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [position, setPosition] = useState({ x: 16, y: 64 }); // right-4, bottom-16
+  const [isDragging, setIsDragging] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
   const loadedChannelIdRef = useRef<string | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // LiveTV page এ থাকলে popup দেখাবে না
   const shouldShow = activeChannel && location.pathname !== '/live';
 
   // Stream load - শুধু নতুন channel হলে
   useEffect(() => {
-    if (!activeChannel || location.pathname === '/live') {
-      return;
-    }
-
-    // একই channel আবার load করবে না
-    if (loadedChannelIdRef.current === activeChannel.id) {
-      return;
-    }
+    if (!activeChannel || location.pathname === '/live') return;
+    if (loadedChannelIdRef.current === activeChannel.id) return;
 
     const video = videoRef.current;
     if (!video) return;
 
-    // আগের HLS destroy
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
@@ -2755,70 +2751,212 @@ function GlobalLiveTVPlayer() {
     };
   }, []);
 
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('video')) return;
+    
+    setIsDragging(true);
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: position.x,
+      initialY: position.y
+    };
+    e.preventDefault();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('video')) return;
+    
+    const touch = e.touches[0];
+    setIsDragging(true);
+    dragRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      initialX: position.x,
+      initialY: position.y
+    };
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      
+      const deltaX = dragRef.current.startX - e.clientX;
+      const deltaY = dragRef.current.startY - e.clientY;
+      
+      const newX = Math.max(16, Math.min(window.innerWidth - 320, dragRef.current.initialX + deltaX));
+      const newY = Math.max(64, Math.min(window.innerHeight - 300, dragRef.current.initialY + deltaY));
+      
+      setPosition({ x: newX, y: newY });
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!dragRef.current) return;
+      
+      const touch = e.touches[0];
+      const deltaX = dragRef.current.startX - touch.clientX;
+      const deltaY = dragRef.current.startY - touch.clientY;
+      
+      const newX = Math.max(16, Math.min(window.innerWidth - 320, dragRef.current.initialX + deltaX));
+      const newY = Math.max(64, Math.min(window.innerHeight - 300, dragRef.current.initialY + deltaY));
+      
+      setPosition({ x: newX, y: newY });
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+      dragRef.current = null;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging]);
+
   const handleRetry = () => {
     loadedChannelIdRef.current = null;
     setHasError(false);
     setIsLoading(true);
   };
 
+  // Minimize toggle - video চলতে থাকবে
+  const handleMinimizeToggle = () => {
+    setIsMinimized(!isMinimized);
+    // Video play state বজায় রাখা
+    const video = videoRef.current;
+    if (video && !isMusicPlaying && !isLoading && !hasError) {
+      video.play().catch(() => {});
+    }
+  };
+
   if (!shouldShow) return null;
 
   return (
-    <div className={cn(
-      "fixed z-50 transition-all duration-300 shadow-2xl",
-      isMinimized ? "bottom-16 right-4 w-64" : "bottom-16 right-4 w-80 md:w-96"
-    )}>
+    <div 
+      ref={containerRef}
+      className={cn(
+        "fixed z-50 transition-all shadow-2xl select-none",
+        isDragging ? "cursor-grabbing" : "cursor-grab",
+        isMinimized ? "w-56" : "w-80 md:w-96"
+      )}
+      style={{ 
+        right: `${position.x}px`, 
+        bottom: `${position.y}px`,
+        transition: isDragging ? 'none' : 'all 0.3s ease'
+      }}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+    >
       <div className="bg-black rounded-2xl overflow-hidden border-2 border-red-500">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between">
+        {/* Header - Drag Handle */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between cursor-grab active:cursor-grabbing">
           <div className="flex items-center gap-2 text-white flex-1 min-w-0">
+            {/* Drag indicator */}
+            <div className="flex flex-col gap-0.5 mr-1 opacity-50">
+              <div className="w-4 h-0.5 bg-white rounded"></div>
+              <div className="w-4 h-0.5 bg-white rounded"></div>
+            </div>
             <div className={cn("w-2 h-2 rounded-full flex-shrink-0", isMusicPlaying ? "bg-yellow-400" : "bg-white animate-pulse")} />
             <span className="font-bold text-xs truncate">{isMusicPlaying ? "⏸️ " : "🔴 "}{activeChannel.name}</span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button onClick={() => setIsMinimized(!isMinimized)} className="text-white hover:bg-white/20 p-1.5 rounded transition">
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleMinimizeToggle(); }} 
+              className="text-white hover:bg-white/20 p-1.5 rounded transition"
+            >
               <ChevronDown className={cn("w-4 h-4 transition-transform", isMinimized && "rotate-180")} />
             </button>
-            <button onClick={closeLiveTV} className="text-white hover:bg-red-800 p-1.5 rounded transition">
+            <button 
+              onClick={(e) => { e.stopPropagation(); closeLiveTV(); }} 
+              className="text-white hover:bg-red-800 p-1.5 rounded transition"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Video */}
-        {!isMinimized && (
-          <div className="aspect-video bg-gray-900 relative">
-            <video ref={videoRef} autoPlay playsInline controls className="w-full h-full" />
-            
-            {isLoading && !hasError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        {/* Video - Always rendered but hidden when minimized */}
+        <div className={cn("aspect-video bg-gray-900 relative", isMinimized && "hidden")}>
+          <video ref={videoRef} autoPlay playsInline controls className="w-full h-full" />
+          
+          {isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          
+          {isMusicPlaying && !isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+              <div className="text-center text-white">
+                <Music className="w-10 h-10 mx-auto mb-2" />
+                <p className="text-sm">মিউজিক চালু আছে</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); togglePlayPause(); }} 
+                  className="mt-2 px-4 py-1.5 bg-orange-500 rounded-lg text-xs hover:bg-orange-600"
+                >
+                  মিউজিক বন্ধ করুন
+                </button>
               </div>
-            )}
-            
-            {isMusicPlaying && !isLoading && !hasError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-                <div className="text-center text-white">
-                  <Music className="w-10 h-10 mx-auto mb-2" />
-                  <p className="text-sm">মিউজিক চালু আছে</p>
-                  <button onClick={togglePlayPause} className="mt-2 px-4 py-1.5 bg-orange-500 rounded-lg text-xs hover:bg-orange-600">
-                    মিউজিক বন্ধ করুন
-                  </button>
+            </div>
+          )}
+          
+          {hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white">
+              <div className="text-center">
+                <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleRetry(); }} 
+                  className="px-4 py-1.5 bg-orange-500 rounded-lg text-xs"
+                >
+                  আবার চেষ্টা
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Minimized State */}
+        {isMinimized && (
+          <div className="p-3 flex items-center justify-between bg-gray-900">
+            <div className="flex items-center gap-2">
+              {!isMusicPlaying && !isLoading && !hasError && (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-4 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
                 </div>
-              </div>
-            )}
-            
-            {hasError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white">
-                <div className="text-center">
-                  <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
-                  <button onClick={handleRetry} className="px-4 py-1.5 bg-orange-500 rounded-lg text-xs">আবার চেষ্টা</button>
-                </div>
-              </div>
-            )}
+              )}
+              <span className="text-white text-xs">
+                {isMusicPlaying ? "⏸️ Paused" : isLoading ? "Loading..." : hasError ? "Error" : "▶️ Playing"}
+              </span>
+            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleMinimizeToggle(); }}
+              className="text-white bg-white/20 px-2 py-1 rounded text-xs hover:bg-white/30"
+            >
+              বড় করুন
+            </button>
           </div>
         )}
       </div>
+
+      {/* Drag hint */}
+      {!isMinimized && (
+        <p className="text-center text-xs text-gray-400 mt-1 pointer-events-none">
+          ধরে সরান
+        </p>
+      )}
     </div>
   );
 }
