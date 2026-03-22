@@ -1958,34 +1958,244 @@ function AIChatbox() {
 
 // JSON Editor Component for Super Admin
 function JSONEditor() {
-  const [jsonContent, setJsonContent] = useState('');
-  const [copied, setCopied] = useState(false);
   const [selectedFile, setSelectedFile] = useState('dynamicContent');
+  const [jsonData, setJsonData] = useState([]);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
+  const [formData, setFormData] = useState({});
+  const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // All available JSON files
+  const JSON_FILES = [
+    { id: 'dynamicContent', label: '📰 ঘোষণা ও খবর', url: GITHUB_DYNAMIC_CONTENT_URL },
+    { id: 'membersData', label: '👥 সদস্য তথ্য', url: GITHUB_MEMBERS_DATA_URL },
+    { id: 'loginData', label: '🔐 সদস্য লগইন', url: GITHUB_LOGIN_URL },
+    { id: 'chatbotData', label: '💬 চ্যাটবট ডেটা', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/chatbot-data.json' },
+    { id: 'galleryImages', label: '🖼️ গ্যালারি ছবি', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/gallery-images.json' },
+    { id: 'accountsPDFs', label: '📊 হিসাব PDF', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json' },
+    { id: 'liveChannels', label: '📺 লাইভ চ্যানেল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json' },
+    { id: 'pdfFiles', label: '📄 PDF ফাইল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json' },
+    { id: 'pujaData', label: '🙏 পূজা তথ্য', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json' },
+    { id: 'schedules', label: '📅 সময়সূচী', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json' },
+    { id: 'songs', label: '🎵 গান', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json' },
+  ];
+
+  // Load JSON file
   useEffect(() => {
     const fetchJSON = async () => {
+      setLoading(true);
       try {
-        let url = '';
-        switch(selectedFile) {
-          case 'dynamicContent': url = GITHUB_DYNAMIC_CONTENT_URL; break;
-          case 'membersData': url = GITHUB_MEMBERS_DATA_URL; break;
-          case 'loginData': url = GITHUB_LOGIN_URL; break;
-        }
-        const response = await fetch(url, { cache: 'no-cache' });
+        const file = JSON_FILES.find(f => f.id === selectedFile);
+        const response = await fetch(file.url, { cache: 'no-cache' });
         const data = await response.json();
-        setJsonContent(JSON.stringify(data, null, 2));
-      } catch {
-        setJsonContent('// ডেটা লোড করতে সমস্যা হয়েছে');
+        const dataArray = Array.isArray(data) ? data : [data];
+        setJsonData(dataArray);
+        setSelectedItemIndex(0);
+        setFormData(dataArray[0] || {});
+      } catch (error) {
+        console.error('Error loading JSON:', error);
+        setJsonData([]);
+        setFormData({});
       }
+      setLoading(false);
     };
     fetchJSON();
   }, [selectedFile]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(jsonContent);
+  // Update form data when item changes
+  useEffect(() => {
+    if (jsonData[selectedItemIndex]) {
+      setFormData({ ...jsonData[selectedItemIndex] });
+    }
+  }, [selectedItemIndex]);
+
+  const handleFieldChange = (key, value) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleCopyJSON = () => {
+    const updatedData = [...jsonData];
+    updatedData[selectedItemIndex] = formData;
+    const jsonString = JSON.stringify(updatedData, null, 2);
+    navigator.clipboard.writeText(jsonString);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // বাংলা লেবেল ম্যাপিং
+  const labelMap = {
+    id: 'আইডি',
+    title: 'শিরোনাম',
+    date: 'তারিখ (বাংলা)',
+    dateEn: 'তারিখ (ইংরেজি)',
+    details: 'বিবরণ',
+    priority: 'প্রাধান্য',
+    category: 'ক্যাটাগরি',
+    question: 'প্রশ্ন',
+    answer: 'উত্তর',
+    keywords: 'কীওয়ার্ড',
+    name: 'নাম',
+    role: 'পদবী',
+    phone: 'ফোন',
+    email: 'ইমেইল',
+    address: 'ঠিকানা',
+    imageUrl: 'ছবির লিংক',
+    caption: 'ক্যাপশন',
+    url: 'লিংক',
+    audioUrl: 'অডিও লিংক',
+    time: 'সময়',
+    location: 'স্থান',
+    description: 'বর্ণনা',
+    artist: 'শিল্পী',
+    duration: 'সময়কাল',
+    pdfUrl: 'PDF লিংক',
+    channelName: 'চ্যানেল নাম',
+    streamUrl: 'স্ট্রিম লিংক',
+    thumbnail: 'থাম্বনেইল',
+    username: 'ইউজারনেম',
+    password: 'পাসওয়ার্ড',
+  };
+
+  const renderFormField = (key, value) => {
+    const label = labelMap[key] || key;
+
+    // ID field - readonly
+    if (key === 'id') {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <input
+            type="text"
+            value={formData[key] || ''}
+            disabled
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+      );
+    }
+
+    // Textarea for long text
+    if (typeof value === 'string' && (value.length > 100 || key === 'details' || key === 'answer' || key === 'description' || key === 'address')) {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <textarea
+            value={formData[key] || ''}
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            rows={5}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+      );
+    }
+
+    // Priority dropdown
+    if (key === 'priority') {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <select
+            value={formData[key] || 'medium'}
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          >
+            <option value="high">🔴 উচ্চ (High)</option>
+            <option value="medium">🟡 মাঝারি (Medium)</option>
+            <option value="low">🟢 নিম্ন (Low)</option>
+          </select>
+        </div>
+      );
+    }
+
+    // Role dropdown
+    if (key === 'role') {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <select
+            value={formData[key] || 'Member'}
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          >
+            <option value="Super Admin">Super Admin</option>
+            <option value="Admin">Admin</option>
+            <option value="Member">Member</option>
+          </select>
+        </div>
+      );
+    }
+
+    // Date fields
+    if (key.toLowerCase().includes('date') && typeof value === 'string' && key !== 'date') {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <input
+            type="date"
+            value={formData[key] || ''}
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+      );
+    }
+
+    // Boolean fields
+    if (typeof value === 'boolean') {
+      return (
+        <div key={key} className="mb-4 flex items-center">
+          <input
+            type="checkbox"
+            checked={formData[key] || false}
+            onChange={(e) => handleFieldChange(key, e.target.checked)}
+            className="w-5 h-5 text-orange-500 rounded focus:ring-2 focus:ring-orange-500"
+          />
+          <label className="ml-3 text-sm font-semibold text-gray-700">{label}</label>
+        </div>
+      );
+    }
+
+    // Array fields
+    if (Array.isArray(value)) {
+      return (
+        <div key={key} className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {label} <span className="text-xs text-gray-500">(কমা দিয়ে আলাদা করুন)</span>
+          </label>
+          <input
+            type="text"
+            value={formData[key]?.join(', ') || ''}
+            onChange={(e) => handleFieldChange(key, e.target.value.split(',').map(s => s.trim()))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+      );
+    }
+
+    // Default text input
+    return (
+      <div key={key} className="mb-4">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+        <input
+          type="text"
+          value={formData[key] || ''}
+          onChange={(e) => handleFieldChange(key, e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        />
+      </div>
+    );
+  };
+
+  // Generate updated JSON
+  const generatedJSON = JSON.stringify(
+    (() => {
+      const updatedData = [...jsonData];
+      updatedData[selectedItemIndex] = formData;
+      return updatedData;
+    })(),
+    null,
+    2
+  );
 
   return (
     <div className="space-y-4">
@@ -1996,62 +2206,112 @@ function JSONEditor() {
         </h2>
       </div>
 
-      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
-        <p className="text-yellow-800 font-medium">⚠️ সতর্কতা:</p>
-        <p className="text-sm text-yellow-700 mt-1">
-          এই JSON ফাইলগুলো GitHub এ সরাসরি এডিট করতে হবে। নিচে থেকে কপি করে GitHub এ পেস্ট করুন।
+      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+        <p className="text-blue-800 font-medium">ℹ️ নতুন ফিচার:</p>
+        <p className="text-sm text-blue-700 mt-1">
+          এখন বাম পাশে ফর্ম এডিট করুন, ডান পাশে JSON কোড দেখুন এবং কপি করে GitHub এ পেস্ট করুন।
         </p>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { id: 'dynamicContent', label: 'Dynamic Content' },
-          { id: 'membersData', label: 'Members Data' },
-          { id: 'loginData', label: 'Login Data' }
-        ].map(file => (
-          <button
-            key={file.id}
-            onClick={() => setSelectedFile(file.id)}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition",
-              selectedFile === file.id 
-                ? "bg-orange-500 text-white" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
-            {file.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-gray-900 rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
-          <span className="text-gray-400 text-sm">{selectedFile}.json</span>
-          <button 
-            onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-1 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition"
-          >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'কপি হয়েছে!' : 'কপি করুন'}
-          </button>
+      {/* File Selector */}
+      <div className="bg-white rounded-xl p-4 shadow-lg">
+        <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন করুন:</label>
+        <div className="flex gap-2 flex-wrap">
+          {JSON_FILES.map(file => (
+            <button
+              key={file.id}
+              onClick={() => setSelectedFile(file.id)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium transition",
+                selectedFile === file.id 
+                  ? "bg-orange-500 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-700 hover:bg-orange-50"
+              )}
+            >
+              {file.label}
+            </button>
+          ))}
         </div>
-        <textarea
-          value={jsonContent}
-          onChange={(e) => setJsonContent(e.target.value)}
-          className="w-full h-96 p-4 bg-gray-900 text-green-400 font-mono text-sm outline-none resize-none"
-          spellCheck={false}
-        />
       </div>
 
+      {/* Item Selector */}
+      {jsonData.length > 1 && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          <label className="block text-sm font-bold text-gray-700 mb-3">
+            📋 আইটেম নির্বাচন করুন ({jsonData.length} টি):
+          </label>
+          <select
+            value={selectedItemIndex}
+            onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          >
+            {jsonData.map((item, index) => (
+              <option key={index} value={index}>
+                #{index + 1} - {item.title || item.name || item.question || item.channelName || `আইটেম ${index + 1}`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Two Column Layout: Form + JSON Code */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left Panel: Form Editor */}
+        <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
+            <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট করুন</h3>
+            <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+              {Object.keys(formData).length} টি ফিল্ড
+            </span>
+          </div>
+          <div className="max-h-[600px] overflow-y-auto pr-2">
+            {loading ? (
+              <div className="text-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <p className="mt-3 text-gray-600">লোডিং হচ্ছে...</p>
+              </div>
+            ) : Object.keys(formData).length > 0 ? (
+              Object.keys(formData).map(key => renderFormField(key, formData[key]))
+            ) : (
+              <p className="text-center text-gray-500 py-10">কোন ডেটা পাওয়া যায়নি</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right Panel: JSON Code */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700">
+            <h3 className="text-white font-bold">💻 আপডেটেড JSON কোড</h3>
+            <button 
+              onClick={handleCopyJSON}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? '✅ কপি হয়েছে!' : '📋 সম্পূর্ণ JSON কপি করুন'}
+            </button>
+          </div>
+          <pre className="bg-gray-900 text-green-400 p-4 text-sm font-mono overflow-x-auto max-h-[600px] overflow-y-auto">
+            <code>{generatedJSON}</code>
+          </pre>
+          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
+            <p className="text-xs text-yellow-800">
+              ⚠️ এই JSON কপি করে GitHub এর সংশ্লিষ্ট ফাইলে পেস্ট করুন
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* GitHub Instructions */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <h3 className="font-bold mb-3">📝 GitHub এ এডিট করার পদ্ধতি:</h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-          <li>উপরের JSON কপি করুন</li>
-          <li>GitHub Repository তে যান: <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline">github.com/tkmani91/KHD</a></li>
-          <li>সংশ্লিষ্ট JSON ফাইলটি খুলুন</li>
+          <li>উপরের "📋 সম্পূর্ণ JSON কপি করুন" বাটনে ক্লিক করুন</li>
+          <li>GitHub Repository তে যান: <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline font-semibold">github.com/tkmani91/KHD</a></li>
+          <li><code className="bg-gray-100 px-2 py-1 rounded">public/data/{selectedFile}.json</code> ফাইলটি খুলুন</li>
           <li>Edit বাটনে (✏️) ক্লিক করুন</li>
-          <li>পরিবর্তন করুন বা নতুন কনটেন্ট পেস্ট করুন</li>
+          <li>পুরো কনটেন্ট মুছে কপি করা JSON পেস্ট করুন</li>
           <li>"Commit changes" বাটনে ক্লিক করুন</li>
+          <li>কিছুক্ষণ পর ওয়েবসাইটে রিফ্রেশ করলে পরিবর্তন দেখবেন</li>
         </ol>
       </div>
     </div>
