@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { InstallPrompt } from './components/InstallPrompt';
 import { 
@@ -42,95 +42,180 @@ import { cn } from './utils/cn';
 import { OptimizedImage } from './components/OptimizedImage';
 
 // ==================== GLOBAL MEDIA CONTEXT ====================
-import { createContext, useContext } from 'react';
-
 interface MediaContextType {
-  // Music Player
+  // Music
   currentSong: Song | null;
   currentIndex: number;
   isPlaying: boolean;
-  audioRef: React.RefObject<HTMLAudioElement>;
+  isLoading: boolean;
+  progress: number;
+  duration: number;
+  currentTime: number;
+  volume: number;
+  setVolume: (v: number) => void;
   playSong: (song: Song, index: number, playlist: Song[]) => void;
   togglePlayPause: () => void;
   closeMusicPlayer: () => void;
-  skipForward: (playlist: Song[]) => void;
-  skipBack: (playlist: Song[]) => void;
-  
+  skipForward: () => void;
+  skipBack: () => void;
+  seekTo: (percent: number) => void;
+  playlist: Song[];
+
   // Live TV
   activeChannel: LiveChannel | null;
+  isTVLoading: boolean;
+  tvError: boolean;
   setActiveChannel: (channel: LiveChannel | null) => void;
   closeLiveTV: () => void;
+  retryTV: () => void;
 }
 
 const MediaContext = createContext<MediaContextType | null>(null);
 
 function MediaProvider({ children }: { children: React.ReactNode }) {
-  // Music State
+  // ===== MUSIC STATE =====
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [playlist, setPlaylist] = useState<Song[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentPlaylist, setCurrentPlaylist] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentIndexRef = useRef<number>(-1);
+  const playlistRef = useRef<Song[]>([]);
 
-  // Live TV State
-  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
+  // ===== LIVE TV STATE =====
+  const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
+  const [isTVLoading, setIsTVLoading] = useState(false);
+  const [tvError, setTvError] = useState(false);
 
-  // Initialize Audio
+  // Keep refs updated
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+    playlistRef.current = playlist;
+  }, [currentIndex, playlist]);
+
+  // ===== AUDIO INITIALIZATION =====
   useEffect(() => {
     const audio = new Audio();
-    audio.volume = 0.7;
+    audio.volume = volume;
     audio.preload = 'metadata';
     audioRef.current = audio;
 
+    const handleTimeUpdate = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
     const handleEnded = () => {
-      // Auto play next song
-      if (currentPlaylist.length > 0) {
-        const nextIndex = currentIndex + 1 >= currentPlaylist.length ? 0 : currentIndex + 1;
-        const nextSong = currentPlaylist[nextIndex];
+      const idx = currentIndexRef.current;
+      const songs = playlistRef.current;
+      
+      if (songs.length > 0) {
+        const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
+        const nextSong = songs[nextIndex];
+        
         if (nextSong && audioRef.current) {
           setCurrentSong(nextSong);
           setCurrentIndex(nextIndex);
+          setProgress(0);
+          setCurrentTime(0);
+          setIsLoading(true);
+          
           audioRef.current.src = nextSong.url;
           audioRef.current.load();
           audioRef.current.play()
-            .then(() => setIsPlaying(true))
-            .catch(() => setIsPlaying(false));
+            .then(() => {
+              setIsPlaying(true);
+              setIsLoading(false);
+            })
+            .catch(() => {
+              setIsPlaying(false);
+              setIsLoading(false);
+            });
         }
       }
     };
 
+    const handleError = () => {
+      setIsLoading(false);
+      setIsPlaying(false);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
 
     return () => {
       audio.pause();
       audio.src = '';
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, [currentIndex, currentPlaylist]);
+  }, []);
 
-  // Play Song Function
-  const playSong = useCallback((song: Song, index: number, playlist: Song[]) => {
+  // Volume sync
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // ===== MUSIC FUNCTIONS =====
+  const playSong = useCallback((song: Song, index: number, newPlaylist: Song[]) => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.pause();
     setCurrentSong(song);
     setCurrentIndex(index);
-    setCurrentPlaylist(playlist);
-    
+    setPlaylist(newPlaylist);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsLoading(true);
+
     audio.src = song.url;
     audio.load();
     
-    audio.play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setIsLoading(false);
+        });
+    }
   }, []);
 
-  // Toggle Play/Pause
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !currentSong) return;
-    
+
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
@@ -141,41 +226,45 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentSong, isPlaying]);
 
-  // Skip Forward
-  const skipForward = useCallback((playlist: Song[]) => {
-    if (playlist.length === 0) return;
-    
-    let newIndex = currentIndex + 1;
-    if (newIndex >= playlist.length) newIndex = 0;
-    
-    const nextSong = playlist[newIndex];
-    if (nextSong) {
-      playSong(nextSong, newIndex, playlist);
-    }
-  }, [currentIndex, playSong]);
+  const skipForward = useCallback(() => {
+    const songs = playlistRef.current;
+    if (songs.length === 0) return;
 
-  // Skip Back
-  const skipBack = useCallback((playlist: Song[]) => {
+    let newIndex = currentIndexRef.current + 1;
+    if (newIndex >= songs.length) newIndex = 0;
+
+    const nextSong = songs[newIndex];
+    if (nextSong) {
+      playSong(nextSong, newIndex, songs);
+    }
+  }, [playSong]);
+
+  const skipBack = useCallback(() => {
     const audio = audioRef.current;
-    
-    // If more than 3 seconds played, restart current song
+    const songs = playlistRef.current;
+
     if (audio && audio.currentTime > 3) {
       audio.currentTime = 0;
       return;
     }
-    
-    if (playlist.length === 0) return;
-    
-    let newIndex = currentIndex - 1;
-    if (newIndex < 0) newIndex = playlist.length - 1;
-    
-    const prevSong = playlist[newIndex];
-    if (prevSong) {
-      playSong(prevSong, newIndex, playlist);
-    }
-  }, [currentIndex, playSong]);
 
-  // Close Music Player
+    if (songs.length === 0) return;
+
+    let newIndex = currentIndexRef.current - 1;
+    if (newIndex < 0) newIndex = songs.length - 1;
+
+    const prevSong = songs[newIndex];
+    if (prevSong) {
+      playSong(prevSong, newIndex, songs);
+    }
+  }, [playSong]);
+
+  const seekTo = useCallback((percent: number) => {
+    const audio = audioRef.current;
+    if (!audio || !duration || isNaN(duration)) return;
+    audio.currentTime = (percent / 100) * duration;
+  }, [duration]);
+
   const closeMusicPlayer = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
@@ -184,43 +273,70 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
     }
     setCurrentSong(null);
     setCurrentIndex(-1);
+    setPlaylist([]);
     setIsPlaying(false);
-    setCurrentPlaylist([]);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
   }, []);
 
-  // Close Live TV
-  const closeLiveTV = useCallback(() => {
-    setActiveChannel(null);
+  // ===== LIVE TV FUNCTIONS =====
+  const setActiveChannel = useCallback((channel: LiveChannel | null) => {
+    setActiveChannelState(channel);
+    setIsTVLoading(true);
+    setTvError(false);
   }, []);
+
+  const closeLiveTV = useCallback(() => {
+    setActiveChannelState(null);
+    setIsTVLoading(false);
+    setTvError(false);
+  }, []);
+
+  const retryTV = useCallback(() => {
+    if (activeChannel) {
+      setActiveChannel({ ...activeChannel });
+    }
+  }, [activeChannel, setActiveChannel]);
 
   return (
     <MediaContext.Provider value={{
+      // Music
       currentSong,
       currentIndex,
       isPlaying,
-      audioRef: audioRef as React.RefObject<HTMLAudioElement>,
+      isLoading,
+      progress,
+      duration,
+      currentTime,
+      volume,
+      setVolume,
       playSong,
       togglePlayPause,
       closeMusicPlayer,
       skipForward,
       skipBack,
+      seekTo,
+      playlist,
+      // Live TV
       activeChannel,
+      isTVLoading,
+      tvError,
       setActiveChannel,
-      closeLiveTV
+      closeLiveTV,
+      retryTV
     }}>
       {children}
     </MediaContext.Provider>
   );
 }
 
-// Custom Hook
 function useMedia() {
   const context = useContext(MediaContext);
   if (!context) {
     throw new Error('useMedia must be used within MediaProvider');
   }
   return context;
-}
 
 // Types
 interface CountdownTime {
@@ -1321,67 +1437,46 @@ function QuizArchivePage() {
 
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
-  const { currentSong, isPlaying, playSong, togglePlayPause } = useMedia();
   const [selectedCategory, setSelectedCategory] = useState('সব');
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(0.7);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  const {
+    currentSong,
+    isPlaying,
+    isLoading,
+    progress,
+    duration,
+    currentTime,
+    volume,
+    setVolume,
+    playSong,
+    togglePlayPause,
+    skipForward,
+    skipBack,
+    seekTo
+  } = useMedia();
+
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
-  const filteredSongs = selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory);
-
-  // Get audio element from context for progress tracking
-  const { audioRef, skipForward, skipBack } = useMedia();
-
-  // Progress tracking
-  useEffect(() => {
-    const audio = audioRef?.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setCurrentTime(audio.currentTime);
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    };
-  }, [audioRef, currentSong]);
-
-  // Volume control
-  useEffect(() => {
-    const audio = audioRef?.current;
-    if (audio) audio.volume = volume;
-  }, [volume, audioRef]);
-
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const audio = audioRef?.current;
-    if (!audio || !duration || isNaN(duration)) return;
-    const bar = e.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const barWidth = rect.width;
-    const newTime = (clickX / barWidth) * duration;
-    audio.currentTime = newTime;
-  };
+  const filteredSongs = useMemo(() => {
+    return selectedCategory === 'সব' 
+      ? songs 
+      : songs.filter(s => s.category === selectedCategory);
+  }, [songs, selectedCategory]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const barWidth = rect.width;
+    const percent = (clickX / barWidth) * 100;
+    seekTo(percent);
   };
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
@@ -1391,6 +1486,8 @@ function MusicPage() {
       return;
     }
     setDownloadingId(song.id);
+    
+    // Create download link
     const link = document.createElement('a');
     link.href = song.url;
     link.download = `${song.title} - ${song.artist}.mp3`;
@@ -1398,6 +1495,7 @@ function MusicPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
     setTimeout(() => setDownloadingId(null), 1000);
   };
 
@@ -1417,7 +1515,9 @@ function MusicPage() {
         <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isPlaying ? (
+              {isLoading ? (
+                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
                 <div className="flex items-center gap-0.5">
                   <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1431,25 +1531,33 @@ function MusicPage() {
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
+              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
             
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => skipBack(filteredSongs)} 
+                onClick={skipBack}
                 className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
               >
                 <SkipBack className="w-5 h-5" />
               </button>
               
               <button 
-                onClick={togglePlayPause} 
-                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition"
+                onClick={togglePlayPause}
+                disabled={isLoading}
+                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
               >
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                {isLoading ? (
+                  <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-1" />
+                )}
               </button>
               
               <button 
-                onClick={() => skipForward(filteredSongs)} 
+                onClick={skipForward}
                 className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
               >
                 <SkipForward className="w-5 h-5" />
@@ -1478,7 +1586,7 @@ function MusicPage() {
               onClick={handleProgressClick}
             >
               <div 
-                className="h-full bg-white rounded-full transition-all" 
+                className="h-full bg-white rounded-full transition-all duration-200" 
                 style={{ width: `${progress}%` }} 
               />
             </div>
@@ -1524,7 +1632,9 @@ function MusicPage() {
                   : "bg-orange-100"
               )}
             >
-              {currentSong?.id === song.id && isPlaying ? (
+              {currentSong?.id === song.id && isLoading ? (
+                <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+              ) : currentSong?.id === song.id && isPlaying ? (
                 <div className="flex items-center gap-0.5">
                   <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
                   <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -1545,7 +1655,7 @@ function MusicPage() {
               <button 
                 onClick={(e) => handleDownload(e, song)} 
                 disabled={downloadingId === song.id} 
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200 transition"
               >
                 {downloadingId === song.id ? (
                   <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
@@ -1567,6 +1677,7 @@ function MusicPage() {
     </div>
   );
 }
+  
 function PDFPage() {
   const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
@@ -1607,51 +1718,97 @@ function PDFPage() {
 
 function LiveTVPage() {
   const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
-  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const { activeChannel, setActiveChannel, isTVLoading, tvError, retryTV } = useMedia();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<any>(null);
+  const [localLoading, setLocalLoading] = useState(true);
+  const [localError, setLocalError] = useState(false);
 
+  // Set first channel on load
   useEffect(() => {
     if (liveChannels.length > 0 && !activeChannel) {
       setActiveChannel(liveChannels[0]);
     }
-  }, [liveChannels, activeChannel]);
+  }, [liveChannels, activeChannel, setActiveChannel]);
 
+  // Load HLS stream
   useEffect(() => {
     if (!activeChannel) return;
 
     const loadStream = async () => {
       const video = videoRef.current;
       if (!video) return;
-      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-      setIsLoading(true); setHasError(false);
+
+      // Cleanup previous
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      setLocalLoading(true);
+      setLocalError(false);
 
       try {
         const Hls = (await import('hls.js')).default;
+        
         if (Hls.isSupported()) {
-          const hls = new Hls();
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+          });
           hlsRef.current = hls;
+          
           hls.loadSource(activeChannel.streamUrl);
           hls.attachMedia(video);
+          
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            setIsLoading(false);
-            video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+            setLocalLoading(false);
+            video.play().catch(() => {
+              video.muted = true;
+              video.play().catch(() => {});
+            });
           });
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setHasError(true); setIsLoading(false); } });
+          
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data.fatal) {
+              setLocalError(true);
+              setLocalLoading(false);
+            }
+          });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
-          video.addEventListener('loadedmetadata', () => { setIsLoading(false); video.play().catch(() => {}); });
+          video.addEventListener('loadedmetadata', () => {
+            setLocalLoading(false);
+            video.play().catch(() => {});
+          });
+          video.addEventListener('error', () => {
+            setLocalError(true);
+            setLocalLoading(false);
+          });
         }
-      } catch { setHasError(true); setIsLoading(false); }
+      } catch {
+        setLocalError(true);
+        setLocalLoading(false);
+      }
     };
+
     loadStream();
-    return () => { if (hlsRef.current) hlsRef.current.destroy(); };
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
   }, [activeChannel]);
 
   if (!activeChannel) {
-    return <div className="text-center py-12">লোড হচ্ছে...</div>;
+    return (
+      <div className="text-center py-12">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p>লোড হচ্ছে...</p>
+      </div>
+    );
   }
 
   return (
@@ -1660,31 +1817,65 @@ function LiveTVPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
         <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
       </div>
+
+      {/* Video Player */}
       <div className="bg-black rounded-2xl overflow-hidden relative">
         <div className="aspect-video relative">
-          <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
-          {isLoading && !hasError && (
+          <video 
+            ref={videoRef} 
+            className="w-full h-full object-contain bg-black" 
+            playsInline 
+            autoPlay 
+            controls 
+          />
+          
+          {/* Loading Overlay */}
+          {localLoading && !localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center text-white">
                 <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p>লোড হচ্ছে...</p>
+                <p className="text-lg">লোড হচ্ছে...</p>
+                <p className="text-sm text-gray-400 mt-2">{activeChannel.name}</p>
               </div>
             </div>
           )}
-          {hasError && (
+          
+          {/* Error Overlay */}
+          {localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90">
               <div className="text-center text-white">
                 <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
-                <button onClick={() => setActiveChannel({...activeChannel})} className="px-6 py-2 bg-orange-500 rounded-lg">আবার চেষ্টা করুন</button>
+                <button 
+                  onClick={() => setActiveChannel({...activeChannel})} 
+                  className="px-6 py-2 bg-orange-500 rounded-lg hover:bg-orange-600 transition"
+                >
+                  আবার চেষ্টা করুন
+                </button>
               </div>
             </div>
           )}
         </div>
+        
+        {/* Now Playing Banner */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center gap-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+          <span className="text-white font-medium">🔴 LIVE: {activeChannel.name}</span>
+        </div>
       </div>
+
+      {/* Channel Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {liveChannels.map((channel) => (
-          <button key={channel.id} onClick={() => setActiveChannel(channel)}
-            className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
+          <button 
+            key={channel.id} 
+            onClick={() => setActiveChannel(channel)}
+            className={cn(
+              "p-4 rounded-xl text-center transition-all", 
+              activeChannel.id === channel.id 
+                ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg scale-105" 
+                : "bg-white hover:bg-orange-50 hover:shadow-md"
+            )}
+          >
             <div className="text-3xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
@@ -1693,7 +1884,7 @@ function LiveTVPage() {
     </div>
   );
 }
-
+  
 function ContactPage() {
   return (
     <div className="space-y-8">
@@ -2990,39 +3181,24 @@ function GlobalMusicPlayer() {
   const { 
     currentSong, 
     isPlaying, 
+    isLoading,
+    progress,
     togglePlayPause, 
     closeMusicPlayer,
     skipForward,
-    skipBack,
-    audioRef
+    skipBack
   } = useMedia();
   const location = useLocation();
-  const [progress, setProgress] = useState(0);
-
-  // Progress tracking for mini player
-  useEffect(() => {
-    const audio = audioRef?.current;
-    if (!audio) return;
-
-    const handleTimeUpdate = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    return () => audio.removeEventListener('timeupdate', handleTimeUpdate);
-  }, [audioRef, currentSong]);
 
   // MusicPage এ থাকলে mini player দেখাবে না
   if (!currentSong || location.pathname === '/music') return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 animate-slideUp">
+    <div className="fixed bottom-0 left-0 right-0 z-40">
       {/* Progress Bar */}
-      <div className="h-1 bg-orange-200">
+      <div className="h-1 bg-orange-300">
         <div 
-          className="h-full bg-white transition-all duration-200" 
+          className="h-full bg-white transition-all duration-300" 
           style={{ width: `${progress}%` }} 
         />
       </div>
@@ -3031,7 +3207,9 @@ function GlobalMusicPlayer() {
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           {/* Song Info */}
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-            {isPlaying ? (
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
               <div className="flex items-center gap-0.5">
                 <div className="w-0.5 h-3 bg-white rounded-full animate-bounce" />
                 <div className="w-0.5 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -3050,7 +3228,7 @@ function GlobalMusicPlayer() {
           {/* Controls */}
           <div className="flex items-center gap-1">
             <button 
-              onClick={() => skipBack([])}
+              onClick={skipBack}
               className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
             >
               <SkipBack className="w-4 h-4" />
@@ -3058,13 +3236,20 @@ function GlobalMusicPlayer() {
             
             <button 
               onClick={togglePlayPause}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition"
+              disabled={isLoading}
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
             >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-5 h-5" />
+              ) : (
+                <Play className="w-5 h-5 ml-0.5" />
+              )}
             </button>
             
             <button 
-              onClick={() => skipForward([])}
+              onClick={skipForward}
               className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
             >
               <SkipForward className="w-4 h-4" />
@@ -3082,96 +3267,199 @@ function GlobalMusicPlayer() {
     </div>
   );
 }
+
 function GlobalLiveTVPlayer() {
   const { activeChannel, closeLiveTV } = useMedia();
   const location = useLocation();
   const [isMinimized, setIsMinimized] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
+  // LiveTV page এ থাকলে popup দেখাবে না
   if (!activeChannel || location.pathname === '/live') return null;
+
+  // HLS Stream Load
+  useEffect(() => {
+    const loadStream = async () => {
+      const video = videoRef.current;
+      if (!video || !activeChannel) return;
+
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      setIsLoading(true);
+      setHasError(false);
+
+      try {
+        const Hls = (await import('hls.js')).default;
+        
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hlsRef.current = hls;
+          
+          hls.loadSource(activeChannel.streamUrl);
+          hls.attachMedia(video);
+          
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setIsLoading(false);
+            video.play().catch(() => {
+              video.muted = true;
+              video.play().catch(() => {});
+            });
+          });
+          
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data.fatal) {
+              setHasError(true);
+              setIsLoading(false);
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = activeChannel.streamUrl;
+          video.addEventListener('loadedmetadata', () => {
+            setIsLoading(false);
+            video.play().catch(() => {});
+          });
+        }
+      } catch {
+        setHasError(true);
+        setIsLoading(false);
+      }
+    };
+
+    loadStream();
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [activeChannel]);
 
   return (
     <div 
       className={cn(
-        "fixed z-40 transition-all duration-300",
+        "fixed z-50 transition-all duration-300 shadow-2xl",
         isMinimized 
-          ? "bottom-4 right-4 w-64" 
-          : "bottom-0 left-0 right-0 max-w-md mx-auto"
+          ? "bottom-16 right-4 w-64" 
+          : "bottom-16 right-4 w-80 md:w-96"
       )}
     >
-      <div className="bg-black rounded-t-2xl overflow-hidden shadow-2xl">
-        <div className="bg-gradient-to-r from-orange-600 to-red-600 px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="font-bold text-sm">LIVE: {activeChannel.name}</span>
+      <div className="bg-black rounded-2xl overflow-hidden border-2 border-red-500">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white flex-1 min-w-0">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse flex-shrink-0" />
+            <span className="font-bold text-xs truncate">🔴 {activeChannel.name}</span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button 
               onClick={() => setIsMinimized(!isMinimized)}
               className="text-white hover:bg-white/20 p-1 rounded transition"
+              title={isMinimized ? "বড় করুন" : "ছোট করুন"}
             >
-              {isMinimized ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4 rotate-90" />}
+              <ChevronDown className={cn("w-4 h-4 transition-transform", isMinimized && "rotate-180")} />
             </button>
             
             <button 
               onClick={closeLiveTV}
-              className="text-white hover:bg-white/20 p-1 rounded transition"
+              className="text-white hover:bg-red-800 p-1 rounded transition"
+              title="বন্ধ করুন"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
+        {/* Video */}
         {!isMinimized && (
-          <div className="aspect-video bg-black">
+          <div className="aspect-video bg-gray-900 relative">
             <video 
-              src={activeChannel.streamUrl} 
+              ref={videoRef}
               autoPlay 
               playsInline 
               controls 
               className="w-full h-full"
             />
+            
+            {isLoading && !hasError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+                <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            
+            {hasError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white text-center p-4">
+                <div>
+                  <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
+                  <button 
+                    onClick={() => {
+                      setHasError(false);
+                      setIsLoading(true);
+                    }}
+                    className="text-xs bg-orange-500 px-3 py-1 rounded"
+                  >
+                    পুনরায় চেষ্টা
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+  
 // ==================== MAIN APP COMPONENT ====================
 
 function App() {
   return (
     <MediaProvider>
       <Router>
-        <InstallPrompt /> 
-        <div className="min-h-screen sacred-pattern">
-          <Header />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/durga" element={<DurgaPujaPage />} />
-              <Route path="/shyama" element={<ShyamaPujaPage />} />
-              <Route path="/saraswati" element={<SaraswatiPujaPage />} />
-              <Route path="/rath" element={<RathYatraPage />} />
-              <Route path="/deities" element={<DeitiesPage />} />
-              <Route path="/quiz" element={<QuizArchivePage />} />
-              <Route path="/gallery" element={<GalleryPage />} />
-              <Route path="/music" element={<MusicPage />} />
-              <Route path="/pdf" element={<PDFPage />} />
-              <Route path="/live" element={<LiveTVPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/login" element={<LoginPage />} />
-            </Routes>
-          </main>
-          
-          {/* Global Mini Players */}
-          <GlobalMusicPlayer />
-          <GlobalLiveTVPlayer />
-          
-          <Footer />
-        </div>
+        <AppContent />
       </Router>
     </MediaProvider>
+  );
+}
+
+function AppContent() {
+  return (
+    <>
+      <InstallPrompt /> 
+      <div className="min-h-screen sacred-pattern">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/durga" element={<DurgaPujaPage />} />
+            <Route path="/shyama" element={<ShyamaPujaPage />} />
+            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+            <Route path="/rath" element={<RathYatraPage />} />
+            <Route path="/deities" element={<DeitiesPage />} />
+            <Route path="/quiz" element={<QuizArchivePage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/music" element={<MusicPage />} />
+            <Route path="/pdf" element={<PDFPage />} />
+            <Route path="/live" element={<LiveTVPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </main>
+        
+        {/* Global Mini Players */}
+        <GlobalMusicPlayer />
+        <GlobalLiveTVPlayer />
+        
+        <Footer />
+      </div>
+    </>
   );
 }
 export default App;
