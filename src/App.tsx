@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Send } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { InstallPrompt } from './components/InstallPrompt';
 import { 
   Home as HomeIcon,
@@ -1844,8 +1846,8 @@ function AIChatbox() {
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Gemini API Key
-  const GEMINI_API_KEY = 'AIzaSyCZaZXmde1xKyX5Cn8fng_Pj_aIxrRmo6Q'; // আপনার API Key দিন
+  // ✅ Gemini API Key (Environment Variable + Fallback)
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyCZaZXmde1xKyX5Cn8fng_Pj_aIxrRmo6Q';
 
   // ✅ Load custom FAQ from JSON
   useEffect(() => {
@@ -1888,27 +1890,37 @@ function AIChatbox() {
 
   useEffect(scrollToBottom, [messages]);
 
-  // ✅ Step 1: Search in custom FAQ first
+  // ✅ IMPROVED: শুধু Quick Replies এর জন্য FAQ check
   const findInFAQ = (question: string): string | null => {
-    const lowerQuestion = question.toLowerCase();
+    const lowerQuestion = question.toLowerCase().trim();
     
-    for (const item of faq) {
-      const keywords = item.keywords || [];
-      const matched = keywords.some((keyword: string) => {
-        const lowerKeyword = keyword.toLowerCase();
-        return lowerQuestion.includes(lowerKeyword) || lowerKeyword.includes(lowerQuestion);
-      });
-      
-      if (matched) {
-        return item.answer;
+    // ✅ Quick replies list তৈরি করো
+    const quickRepliesLower = quickReplies.map((q: string) => q.toLowerCase().trim());
+    
+    // ✅ শুধু quick reply হলেই FAQ check করো
+    if (quickRepliesLower.includes(lowerQuestion)) {
+      for (const item of faq) {
+        const keywords = item.keywords || [];
+        const matched = keywords.some((keyword: string) => {
+          return keyword.toLowerCase().trim() === lowerQuestion;
+        });
+        
+        if (matched) {
+          console.log('✅ FAQ match found:', item.answer.substring(0, 50) + '...');
+          return item.answer;
+        }
       }
     }
     
-    return null; // FAQ তে পাওয়া যায়নি
+    // ✅ অন্য সব প্রশ্ন AI এর কাছে পাঠাও
+    console.log('🤖 No FAQ match, sending to AI...');
+    return null;
   };
 
-  // ✅ Step 2: Ask Gemini AI if FAQ doesn't have answer
+  // ✅ IMPROVED: Gemini AI call with better settings
   const askGeminiAI = async (question: string): Promise<string> => {
+    console.log('🤖 Gemini AI called for question:', question);
+    
     try {
       const systemPrompt = `তুমি কলম হিন্দু ধর্মসভার (KHDS) ভার্চুয়াল সহায়ক। 
 তুমি হিন্দু ধর্ম, পূজা, দেব-দেবী, মন্ত্র, উৎসব সম্পর্কে জ্ঞানী।
@@ -1924,10 +1936,12 @@ function AIChatbox() {
 - Website: durgpuja12.vercel.app
 - প্রধান পূজা: দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা, রথযাত্রা
 
-ব্যবহারকারীর প্রশ্ন: ${question}`;
+ব্যবহারকারীর প্রশ্ন: ${question}
+
+দয়া করে সুন্দর বাংলায় এবং emoji সহ উত্তর দাও।`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: {
@@ -1945,46 +1959,74 @@ function AIChatbox() {
             ],
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 500,
+              maxOutputTokens: 800,
               topP: 0.8,
               topK: 40
-            }
+            },
+            safetySettings: [
+              {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_NONE"
+              }
+            ]
           })
         }
       );
 
       if (!response.ok) {
-        throw new Error('AI API failed');
+        const errorData = await response.json();
+        console.error('❌ Gemini API Error:', errorData);
+        throw new Error(`API Error: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('✅ Gemini API Response received');
+      
       const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       
       if (aiResponse) {
         return aiResponse;
       }
       
-      throw new Error('No response from AI');
-    } catch (error) {
-      console.error('Gemini AI error:', error);
+      throw new Error('No response text from AI');
       
-      // Fallback messages
-      const fallbacks = chatbotData?.fallbackMessages || [
-        'দুঃখিত, এই মুহূর্তে AI সেবা পাওয়া যাচ্ছে না। 😔\n\n📞 সরাসরি যোগাযোগ করুন:\n+88 01733118313'
-      ];
-      return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    } catch (error) {
+      console.error('❌ Gemini AI error:', error);
+      
+      // ✅ Better fallback message
+      return `দুঃখিত, এই মুহূর্তে AI সেবা পাওয়া যাচ্ছে না। 😔
+
+তবে আপনি আমাদের সাথে সরাসরি যোগাযোগ করতে পারেন:
+
+📞 ফোন: +88 01733118313
+📘 Facebook: facebook.com/KHDS3
+🌐 Website: durgpuja12.vercel.app
+
+আমরা শীঘ্রই আপনার সাহায্য করব! 🙏`;
     }
   };
 
-  // ✅ Main handler - FAQ first, then AI
+  // ✅ Main handler - FAQ first (শুধু quick replies), then AI
   const getAnswer = async (question: string): Promise<string> => {
-    // Step 1: Custom FAQ তে খুঁজুন
+    // Step 1: শুধু Quick Replies এর জন্য FAQ check
     const faqAnswer = findInFAQ(question);
     if (faqAnswer) {
       return faqAnswer;
     }
 
-    // Step 2: FAQ তে না পেলে AI কে জিজ্ঞেস করুন
+    // Step 2: বাকি সব প্রশ্ন AI কে পাঠাও
     const aiAnswer = await askGeminiAI(question);
     return aiAnswer;
   };
@@ -2001,7 +2043,11 @@ function AIChatbox() {
       const answer = await getAnswer(userMessage);
       setMessages(prev => [...prev, { role: 'bot', text: answer }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'bot', text: 'দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' }]);
+      console.error('Error getting answer:', error);
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: '❌ দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।\n\nসমস্যা বার বার হলে আমাদের সাথে যোগাযোগ করুন: 01733118313' 
+      }]);
     } finally {
       setIsTyping(false);
     }
@@ -2015,7 +2061,8 @@ function AIChatbox() {
       const answer = await getAnswer(reply);
       setMessages(prev => [...prev, { role: 'bot', text: answer }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'bot', text: 'দুঃখিত, সমস্যা হয়েছে।' }]);
+      console.error('Error with quick reply:', error);
+      setMessages(prev => [...prev, { role: 'bot', text: '❌ দুঃখিত, সমস্যা হয়েছে। আবার চেষ্টা করুন।' }]);
     } finally {
       setIsTyping(false);
     }
@@ -2133,7 +2180,7 @@ function AIChatbox() {
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-2 text-center">
-          🤖 AI powered • যেকোনো ধর্মীয় প্রশ্ন করতে পারেন
+          🤖 AI powered by Google Gemini • যেকোনো ধর্মীয় প্রশ্ন করতে পারেন
         </p>
       </div>
     </div>
