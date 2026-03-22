@@ -41,303 +41,6 @@ import {
 import { cn } from './utils/cn';
 import { OptimizedImage } from './components/OptimizedImage';
 
-// ==================== GLOBAL MEDIA CONTEXT ====================
-interface MediaContextType {
-  // Music
-  currentSong: Song | null;
-  currentIndex: number;
-  isPlaying: boolean;
-  isLoading: boolean;
-  progress: number;
-  duration: number;
-  currentTime: number;
-  volume: number;
-  setVolume: (v: number) => void;
-  playSong: (song: Song, index: number, playlist: Song[]) => void;
-  togglePlayPause: () => void;
-  closeMusicPlayer: () => void;
-  skipForward: () => void;
-  skipBack: () => void;
-  seekTo: (percent: number) => void;
-  playlist: Song[];
-
-  // Live TV
-  activeChannel: LiveChannel | null;
-  isTVLoading: boolean;
-  tvError: boolean;
-  setActiveChannel: (channel: LiveChannel | null) => void;
-  closeLiveTV: () => void;
-  retryTV: () => void;
-}
-
-const MediaContext = createContext<MediaContextType | null>(null);
-
-function MediaProvider({ children }: { children: React.ReactNode }) {
-  // ===== MUSIC STATE =====
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [playlist, setPlaylist] = useState<Song[]>([]);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentIndexRef = useRef<number>(-1);
-  const playlistRef = useRef<Song[]>([]);
-
-  // ===== LIVE TV STATE =====
-  const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
-  const [isTVLoading, setIsTVLoading] = useState(false);
-  const [tvError, setTvError] = useState(false);
-
-  // Keep refs updated
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-    playlistRef.current = playlist;
-  }, [currentIndex, playlist]);
-
-  // ===== AUDIO INITIALIZATION =====
-  useEffect(() => {
-    const audio = new Audio();
-    audio.volume = volume;
-    audio.preload = 'metadata';
-    audioRef.current = audio;
-
-    const handleTimeUpdate = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setCurrentTime(audio.currentTime);
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-      setIsLoading(false);
-    };
-
-    const handleEnded = () => {
-      const idx = currentIndexRef.current;
-      const songs = playlistRef.current;
-      
-      if (songs.length > 0) {
-        const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
-        const nextSong = songs[nextIndex];
-        
-        if (nextSong && audioRef.current) {
-          setCurrentSong(nextSong);
-          setCurrentIndex(nextIndex);
-          setProgress(0);
-          setCurrentTime(0);
-          setIsLoading(true);
-          
-          audioRef.current.src = nextSong.url;
-          audioRef.current.load();
-          audioRef.current.play()
-            .then(() => {
-              setIsPlaying(true);
-              setIsLoading(false);
-            })
-            .catch(() => {
-              setIsPlaying(false);
-              setIsLoading(false);
-            });
-        }
-      }
-    };
-
-    const handleError = () => {
-      setIsLoading(false);
-      setIsPlaying(false);
-    };
-
-    const handleCanPlay = () => {
-      setIsLoading(false);
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
-    audio.addEventListener('canplay', handleCanPlay);
-
-    return () => {
-      audio.pause();
-      audio.src = '';
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-      audio.removeEventListener('canplay', handleCanPlay);
-    };
-  }, []);
-
-  // Volume sync
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // ===== MUSIC FUNCTIONS =====
-  const playSong = useCallback((song: Song, index: number, newPlaylist: Song[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.pause();
-    setCurrentSong(song);
-    setCurrentIndex(index);
-    setPlaylist(newPlaylist);
-    setProgress(0);
-    setCurrentTime(0);
-    setDuration(0);
-    setIsLoading(true);
-
-    audio.src = song.url;
-    audio.load();
-    
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          setIsPlaying(true);
-          setIsLoading(false);
-        })
-        .catch(() => {
-          setIsPlaying(false);
-          setIsLoading(false);
-        });
-    }
-  }, []);
-
-  const togglePlayPause = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentSong) return;
-
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      audio.play()
-        .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false));
-    }
-  }, [currentSong, isPlaying]);
-
-  const skipForward = useCallback(() => {
-    const songs = playlistRef.current;
-    if (songs.length === 0) return;
-
-    let newIndex = currentIndexRef.current + 1;
-    if (newIndex >= songs.length) newIndex = 0;
-
-    const nextSong = songs[newIndex];
-    if (nextSong) {
-      playSong(nextSong, newIndex, songs);
-    }
-  }, [playSong]);
-
-  const skipBack = useCallback(() => {
-    const audio = audioRef.current;
-    const songs = playlistRef.current;
-
-    if (audio && audio.currentTime > 3) {
-      audio.currentTime = 0;
-      return;
-    }
-
-    if (songs.length === 0) return;
-
-    let newIndex = currentIndexRef.current - 1;
-    if (newIndex < 0) newIndex = songs.length - 1;
-
-    const prevSong = songs[newIndex];
-    if (prevSong) {
-      playSong(prevSong, newIndex, songs);
-    }
-  }, [playSong]);
-
-  const seekTo = useCallback((percent: number) => {
-    const audio = audioRef.current;
-    if (!audio || !duration || isNaN(duration)) return;
-    audio.currentTime = (percent / 100) * duration;
-  }, [duration]);
-
-  const closeMusicPlayer = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.src = '';
-    }
-    setCurrentSong(null);
-    setCurrentIndex(-1);
-    setPlaylist([]);
-    setIsPlaying(false);
-    setProgress(0);
-    setCurrentTime(0);
-    setDuration(0);
-  }, []);
-
-  // ===== LIVE TV FUNCTIONS =====
-  const setActiveChannel = useCallback((channel: LiveChannel | null) => {
-    setActiveChannelState(channel);
-    setIsTVLoading(true);
-    setTvError(false);
-  }, []);
-
-  const closeLiveTV = useCallback(() => {
-    setActiveChannelState(null);
-    setIsTVLoading(false);
-    setTvError(false);
-  }, []);
-
-  const retryTV = useCallback(() => {
-    if (activeChannel) {
-      setActiveChannel({ ...activeChannel });
-    }
-  }, [activeChannel, setActiveChannel]);
-
-  return (
-    <MediaContext.Provider value={{
-      // Music
-      currentSong,
-      currentIndex,
-      isPlaying,
-      isLoading,
-      progress,
-      duration,
-      currentTime,
-      volume,
-      setVolume,
-      playSong,
-      togglePlayPause,
-      closeMusicPlayer,
-      skipForward,
-      skipBack,
-      seekTo,
-      playlist,
-      // Live TV
-      activeChannel,
-      isTVLoading,
-      tvError,
-      setActiveChannel,
-      closeLiveTV,
-      retryTV
-    }}>
-      {children}
-    </MediaContext.Provider>
-  );
-}
-
-function useMedia() {
-  const context = useContext(MediaContext);
-  if (!context) {
-    throw new Error('useMedia must be used within MediaProvider');
-  }
-  return context;
-
 // Types
 interface CountdownTime {
   days: number;
@@ -499,6 +202,231 @@ const notices = [
   '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
 ];
 
+// ==================== GLOBAL MEDIA CONTEXT ====================
+
+interface MediaContextType {
+  currentSong: Song | null;
+  currentIndex: number;
+  isPlaying: boolean;
+  isLoading: boolean;
+  progress: number;
+  duration: number;
+  currentTime: number;
+  volume: number;
+  setVolume: (v: number) => void;
+  playSong: (song: Song, index: number, playlist: Song[]) => void;
+  togglePlayPause: () => void;
+  closeMusicPlayer: () => void;
+  skipForward: () => void;
+  skipBack: () => void;
+  seekTo: (percent: number) => void;
+  playlist: Song[];
+  activeChannel: LiveChannel | null;
+  setActiveChannel: (channel: LiveChannel | null) => void;
+  closeLiveTV: () => void;
+}
+
+const MediaContext = createContext<MediaContextType | null>(null);
+
+function MediaProvider({ children }: { children: React.ReactNode }) {
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [playlist, setPlaylist] = useState<Song[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentIndexRef = useRef<number>(-1);
+  const playlistRef = useRef<Song[]>([]);
+  const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+    playlistRef.current = playlist;
+  }, [currentIndex, playlist]);
+
+  useEffect(() => {
+    const audio = new Audio();
+    audio.volume = volume;
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
+    const handleEnded = () => {
+      const idx = currentIndexRef.current;
+      const songs = playlistRef.current;
+      if (songs.length > 0) {
+        const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
+        const nextSong = songs[nextIndex];
+        if (nextSong && audioRef.current) {
+          setCurrentSong(nextSong);
+          setCurrentIndex(nextIndex);
+          setProgress(0);
+          setCurrentTime(0);
+          setIsLoading(true);
+          audioRef.current.src = nextSong.url;
+          audioRef.current.load();
+          audioRef.current.play()
+            .then(() => { setIsPlaying(true); setIsLoading(false); })
+            .catch(() => { setIsPlaying(false); setIsLoading(false); });
+        }
+      }
+    };
+
+    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
+    const handleCanPlay = () => { setIsLoading(false); };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
+  const playSong = useCallback((song: Song, index: number, newPlaylist: Song[]) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    setCurrentSong(song);
+    setCurrentIndex(index);
+    setPlaylist(newPlaylist);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsLoading(true);
+    audio.src = song.url;
+    audio.load();
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); })
+        .catch(() => { setIsPlaying(false); setIsLoading(false); });
+    }
+  }, []);
+
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    }
+  }, [currentSong, isPlaying]);
+
+  const skipForward = useCallback(() => {
+    const songs = playlistRef.current;
+    if (songs.length === 0) return;
+    let newIndex = currentIndexRef.current + 1;
+    if (newIndex >= songs.length) newIndex = 0;
+    const nextSong = songs[newIndex];
+    if (nextSong) playSong(nextSong, newIndex, songs);
+  }, [playSong]);
+
+  const skipBack = useCallback(() => {
+    const audio = audioRef.current;
+    const songs = playlistRef.current;
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+    if (songs.length === 0) return;
+    let newIndex = currentIndexRef.current - 1;
+    if (newIndex < 0) newIndex = songs.length - 1;
+    const prevSong = songs[newIndex];
+    if (prevSong) playSong(prevSong, newIndex, songs);
+  }, [playSong]);
+
+  const seekTo = useCallback((percent: number) => {
+    const audio = audioRef.current;
+    if (!audio || !duration || isNaN(duration)) return;
+    audio.currentTime = (percent / 100) * duration;
+  }, [duration]);
+
+  const closeMusicPlayer = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.src = '';
+    }
+    setCurrentSong(null);
+    setCurrentIndex(-1);
+    setPlaylist([]);
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+  }, []);
+
+  const setActiveChannel = useCallback((channel: LiveChannel | null) => {
+    setActiveChannelState(channel);
+  }, []);
+
+  const closeLiveTV = useCallback(() => {
+    setActiveChannelState(null);
+  }, []);
+
+  return (
+    <MediaContext.Provider value={{
+      currentSong,
+      currentIndex,
+      isPlaying,
+      isLoading,
+      progress,
+      duration,
+      currentTime,
+      volume,
+      setVolume,
+      playSong,
+      togglePlayPause,
+      closeMusicPlayer,
+      skipForward,
+      skipBack,
+      seekTo,
+      playlist,
+      activeChannel,
+      setActiveChannel,
+      closeLiveTV
+    }}>
+      {children}
+    </MediaContext.Provider>
+  );
+}
+
+function useMedia() {
+  const context = useContext(MediaContext);
+  if (!context) throw new Error('useMedia must be used within MediaProvider');
+  return context;
+}
+
 // Hooks
 function useCountdown(targetDate: string): CountdownTime {
   const [timeLeft, setTimeLeft] = useState<CountdownTime>({ 
@@ -555,7 +483,6 @@ function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
 
   return [data, isLoading, error];
 }
-
 // Components
 function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
   const time = useCountdown(targetDate);
@@ -738,7 +665,6 @@ function Footer() {
     </footer>
   );
 }
-
 function HomePage() {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
   
@@ -911,7 +837,6 @@ function DeitiesPage() {
     </div>
   );
 }
-
 function GalleryPage() {
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedPuja, setSelectedPuja] = useState<string>('সব');
@@ -923,7 +848,6 @@ function GalleryPage() {
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
-  // Fetch Images
   useEffect(() => {
     const fetchImages = async () => {
       setIsLoading(true);
@@ -932,90 +856,39 @@ function GalleryPage() {
         const cacheBuster = `?t=${new Date().getTime()}`;
         const response = await fetch(
           `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
-          { 
-            cache: 'no-store',
-            headers: {
-              'Accept': 'application/json',
-            }
-          }
+          { cache: 'no-store' }
         );
-
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
-        
-        // Validate data structure
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format');
-        }
-        
+        if (!Array.isArray(data)) throw new Error('Invalid data format');
         setGalleryImages(data);
       } catch (err) {
-        console.error("Fetch error:", err);
-        setError('ছবি লোড করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।');
+        setError('ছবি লোড করতে সমস্যা হয়েছে।');
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchImages();
   }, []);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (selectedImage) {
       document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = 'unset';
-      };
+      return () => { document.body.style.overflow = 'unset'; };
     }
   }, [selectedImage]);
 
-  // Keyboard navigation for modal
-  useEffect(() => {
-    if (!selectedImage) return;
-
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const currentIndex = filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id);
-      
-      switch(e.key) {
-        case 'Escape':
-          setSelectedImage(null);
-          break;
-        case 'ArrowLeft':
-          if (currentIndex > 0) {
-            setSelectedImage(filteredImages[currentIndex - 1]);
-          }
-          break;
-        case 'ArrowRight':
-          if (currentIndex < filteredImages.length - 1) {
-            setSelectedImage(filteredImages[currentIndex + 1]);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedImage]);
-
-  // Optimized filtering with useMemo
   const filteredImages = useMemo(() => {
-    return galleryImages.filter((img: GalleryImage) => {
+    return galleryImages.filter((img) => {
       const yearMatch = img.year === selectedYear;
       const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
       return yearMatch && pujaMatch;
     });
   }, [galleryImages, selectedYear, selectedPuja]);
 
-  // Navigation handlers
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return;
-    
-    const currentIndex = filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id);
-    
+    const currentIndex = filteredImages.findIndex((img) => img.id === selectedImage.id);
     if (direction === 'prev' && currentIndex > 0) {
       setSelectedImage(filteredImages[currentIndex - 1]);
     } else if (direction === 'next' && currentIndex < filteredImages.length - 1) {
@@ -1025,49 +898,36 @@ function GalleryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold gradient-text mb-2">ফটো গ্যালারি</h1>
         <p className="text-gray-600">পূজার ছবি সংগ্রহ</p>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-2xl p-4 shadow-lg">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              সাল
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">সাল</label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition-colors"
-              aria-label="বছর নির্বাচন করুন"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
             >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
+              {years.map(year => (<option key={year} value={year}>{year}</option>))}
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              পূজার ধরন
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">পূজার ধরন</label>
             <select
               value={selectedPuja}
               onChange={(e) => setSelectedPuja(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none transition-colors"
-              aria-label="পূজার ধরন নির্বাচন করুন"
+              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
             >
-              {pujaTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
+              {pujaTypes.map(type => (<option key={type} value={type}>{type}</option>))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Loading State */}
       {isLoading && (
         <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -1075,54 +935,25 @@ function GalleryPage() {
         </div>
       )}
 
-      {/* Error State */}
       {error && !isLoading && (
         <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
-          <div className="text-5xl mb-4">⚠️</div>
           <p className="text-red-500 text-lg mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-          >
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-orange-500 text-white rounded-lg">
             🔄 আবার চেষ্টা করুন
           </button>
         </div>
       )}
 
-      {/* Gallery Grid */}
       {!isLoading && !error && (
         <>
-          {filteredImages.length > 0 && (
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-500">
-                মোট <strong>{filteredImages.length}</strong>টি ছবি
-              </p>
-              <p className="text-xs text-gray-400">
-                {selectedYear} • {selectedPuja}
-              </p>
-            </div>
-          )}
-
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
               <div 
                 key={img.id} 
                 onClick={() => setSelectedImage(img)} 
                 className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    setSelectedImage(img);
-                  }
-                }}
-                aria-label={`${img.title} দেখুন`}
               >
-                                
-                {/* Image */}
                 <OptimizedImage src={img.url} alt={img.title} className="w-full h-48"/> 
-                
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                     <p className="text-sm font-medium line-clamp-1">{img.title}</p>
@@ -1133,81 +964,28 @@ function GalleryPage() {
             ))}
           </div>
 
-          {/* Empty State */}
           {filteredImages.length === 0 && (
             <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
-              <div className="text-6xl mb-4">🖼️</div>
-              <p className="text-gray-500 text-lg mb-2">
-                {selectedYear} সালের {selectedPuja === 'সব' ? '' : selectedPuja + ' এর'} ছবি পাওয়া যায়নি
-              </p>
-              <p className="text-gray-400 text-sm">অন্য বছর বা পূজা নির্বাচন করুন</p>
+              <p className="text-gray-500 text-lg">{selectedYear} সালের ছবি পাওয়া যায়নি</p>
             </div>
           )}
         </>
       )}
 
-      {/* Image Modal */}
       {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 backdrop-blur-sm" 
-          onClick={() => setSelectedImage(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-        >
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <div className="relative max-w-5xl w-full" onClick={e => e.stopPropagation()}>
-            {/* Close Button */}
-            <button 
-              onClick={() => setSelectedImage(null)} 
-              className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400 transition-colors z-10 bg-black/30 hover:bg-black/50 rounded-full w-10 h-10 flex items-center justify-center"
-              aria-label="বন্ধ করুন"
-              title="বন্ধ করুন (ESC)"
-            >
-              ✕
-            </button>
-            
-            {/* Image Counter */}
-            <div className="absolute -top-12 left-0 bg-black/50 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm">
-              {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) + 1} / {filteredImages.length}
-            </div>
-            
-            {/* Previous Button */}
-            {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) > 0 && (
-              <button 
-                onClick={() => navigateImage('prev')}
-                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 transition-colors bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
-                aria-label="আগের ছবি (←)"
-                title="আগের ছবি"
-              >
-                ‹
-              </button>
+            <button onClick={() => setSelectedImage(null)} className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400">✕</button>
+            {filteredImages.findIndex((img) => img.id === selectedImage.id) > 0 && (
+              <button onClick={() => navigateImage('prev')} className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">‹</button>
             )}
-            
-            {/* Next Button */}
-            {filteredImages.findIndex((img: GalleryImage) => img.id === selectedImage.id) < filteredImages.length - 1 && (
-              <button 
-                onClick={() => navigateImage('next')}
-                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 transition-colors bg-black/50 hover:bg-black/70 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
-                aria-label="পরবর্তী ছবি (→)"
-                title="পরবর্তী ছবি"
-              >
-                ›
-              </button>
+            {filteredImages.findIndex((img) => img.id === selectedImage.id) < filteredImages.length - 1 && (
+              <button onClick={() => navigateImage('next')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">›</button>
             )}
-            
-            {/* Main Image */}
-            <img 
-              src={selectedImage.url} 
-              alt={selectedImage.title} 
-              className="w-full rounded-xl max-h-[80vh] object-contain shadow-2xl" 
-            />
-            
-            {/* Image Info */}
-            <div className="mt-4 text-center text-white bg-black/30 backdrop-blur-sm rounded-xl p-4">
-              <p className="font-bold text-lg" id="modal-title">{selectedImage.title}</p>
-              <p className="text-gray-300 text-sm mt-1">
-                {selectedImage.pujaType} • {selectedImage.year}
-              </p>
+            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
+            <div className="mt-4 text-center text-white">
+              <p className="font-bold text-lg">{selectedImage.title}</p>
+              <p className="text-gray-300 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
             </div>
           </div>
         </div>
@@ -1226,60 +1004,32 @@ function QuizArchivePage() {
 
   const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
 
-  // Fetch Quiz Data
   useEffect(() => {
     const fetchQuizData = async () => {
       setIsLoading(true);
-      setError('');
       try {
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        const response = await fetch(
-          `https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json${cacheBuster}`,
-          { cache: 'no-store' }
-        );
-
-        if (!response.ok) throw new Error('Failed to load');
-        const data = await response.json();
-        setQuizData(data);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError('কুইজ লোড করতে সমস্যা হয়েছে।');
-      } finally {
-        setIsLoading(false);
-      }
+        const response = await fetch(`https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed');
+        setQuizData(await response.json());
+      } catch { setError('কুইজ লোড করতে সমস্যা হয়েছে।'); }
+      finally { setIsLoading(false); }
     };
-
     fetchQuizData();
   }, []);
 
-  // Reset answers when year changes
-  useEffect(() => {
-    setVisibleAnswers({});
-    setShowAllAnswers(false);
-  }, [selectedYear]);
+  useEffect(() => { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
 
-  // Get current year's quiz
-  const currentYearQuiz = useMemo(() => {
-    return quizData.find(q => q.year === selectedYear);
-  }, [quizData, selectedYear]);
+  const currentYearQuiz = useMemo(() => quizData.find(q => q.year === selectedYear), [quizData, selectedYear]);
 
-  // Toggle single answer
   const toggleAnswer = (questionId: number) => {
-    setVisibleAnswers(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }));
+    setVisibleAnswers(prev => ({ ...prev, [questionId]: !prev[questionId] }));
   };
 
-  // Toggle all answers
   const toggleAllAnswers = () => {
-    if (showAllAnswers) {
-      setVisibleAnswers({});
-    } else {
+    if (showAllAnswers) { setVisibleAnswers({}); }
+    else {
       const allVisible: Record<number, boolean> = {};
-      currentYearQuiz?.questions.forEach((q: any) => {
-        allVisible[q.id] = true;
-      });
+      currentYearQuiz?.questions.forEach((q: any) => { allVisible[q.id] = true; });
       setVisibleAnswers(allVisible);
     }
     setShowAllAnswers(!showAllAnswers);
@@ -1287,123 +1037,49 @@ function QuizArchivePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold gradient-text mb-2">📚 দূর্গাপূজা কুইজ</h1>
-        <p className="text-gray-600">প্রতিবছর মহানবমীতে অনুষ্ঠিত কুইজ প্রতিযোগিতার প্রশ্ন-উত্তর</p>
+        <p className="text-gray-600">প্রতিবছর মহানবমীতে অনুষ্ঠিত কুইজ</p>
       </div>
 
-      {/* Year Filter & Info */}
       <div className="bg-white rounded-2xl p-4 shadow-lg">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="w-full sm:w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-2">বছর নির্বাচন করুন</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-lg font-medium"
-            >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-          
-          {currentYearQuiz && (
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="text-center px-4 py-2 bg-orange-50 rounded-xl">
-                <p className="text-xs text-gray-500">মোট প্রশ্ন</p>
-                <p className="text-2xl font-bold text-orange-600">{currentYearQuiz.questions.length}টি</p>
-              </div>
-              <div className="text-center px-4 py-2 bg-green-50 rounded-xl">
-                <p className="text-xs text-gray-500">তারিখ</p>
-                <p className="text-sm font-bold text-green-600">{currentYearQuiz.eventDate}</p>
-              </div>
-            </div>
-          )}
-        </div>
+        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="w-full px-4 py-3 rounded-xl border">
+          {years.map(year => (<option key={year} value={year}>{year}</option>))}
+        </select>
       </div>
 
-      {/* Loading */}
       {isLoading && (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+        <div className="text-center py-16 bg-white rounded-2xl">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">কুইজ লোড হচ্ছে...</p>
         </div>
       )}
 
-      {/* Error */}
-      {error && !isLoading && (
-        <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
-          <div className="text-5xl mb-4">⚠️</div>
-          <p className="text-red-500 text-lg mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-            🔄 আবার চেষ্টা করুন
-          </button>
-        </div>
-      )}
-
-      {/* Quiz Content */}
       {!isLoading && !error && currentYearQuiz && (
         <>
-          {/* Event Info Banner */}
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold mb-1">{currentYearQuiz.title}</h2>
-                <p className="text-orange-100">📅 {currentYearQuiz.eventDate} • 📍 {currentYearQuiz.venue || 'কলম দূর্গা মন্দির'}</p>
-              </div>
-              <button
-                onClick={toggleAllAnswers}
-                className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition flex items-center gap-2"
-              >
-                {showAllAnswers ? (
-                  <><EyeOff className="w-5 h-5" /> সব উত্তর লুকান</>
-                ) : (
-                  <><Eye className="w-5 h-5" /> সব উত্তর দেখুন</>
-                )}
-              </button>
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">{currentYearQuiz.title}</h2>
+              <p className="text-orange-100">📅 {currentYearQuiz.eventDate}</p>
             </div>
+            <button onClick={toggleAllAnswers} className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold flex items-center gap-2">
+              {showAllAnswers ? <><EyeOff className="w-5 h-5" /> সব উত্তর লুকান</> : <><Eye className="w-5 h-5" /> সব উত্তর দেখুন</>}
+            </button>
           </div>
 
-          {/* Questions Grid - 3/4 Columns */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentYearQuiz.questions.map((q: any, index: number) => (
-              <div 
-                key={q.id} 
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all"
-              >
-                {/* Question Number Badge */}
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 flex items-center justify-between">
-                  <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    প্রশ্ন {index + 1}
-                  </span>
+              <div key={q.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3">
+                  <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">প্রশ্ন {index + 1}</span>
                 </div>
-
-                {/* Question Text */}
                 <div className="p-4">
-                  <p className="font-medium text-gray-800 leading-relaxed min-h-[60px]">
-                    {q.question}
-                  </p>
-
-                  {/* Answer Toggle Button */}
-                  <button
-                    onClick={() => toggleAnswer(q.id)}
-                    className="w-full mt-4 py-2.5 bg-orange-50 text-orange-600 rounded-xl font-medium text-sm hover:bg-orange-100 transition flex items-center justify-center gap-2"
-                  >
-                    {visibleAnswers[q.id] ? (
-                      <><EyeOff className="w-4 h-4" /> উত্তর লুকান</>
-                    ) : (
-                      <><Eye className="w-4 h-4" /> উত্তর দেখুন</>
-                    )}
+                  <p className="font-medium text-gray-800 min-h-[60px]">{q.question}</p>
+                  <button onClick={() => toggleAnswer(q.id)} className="w-full mt-4 py-2.5 bg-orange-50 text-orange-600 rounded-xl text-sm flex items-center justify-center gap-2">
+                    {visibleAnswers[q.id] ? <><EyeOff className="w-4 h-4" /> উত্তর লুকান</> : <><Eye className="w-4 h-4" /> উত্তর দেখুন</>}
                   </button>
-
-                  {/* Answer Section */}
                   {visibleAnswers[q.id] && (
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl animate-fadeIn">
-                      <p className="text-xs text-green-600 font-medium mb-1 flex items-center gap-1">
-                        <Check className="w-4 h-4" /> সঠিক উত্তর
-                      </p>
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                      <p className="text-xs text-green-600 font-medium mb-1 flex items-center gap-1"><Check className="w-4 h-4" /> সঠিক উত্তর</p>
                       <p className="text-green-800 font-semibold">{q.answer}</p>
                     </div>
                   )}
@@ -1414,54 +1090,21 @@ function QuizArchivePage() {
         </>
       )}
 
-      {/* Empty State */}
-      {!isLoading && !error && !currentYearQuiz && (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
-          <div className="text-6xl mb-4">📝</div>
-          <p className="text-gray-500 text-lg mb-2">
-            {selectedYear} সালের কুইজ এখনো যুক্ত হয়নি
-          </p>
-          <p className="text-gray-400 text-sm">অন্য বছর নির্বাচন করুন</p>
-        </div>
+      {!isLoading && !currentYearQuiz && (
+        <div className="text-center py-16 bg-white rounded-2xl"><p className="text-gray-500">{selectedYear} সালের কুইজ নেই</p></div>
       )}
-
-      {/* Footer Info */}
-      <div className="bg-orange-50 rounded-2xl p-4 text-center">
-        <p className="text-sm text-orange-700">
-          🎯 প্রতিবছর দূর্গাপূজার <strong>মহানবমী</strong>তে কুইজ প্রতিযোগিতা অনুষ্ঠিত হয়
-        </p>
-      </div>
     </div>
   );
 }
-
 function MusicPage() {
   const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const {
-    currentSong,
-    isPlaying,
-    isLoading,
-    progress,
-    duration,
-    currentTime,
-    volume,
-    setVolume,
-    playSong,
-    togglePlayPause,
-    skipForward,
-    skipBack,
-    seekTo
-  } = useMedia();
+  const { currentSong, isPlaying, isLoading, progress, duration, currentTime, volume, setVolume, playSong, togglePlayPause, skipForward, skipBack, seekTo } = useMedia();
 
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
-  const filteredSongs = useMemo(() => {
-    return selectedCategory === 'সব' 
-      ? songs 
-      : songs.filter(s => s.category === selectedCategory);
-  }, [songs, selectedCategory]);
+  const filteredSongs = useMemo(() => selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory), [songs, selectedCategory]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
@@ -1473,21 +1116,14 @@ function MusicPage() {
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const bar = e.currentTarget;
     const rect = bar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const barWidth = rect.width;
-    const percent = (clickX / barWidth) * 100;
+    const percent = ((e.clientX - rect.left) / rect.width) * 100;
     seekTo(percent);
   };
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
-    if (!song.url || song.url === '#') {
-      alert('ডাউনলোড লিংক নেই');
-      return;
-    }
+    if (!song.url || song.url === '#') { alert('ডাউনলোড লিংক নেই'); return; }
     setDownloadingId(song.id);
-    
-    // Create download link
     const link = document.createElement('a');
     link.href = song.url;
     link.download = `${song.title} - ${song.artist}.mp3`;
@@ -1495,12 +1131,7 @@ function MusicPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
     setTimeout(() => setDownloadingId(null), 1000);
-  };
-
-  const handlePlaySong = (song: Song, index: number) => {
-    playSong(song, index, filteredSongs);
   };
 
   return (
@@ -1510,158 +1141,62 @@ function MusicPage() {
         <p className="text-gray-600">পবিত্র ভজন ও সংগীত</p>
       </div>
 
-      {/* Now Playing Card */}
       {currentSong && (
         <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isLoading ? (
-                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              ) : (
-                <Music className="w-8 h-8" />
-              )}
+              {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
+                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
+                : (<Music className="w-8 h-8" />)}
             </div>
-            
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
-              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
-            
             <div className="flex items-center gap-3">
-              <button 
-                onClick={skipBack}
-                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-              >
-                <SkipBack className="w-5 h-5" />
+              <button onClick={skipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipBack className="w-5 h-5" /></button>
+              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 disabled:opacity-50">
+                {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
               </button>
-              
-              <button 
-                onClick={togglePlayPause}
-                disabled={isLoading}
-                className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-6 h-6" />
-                ) : (
-                  <Play className="w-6 h-6 ml-1" />
-                )}
-              </button>
-              
-              <button 
-                onClick={skipForward}
-                className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-              >
-                <SkipForward className="w-5 h-5" />
-              </button>
+              <button onClick={skipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipForward className="w-5 h-5" /></button>
             </div>
-            
             <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={volume} 
-                onChange={(e) => setVolume(parseFloat(e.target.value))} 
-                className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" 
-              />
+              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
             </div>
           </div>
-          
-          {/* Progress Bar */}
           <div className="mt-4 flex items-center gap-3">
             <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
-            <div 
-              className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" 
-              onClick={handleProgressClick}
-            >
-              <div 
-                className="h-full bg-white rounded-full transition-all duration-200" 
-                style={{ width: `${progress}%` }} 
-              />
+            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
+              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
           </div>
         </div>
       )}
 
-      {/* Category Filter */}
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button 
-            key={cat} 
-            onClick={() => setSelectedCategory(cat)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition", 
-              selectedCategory === cat 
-                ? "bg-orange-500 text-white" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
-            {cat}
-          </button>
+          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
         ))}
       </div>
 
-      {/* Songs List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSongs.map((song, index) => (
-          <div 
-            key={song.id} 
-            onClick={() => handlePlaySong(song, index)}
-            className={cn(
-              "card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", 
-              currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50"
-            )}
-          >
-            <div 
-              className={cn(
-                "w-14 h-14 rounded-xl flex items-center justify-center transition-all", 
-                currentSong?.id === song.id && isPlaying 
-                  ? "bg-gradient-to-br from-orange-500 to-red-500" 
-                  : "bg-orange-100"
-              )}
-            >
-              {currentSong?.id === song.id && isLoading ? (
-                <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-              ) : currentSong?.id === song.id && isPlaying ? (
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
-                  <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              ) : (
-                <Music className="w-6 h-6 text-orange-600" />
-              )}
+          <div key={song.id} onClick={() => playSong(song, index, filteredSongs)} className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
+              {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
+                : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
+                : (<Music className="w-6 h-6 text-orange-600" />)}
             </div>
-            
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{song.title}</h4>
               <p className="text-sm text-gray-500 truncate">{song.artist}</p>
             </div>
-            
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-400">{song.duration}</span>
-              <button 
-                onClick={(e) => handleDownload(e, song)} 
-                disabled={downloadingId === song.id} 
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200 transition"
-              >
-                {downloadingId === song.id ? (
-                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
+              <button onClick={(e) => handleDownload(e, song)} disabled={downloadingId === song.id} className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
+                {downloadingId === song.id ? (<div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : (<Download className="w-4 h-4" />)}
               </button>
             </div>
           </div>
@@ -1677,7 +1212,7 @@ function MusicPage() {
     </div>
   );
 }
-  
+
 function PDFPage() {
   const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
@@ -1692,10 +1227,7 @@ function PDFPage() {
       </div>
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
-            {cat}
-          </button>
+          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1718,97 +1250,53 @@ function PDFPage() {
 
 function LiveTVPage() {
   const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
-  const { activeChannel, setActiveChannel, isTVLoading, tvError, retryTV } = useMedia();
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const hlsRef = useRef<any>(null);
+  const { activeChannel, setActiveChannel } = useMedia();
   const [localLoading, setLocalLoading] = useState(true);
   const [localError, setLocalError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsRef = useRef<any>(null);
 
-  // Set first channel on load
   useEffect(() => {
     if (liveChannels.length > 0 && !activeChannel) {
       setActiveChannel(liveChannels[0]);
     }
   }, [liveChannels, activeChannel, setActiveChannel]);
 
-  // Load HLS stream
   useEffect(() => {
     if (!activeChannel) return;
 
     const loadStream = async () => {
       const video = videoRef.current;
       if (!video) return;
-
-      // Cleanup previous
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
       setLocalLoading(true);
       setLocalError(false);
 
       try {
         const Hls = (await import('hls.js')).default;
-        
         if (Hls.isSupported()) {
-          const hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: true,
-          });
+          const hls = new Hls();
           hlsRef.current = hls;
-          
           hls.loadSource(activeChannel.streamUrl);
           hls.attachMedia(video);
-          
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             setLocalLoading(false);
-            video.play().catch(() => {
-              video.muted = true;
-              video.play().catch(() => {});
-            });
+            video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
           });
-          
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-            if (data.fatal) {
-              setLocalError(true);
-              setLocalLoading(false);
-            }
-          });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setLocalError(true); setLocalLoading(false); } });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
-          video.addEventListener('loadedmetadata', () => {
-            setLocalLoading(false);
-            video.play().catch(() => {});
-          });
-          video.addEventListener('error', () => {
-            setLocalError(true);
-            setLocalLoading(false);
-          });
+          video.addEventListener('loadedmetadata', () => { setLocalLoading(false); video.play().catch(() => {}); });
         }
-      } catch {
-        setLocalError(true);
-        setLocalLoading(false);
-      }
+      } catch { setLocalError(true); setLocalLoading(false); }
     };
 
     loadStream();
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
+    return () => { if (hlsRef.current) hlsRef.current.destroy(); };
   }, [activeChannel]);
 
   if (!activeChannel) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p>লোড হচ্ছে...</p>
-      </div>
-    );
+    return <div className="text-center py-12">লোড হচ্ছে...</div>;
   }
 
   return (
@@ -1817,65 +1305,36 @@ function LiveTVPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
         <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
       </div>
-
-      {/* Video Player */}
+      
       <div className="bg-black rounded-2xl overflow-hidden relative">
         <div className="aspect-video relative">
-          <video 
-            ref={videoRef} 
-            className="w-full h-full object-contain bg-black" 
-            playsInline 
-            autoPlay 
-            controls 
-          />
-          
-          {/* Loading Overlay */}
+          <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
           {localLoading && !localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center text-white">
                 <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-lg">লোড হচ্ছে...</p>
-                <p className="text-sm text-gray-400 mt-2">{activeChannel.name}</p>
+                <p>লোড হচ্ছে...</p>
               </div>
             </div>
           )}
-          
-          {/* Error Overlay */}
           {localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90">
               <div className="text-center text-white">
                 <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
-                <button 
-                  onClick={() => setActiveChannel({...activeChannel})} 
-                  className="px-6 py-2 bg-orange-500 rounded-lg hover:bg-orange-600 transition"
-                >
-                  আবার চেষ্টা করুন
-                </button>
+                <button onClick={() => setActiveChannel({...activeChannel})} className="px-6 py-2 bg-orange-500 rounded-lg">আবার চেষ্টা করুন</button>
               </div>
             </div>
           )}
         </div>
-        
-        {/* Now Playing Banner */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center gap-2">
           <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
           <span className="text-white font-medium">🔴 LIVE: {activeChannel.name}</span>
         </div>
       </div>
 
-      {/* Channel Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {liveChannels.map((channel) => (
-          <button 
-            key={channel.id} 
-            onClick={() => setActiveChannel(channel)}
-            className={cn(
-              "p-4 rounded-xl text-center transition-all", 
-              activeChannel.id === channel.id 
-                ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg scale-105" 
-                : "bg-white hover:bg-orange-50 hover:shadow-md"
-            )}
-          >
+          <button key={channel.id} onClick={() => setActiveChannel(channel)} className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
             <div className="text-3xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
@@ -1884,7 +1343,7 @@ function LiveTVPage() {
     </div>
   );
 }
-  
+
 function ContactPage() {
   return (
     <div className="space-y-8">
@@ -1921,9 +1380,6 @@ function ContactPage() {
     </div>
   );
 }
-
-// ==================== NEW COMPONENTS ====================
-
 // Notice Board Component
 function NoticeBoard() {
   const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
@@ -2395,20 +1851,14 @@ function JSONEditor() {
       try {
         let url = '';
         switch(selectedFile) {
-          case 'dynamicContent':
-            url = GITHUB_DYNAMIC_CONTENT_URL;
-            break;
-          case 'membersData':
-            url = GITHUB_MEMBERS_DATA_URL;
-            break;
-          case 'loginData':
-            url = GITHUB_LOGIN_URL;
-            break;
+          case 'dynamicContent': url = GITHUB_DYNAMIC_CONTENT_URL; break;
+          case 'membersData': url = GITHUB_MEMBERS_DATA_URL; break;
+          case 'loginData': url = GITHUB_LOGIN_URL; break;
         }
         const response = await fetch(url, { cache: 'no-cache' });
         const data = await response.json();
         setJsonContent(JSON.stringify(data, null, 2));
-      } catch (error) {
+      } catch {
         setJsonContent('// ডেটা লোড করতে সমস্যা হয়েছে');
       }
     };
@@ -2491,8 +1941,6 @@ function JSONEditor() {
     </div>
   );
 }
-// ==================== LOGIN PAGE ====================
-
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -2514,7 +1962,6 @@ function LoginPage() {
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
-  // Load login data
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -2532,7 +1979,6 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Load member data after login
   useEffect(() => {
     if (!isLoggedIn) return;
     const fetchAllData = async () => {
@@ -2552,7 +1998,6 @@ function LoginPage() {
     };
     fetchAllData();
 
-    // Load accounts PDFs
     const loadAccountsPDFs = async () => {
       try {
         const response = await fetch('/data/accountsPDFs.json');
@@ -2583,7 +2028,6 @@ function LoginPage() {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
       
-      // ✅ নতুন লজিক: accountsMembers এবং normalMembers থেকে খুঁজুন
       const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
       
       const foundUser = allUsers.find((u: LoginUser) => 
@@ -2591,24 +2035,23 @@ function LoginPage() {
         u.password === trimmedPassword
       );
 
-    if (foundUser) { 
-  // ✅ সরাসরি JSON থেকে role নিন
-  const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
+      if (foundUser) { 
+        const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
 
-  const userWithRole: LoginUser = {
-    id: foundUser.id,
-    name: foundUser.name,
-    mobile: foundUser.mobile || '',
-    email: foundUser.email || '',
-    password: foundUser.password || '',
-    role: userRole
-  };
+        const userWithRole: LoginUser = {
+          id: foundUser.id,
+          name: foundUser.name,
+          mobile: foundUser.mobile || '',
+          email: foundUser.email || '',
+          password: foundUser.password || '',
+          role: userRole
+        };
 
-  setIsLoggedIn(true); 
-  setLoggedInUser(userWithRole);
-  setUsernameInput(''); 
-  setPasswordInput(''); 
-}
+        setIsLoggedIn(true); 
+        setLoggedInUser(userWithRole);
+        setUsernameInput(''); 
+        setPasswordInput(''); 
+      }
       else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
@@ -2628,7 +2071,6 @@ function LoginPage() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // Get available tabs based on role
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'members', label: 'সদস্য তালিকা', icon: Users },
@@ -2651,7 +2093,6 @@ function LoginPage() {
     return baseTabs;
   };
 
-  // Member Details Modal
   const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -2687,37 +2128,30 @@ function LoginPage() {
               <p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p>
               <p className="font-semibold text-gray-800">{member.mobile}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">📧 ইমেইল</p>
               <p className="font-semibold text-gray-800 text-sm break-all">{member.email || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">👨 পিতার নাম</p>
               <p className="font-semibold text-gray-800">{member.fatherName || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">👩 মাতার নাম</p>
               <p className="font-semibold text-gray-800">{member.motherName || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">🔱 গোত্র</p>
               <p className="font-semibold text-gray-800">{member.gotra || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">💼 পেশা</p>
               <p className="font-semibold text-gray-800">{member.occupation || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
               <p className="text-xs text-orange-500 font-medium mb-1">📍 বর্তমান ঠিকানা</p>
               <p className="font-semibold text-gray-800">{member.address}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
               <p className="text-xs text-orange-500 font-medium mb-1">🏠 স্থায়ী ঠিকানা</p>
               <p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p>
@@ -2737,16 +2171,12 @@ function LoginPage() {
     </div>
   );
 
-  // Group invitations by area
   const groupedInvitations = invitationData.reduce((acc, item) => {
-    if (!acc[item.area]) {
-      acc[item.area] = [];
-    }
+    if (!acc[item.area]) acc[item.area] = [];
     acc[item.area].push(item);
     return acc;
   }, {} as { [key: string]: InvitationList[] });
 
-  // Login Form
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -2834,10 +2264,8 @@ function LoginPage() {
     );
   }
 
-  // Dashboard
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl p-4 shadow-lg">
         <div>
           <h1 className="text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
@@ -2863,7 +2291,6 @@ function LoginPage() {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex flex-wrap gap-2">
         {getAvailableTabs().map((tab) => (
           <button 
@@ -2881,7 +2308,6 @@ function LoginPage() {
         ))}
       </div>
 
-      {/* Loading */}
       {isDataLoading && (
         <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -2889,7 +2315,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2947,16 +2372,9 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          {membersData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -3013,16 +2431,9 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          {contactsData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -3062,22 +2473,14 @@ function LoginPage() {
                         <p className="text-sm text-gray-500">মোট: {totalMembers} জন</p>
                       </div>
                     </div>
-                    <ChevronDown 
-                      className={cn(
-                        "w-5 h-5 text-gray-400 transition-transform",
-                        isExpanded && "rotate-180"
-                      )} 
-                    />
+                    <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform", isExpanded && "rotate-180")} />
                   </button>
 
                   {isExpanded && (
                     <div className="border-t border-gray-100">
                       <div className="p-4 space-y-2">
                         {items.map((item) => (
-                          <div 
-                            key={item.id} 
-                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-                          >
+                          <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                                 <User className="w-4 h-4 text-green-600" />
@@ -3099,34 +2502,14 @@ function LoginPage() {
               );
             })}
           </div>
-
-          {invitationData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Notice Tab */}
       {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
-
-      {/* Live Broadcasting Tab */}
       {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
-
-      {/* Fund Collection Tab */}
-      {activeTab === 'fund' && !isDataLoading && (
-        <FundCollection 
-          userRole={loggedInUser?.role || 'Member'} 
-          loggedInUserId={loggedInUser?.id || ''} 
-        />
-      )}
-
-      {/* AI Chatbox Tab */}
+      {activeTab === 'fund' && !isDataLoading && <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />}
       {activeTab === 'ai' && !isDataLoading && <AIChatbox />}
 
-      {/* Accounts Tab (Admin/Super Admin only) */}
       {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
@@ -3139,12 +2522,7 @@ function LoginPage() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
-                  <a 
-                    key={year} 
-                    href={url as string} 
-                    download 
-                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                  >
+                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
                     <Download className="w-4 h-4 text-orange-600" />
                     <span className="text-sm font-medium">{year}</span>
                   </a>
@@ -3152,60 +2530,31 @@ function LoginPage() {
               </div>
             </div>
           ))}
-          
-          {Object.keys(accountsPDFs).length === 0 && (
-            <div className="col-span-2 text-center py-12 bg-white rounded-2xl shadow-lg">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো হিসাব তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
 
-      {/* Member Details Modal */}
-      {showMemberDetails && (
-        <MemberDetailsModal 
-          member={showMemberDetails} 
-          onClose={() => setShowMemberDetails(null)} 
-        />
-      )}
+      {showMemberDetails && <MemberDetailsModal member={showMemberDetails} onClose={() => setShowMemberDetails(null)} />}
     </div>
   );
 }
 // ==================== GLOBAL MINI PLAYERS ====================
 
 function GlobalMusicPlayer() {
-  const { 
-    currentSong, 
-    isPlaying, 
-    isLoading,
-    progress,
-    togglePlayPause, 
-    closeMusicPlayer,
-    skipForward,
-    skipBack
-  } = useMedia();
+  const { currentSong, isPlaying, isLoading, progress, togglePlayPause, closeMusicPlayer, skipForward, skipBack } = useMedia();
   const location = useLocation();
 
-  // MusicPage এ থাকলে mini player দেখাবে না
   if (!currentSong || location.pathname === '/music') return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
-      {/* Progress Bar */}
       <div className="h-1 bg-orange-300">
-        <div 
-          className="h-full bg-white transition-all duration-300" 
-          style={{ width: `${progress}%` }} 
-        />
+        <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
       
       <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-3 shadow-2xl">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
-          {/* Song Info */}
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -3225,20 +2574,12 @@ function GlobalMusicPlayer() {
             <p className="text-xs text-orange-100 truncate">{currentSong.artist}</p>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center gap-1">
-            <button 
-              onClick={skipBack}
-              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-            >
+            <button onClick={skipBack} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
               <SkipBack className="w-4 h-4" />
             </button>
             
-            <button 
-              onClick={togglePlayPause}
-              disabled={isLoading}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50"
-            >
+            <button onClick={togglePlayPause} disabled={isLoading} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
               ) : isPlaying ? (
@@ -3248,17 +2589,11 @@ function GlobalMusicPlayer() {
               )}
             </button>
             
-            <button 
-              onClick={skipForward}
-              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"
-            >
+            <button onClick={skipForward} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
               <SkipForward className="w-4 h-4" />
             </button>
             
-            <button 
-              onClick={closeMusicPlayer}
-              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500 transition ml-2"
-            >
+            <button onClick={closeMusicPlayer} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500 transition ml-2">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -3272,19 +2607,17 @@ function GlobalLiveTVPlayer() {
   const { activeChannel, closeLiveTV } = useMedia();
   const location = useLocation();
   const [isMinimized, setIsMinimized] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<any>(null);
 
-  // LiveTV page এ থাকলে popup দেখাবে না
-  if (!activeChannel || location.pathname === '/live') return null;
-
-  // HLS Stream Load
   useEffect(() => {
+    if (!activeChannel || location.pathname === '/live') return;
+
     const loadStream = async () => {
       const video = videoRef.current;
-      if (!video || !activeChannel) return;
+      if (!video) return;
 
       if (hlsRef.current) {
         hlsRef.current.destroy();
@@ -3339,19 +2672,16 @@ function GlobalLiveTVPlayer() {
         hlsRef.current = null;
       }
     };
-  }, [activeChannel]);
+  }, [activeChannel, location.pathname]);
+
+  if (!activeChannel || location.pathname === '/live') return null;
 
   return (
-    <div 
-      className={cn(
-        "fixed z-50 transition-all duration-300 shadow-2xl",
-        isMinimized 
-          ? "bottom-16 right-4 w-64" 
-          : "bottom-16 right-4 w-80 md:w-96"
-      )}
-    >
+    <div className={cn(
+      "fixed z-50 transition-all duration-300 shadow-2xl",
+      isMinimized ? "bottom-16 right-4 w-64" : "bottom-16 right-4 w-80 md:w-96"
+    )}>
       <div className="bg-black rounded-2xl overflow-hidden border-2 border-red-500">
-        {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-white flex-1 min-w-0">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse flex-shrink-0" />
@@ -3359,34 +2689,18 @@ function GlobalLiveTVPlayer() {
           </div>
           
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button 
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="text-white hover:bg-white/20 p-1 rounded transition"
-              title={isMinimized ? "বড় করুন" : "ছোট করুন"}
-            >
+            <button onClick={() => setIsMinimized(!isMinimized)} className="text-white hover:bg-white/20 p-1 rounded transition">
               <ChevronDown className={cn("w-4 h-4 transition-transform", isMinimized && "rotate-180")} />
             </button>
-            
-            <button 
-              onClick={closeLiveTV}
-              className="text-white hover:bg-red-800 p-1 rounded transition"
-              title="বন্ধ করুন"
-            >
+            <button onClick={closeLiveTV} className="text-white hover:bg-red-800 p-1 rounded transition">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Video */}
         {!isMinimized && (
           <div className="aspect-video bg-gray-900 relative">
-            <video 
-              ref={videoRef}
-              autoPlay 
-              playsInline 
-              controls 
-              className="w-full h-full"
-            />
+            <video ref={videoRef} autoPlay playsInline controls className="w-full h-full" />
             
             {isLoading && !hasError && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/70">
@@ -3398,13 +2712,7 @@ function GlobalLiveTVPlayer() {
               <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white text-center p-4">
                 <div>
                   <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
-                  <button 
-                    onClick={() => {
-                      setHasError(false);
-                      setIsLoading(true);
-                    }}
-                    className="text-xs bg-orange-500 px-3 py-1 rounded"
-                  >
+                  <button onClick={() => { setHasError(false); setIsLoading(true); }} className="text-xs bg-orange-500 px-3 py-1 rounded">
                     পুনরায় চেষ্টা
                   </button>
                 </div>
@@ -3416,7 +2724,7 @@ function GlobalLiveTVPlayer() {
     </div>
   );
 }
-  
+
 // ==================== MAIN APP COMPONENT ====================
 
 function App() {
@@ -3453,7 +2761,6 @@ function AppContent() {
           </Routes>
         </main>
         
-        {/* Global Mini Players */}
         <GlobalMusicPlayer />
         <GlobalLiveTVPlayer />
         
@@ -3462,4 +2769,5 @@ function AppContent() {
     </>
   );
 }
+
 export default App;
