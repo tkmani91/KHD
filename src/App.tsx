@@ -1844,7 +1844,10 @@ function AIChatbox() {
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ✅ নতুন JSON ফাইল থেকে data load
+  // ✅ Gemini API Key
+  const GEMINI_API_KEY = 'AIzaSyCZaZXmde1xKyX5Cn8fng_Pj_aIxrRmo6Q'; // আপনার API Key দিন
+
+  // ✅ Load custom FAQ from JSON
   useEffect(() => {
     const fetchChatbotData = async () => {
       setIsLoading(true);
@@ -1867,16 +1870,10 @@ function AIChatbox() {
     fetchChatbotData();
   }, []);
 
-  // Default data (fallback)
-  const defaultWelcome = 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার ভার্চুয়াল সহায়ক।';
-  const defaultQuickReplies = ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য', 'সদস্য হতে চাই'];
-  const defaultFallbacks = ['দুঃখিত, আমি বুঝতে পারিনি। 📞 কল করুন: 01733118313'];
-
-  // Get data from JSON or defaults
-  const welcomeMessage = chatbotData?.welcomeMessage || defaultWelcome;
-  const quickReplies = chatbotData?.quickReplies || defaultQuickReplies;
+  // Defaults
+  const welcomeMessage = chatbotData?.welcomeMessage || 'নমস্কার! 🙏 আমি কলম হিন্দু ধর্মসভার AI সহায়ক। যেকোনো ধর্মীয় প্রশ্ন করতে পারেন!';
+  const quickReplies = chatbotData?.quickReplies || ['দূর্গাপূজা কবে?', 'যোগাযোগ তথ্য', 'সদস্য হতে চাই'];
   const faq = chatbotData?.faq || [];
-  const fallbackMessages = chatbotData?.fallbackMessages || defaultFallbacks;
 
   // Welcome message
   useEffect(() => {
@@ -1891,7 +1888,8 @@ function AIChatbox() {
 
   useEffect(scrollToBottom, [messages]);
 
-  const findAnswer = (question: string) => {
+  // ✅ Step 1: Search in custom FAQ first
+  const findInFAQ = (question: string): string | null => {
     const lowerQuestion = question.toLowerCase();
     
     for (const item of faq) {
@@ -1906,10 +1904,92 @@ function AIChatbox() {
       }
     }
     
-    return fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
+    return null; // FAQ তে পাওয়া যায়নি
   };
 
-  const handleSend = () => {
+  // ✅ Step 2: Ask Gemini AI if FAQ doesn't have answer
+  const askGeminiAI = async (question: string): Promise<string> => {
+    try {
+      const systemPrompt = `তুমি কলম হিন্দু ধর্মসভার (KHDS) ভার্চুয়াল সহায়ক। 
+তুমি হিন্দু ধর্ম, পূজা, দেব-দেবী, মন্ত্র, উৎসব সম্পর্কে জ্ঞানী।
+তুমি বাংলায় উত্তর দেবে।
+তুমি সংক্ষেপে কিন্তু তথ্যবহুল উত্তর দেবে।
+তুমি emoji ব্যবহার করবে।
+
+কলম হিন্দু ধর্মসভা সম্পর্কে তথ্য:
+- অবস্থান: কলম, সিংড়া, নাটোর, বাংলাদেশ
+- প্রতিষ্ঠিত: ২০১৭
+- যোগাযোগ: 01733118313
+- Facebook: facebook.com/KHDS3
+- Website: durgpuja12.vercel.app
+- প্রধান পূজা: দূর্গাপূজা, শ্যামাপূজা, সরস্বতী পূজা, রথযাত্রা
+
+ব্যবহারকারীর প্রশ্ন: ${question}`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: systemPrompt
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 500,
+              topP: 0.8,
+              topK: 40
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('AI API failed');
+      }
+
+      const data = await response.json();
+      const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (aiResponse) {
+        return aiResponse;
+      }
+      
+      throw new Error('No response from AI');
+    } catch (error) {
+      console.error('Gemini AI error:', error);
+      
+      // Fallback messages
+      const fallbacks = chatbotData?.fallbackMessages || [
+        'দুঃখিত, এই মুহূর্তে AI সেবা পাওয়া যাচ্ছে না। 😔\n\n📞 সরাসরি যোগাযোগ করুন:\n+88 01733118313'
+      ];
+      return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    }
+  };
+
+  // ✅ Main handler - FAQ first, then AI
+  const getAnswer = async (question: string): Promise<string> => {
+    // Step 1: Custom FAQ তে খুঁজুন
+    const faqAnswer = findInFAQ(question);
+    if (faqAnswer) {
+      return faqAnswer;
+    }
+
+    // Step 2: FAQ তে না পেলে AI কে জিজ্ঞেস করুন
+    const aiAnswer = await askGeminiAI(question);
+    return aiAnswer;
+  };
+
+  const handleSend = async () => {
     if (!input.trim() || isTyping) return;
     
     const userMessage = input.trim();
@@ -1917,22 +1997,28 @@ function AIChatbox() {
     setInput('');
     setIsTyping(true);
     
-    setTimeout(() => {
-      const answer = findAnswer(userMessage);
+    try {
+      const answer = await getAnswer(userMessage);
       setMessages(prev => [...prev, { role: 'bot', text: answer }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'bot', text: 'দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' }]);
+    } finally {
       setIsTyping(false);
-    }, 800);
+    }
   };
 
-  const handleQuickReply = (reply: string) => {
+  const handleQuickReply = async (reply: string) => {
     setMessages(prev => [...prev, { role: 'user', text: reply }]);
     setIsTyping(true);
     
-    setTimeout(() => {
-      const answer = findAnswer(reply);
+    try {
+      const answer = await getAnswer(reply);
       setMessages(prev => [...prev, { role: 'bot', text: answer }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'bot', text: 'দুঃখিত, সমস্যা হয়েছে।' }]);
+    } finally {
       setIsTyping(false);
-    }, 800);
+    }
   };
 
   if (isLoading) {
@@ -1940,7 +2026,7 @@ function AIChatbox() {
       <div className="bg-white rounded-2xl shadow-2xl flex items-center justify-center" style={{ height: '600px' }}>
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">চ্যাটবট লোড হচ্ছে...</p>
+          <p className="text-gray-500">AI সহায়ক লোড হচ্ছে...</p>
         </div>
       </div>
     );
@@ -1955,10 +2041,10 @@ function AIChatbox() {
             🤖
           </div>
           <div>
-            <h3 className="font-bold text-lg">আমাকে জানুন</h3>
+            <h3 className="font-bold text-lg">AI সহায়ক</h3>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <p className="text-xs text-orange-100">অনলাইন • ভার্চুয়াল সহায়ক</p>
+              <p className="text-xs text-orange-100">অনলাইন • AI Powered • যেকোনো প্রশ্ন করুন</p>
             </div>
           </div>
         </div>
@@ -1974,7 +2060,7 @@ function AIChatbox() {
               </div>
             )}
             <div className={cn(
-              "max-w-[75%] p-4 rounded-2xl shadow-md",
+              "max-w-[80%] p-4 rounded-2xl shadow-md",
               msg.role === 'user' 
                 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
                 : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
@@ -1984,14 +2070,18 @@ function AIChatbox() {
           </div>
         ))}
         
+        {/* Typing Indicator */}
         {isTyping && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">🤖</div>
             <div className="bg-white p-3 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <span className="text-xs text-gray-400">AI চিন্তা করছে...</span>
               </div>
             </div>
           </div>
@@ -2030,7 +2120,7 @@ function AIChatbox() {
                 handleSend();
               }
             }}
-            placeholder="প্রশ্ন লিখুন..."
+            placeholder="যেকোনো প্রশ্ন লিখুন..."
             className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition text-sm"
             disabled={isTyping}
           />
@@ -2042,11 +2132,13 @@ function AIChatbox() {
             <Send className="w-5 h-5" />
           </button>
         </div>
+        <p className="text-xs text-gray-400 mt-2 text-center">
+          🤖 AI powered • যেকোনো ধর্মীয় প্রশ্ন করতে পারেন
+        </p>
       </div>
     </div>
   );
 }
-
 // JSON Editor Component for Super Admin
 function JSONEditor() {
   const [jsonContent, setJsonContent] = useState('');
