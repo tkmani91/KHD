@@ -2061,11 +2061,13 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
+  const [userPhoto, setUserPhoto] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('members');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
   const [membersData, setMembersData] = useState<Member[]>([]);
   const [contactsData, setContactsData] = useState<ContactPerson[]>([]);
@@ -2078,6 +2080,31 @@ function LoginPage() {
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
+  // ===== SESSION PERSISTENCE - Check saved login =====
+  useEffect(() => {
+    const checkSavedSession = async () => {
+      try {
+        const savedUser = localStorage.getItem('khd_logged_in_user');
+        const savedPhoto = localStorage.getItem('khd_user_photo');
+        
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          setLoggedInUser(user);
+          setUserPhoto(savedPhoto || '');
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.log('Session check failed:', error);
+        localStorage.removeItem('khd_logged_in_user');
+        localStorage.removeItem('khd_user_photo');
+      }
+      setIsCheckingSession(false);
+    };
+
+    checkSavedSession();
+  }, []);
+
+  // Load login data
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -2095,15 +2122,30 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
+  // Load member data after login + Find user photo
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || !loggedInUser) return;
+    
     const fetchAllData = async () => {
       setIsDataLoading(true);
       try {
         const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        if (data.members) setMembersData(data.members);
+        
+        if (data.members) {
+          setMembersData(data.members);
+          
+          // Find logged in user's photo from members data
+          const currentUserMember = data.members.find(
+            (m: Member) => m.mobile === loggedInUser.mobile || m.email === loggedInUser.email
+          );
+          
+          if (currentUserMember?.photo) {
+            setUserPhoto(currentUserMember.photo);
+            localStorage.setItem('khd_user_photo', currentUserMember.photo);
+          }
+        }
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
@@ -2126,8 +2168,9 @@ function LoginPage() {
       }
     };
     loadAccountsPDFs();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, loggedInUser]);
 
+  // ===== UPDATED LOGIN HANDLER =====
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -2159,9 +2202,12 @@ function LoginPage() {
           name: foundUser.name,
           mobile: foundUser.mobile || '',
           email: foundUser.email || '',
-          password: foundUser.password || '',
+          password: '', // Don't save password
           role: userRole
         };
+
+        // Save to localStorage for persistence
+        localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
 
         setIsLoggedIn(true); 
         setLoggedInUser(userWithRole);
@@ -2173,9 +2219,15 @@ function LoginPage() {
     }, 800);
   };
 
+  // ===== UPDATED LOGOUT HANDLER =====
   const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('khd_logged_in_user');
+    localStorage.removeItem('khd_user_photo');
+    
     setIsLoggedIn(false);
     setLoggedInUser(null);
+    setUserPhoto('');
     setShowMemberDetails(null);
     setActiveTab('members');
   };
@@ -2293,6 +2345,20 @@ function LoginPage() {
     return acc;
   }, {} as { [key: string]: InvitationList[] });
 
+  // ===== SESSION CHECKING LOADING =====
+  if (isCheckingSession) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 font-medium">সেশন যাচাই করা হচ্ছে...</p>
+          <p className="text-gray-400 text-sm mt-2">অনুগ্রহ করে অপেক্ষা করুন</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== LOGIN FORM =====
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
@@ -2380,33 +2446,57 @@ function LoginPage() {
     );
   }
 
+  // ===== DASHBOARD =====
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 bg-white rounded-2xl p-4 shadow-lg">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-gray-500">
-              স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
-            </p>
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs font-medium",
-              loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
-              loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
-              'bg-green-100 text-green-600'
-            )}>
-              {loggedInUser?.role}
-            </span>
+      {/* ===== UPDATED HEADER WITH PHOTO ===== */}
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            {/* User Photo */}
+            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+              <img 
+                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                alt={loggedInUser?.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { 
+                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+                }}
+              />
+            </div>
+            
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p className="text-sm text-gray-500">
+                  স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
+                </p>
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                  loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
+                  loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
+                  'bg-green-100 text-green-600'
+                )}>
+                  {loggedInUser?.role}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                {loggedInUser?.mobile}
+              </p>
+            </div>
           </div>
+          
+          <button 
+            onClick={handleLogout} 
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> লগআউট
+          </button>
         </div>
-        <button 
-          onClick={handleLogout} 
-          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
-        >
-          <LogOut className="w-4 h-4" /> লগআউট
-        </button>
       </div>
 
+      {/* Tabs */}
       <div className="flex flex-wrap gap-2">
         {getAvailableTabs().map((tab) => (
           <button 
@@ -2424,6 +2514,7 @@ function LoginPage() {
         ))}
       </div>
 
+      {/* Loading */}
       {isDataLoading && (
         <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -2431,6 +2522,7 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2491,6 +2583,7 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2550,6 +2643,7 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2621,11 +2715,24 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Notice Tab */}
       {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+
+      {/* Live Broadcasting Tab */}
       {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
-      {activeTab === 'fund' && !isDataLoading && <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />}
+
+      {/* Fund Collection Tab */}
+      {activeTab === 'fund' && !isDataLoading && (
+        <FundCollection 
+          userRole={loggedInUser?.role || 'Member'} 
+          loggedInUserId={loggedInUser?.id || ''} 
+        />
+      )}
+
+      {/* AI Chatbox Tab */}
       {activeTab === 'ai' && !isDataLoading && <AIChatbox />}
 
+      {/* Accounts Tab (Admin/Super Admin only) */}
       {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
@@ -2649,8 +2756,10 @@ function LoginPage() {
         </div>
       )}
 
+      {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
 
+      {/* Member Details Modal */}
       {showMemberDetails && <MemberDetailsModal member={showMemberDetails} onClose={() => setShowMemberDetails(null)} />}
     </div>
   );
