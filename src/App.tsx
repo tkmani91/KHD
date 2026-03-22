@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { InstallPrompt } from './components/InstallPrompt';
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -27,9 +28,18 @@ import {
   EyeOff, 
   AlertCircle,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Bell,
+  Send,
+  Settings,
+  Copy,
+  Check,
+  LogOut,
+  DollarSign,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from './utils/cn';
+import { OptimizedImage } from './components/OptimizedImage';
 
 // Types
 interface CountdownTime {
@@ -57,11 +67,11 @@ interface Deity {
 }
 
 interface GalleryImage {
-  id: string;
-  year: number;
-  pujaType: string;
+  id: number;
   url: string;
   title: string;
+  pujaType: string;
+  year: number;
 }
 
 interface Song {
@@ -93,6 +103,7 @@ interface Member {
   name: string;
   designation: string;
   photo: string;
+  bloodGroup: string;
   birthDate: string;
   address: string;
   permanentAddress: string;
@@ -132,9 +143,19 @@ interface AccountsPDFs {
   };
 }
 
+interface LoginUser {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  password: string;
+  role: 'Member' | 'Admin' | 'Super Admin';
+}
+
 // Data URLs
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
 const deities: Deity[] = [
   {
@@ -181,6 +202,293 @@ const notices = [
   '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
 ];
 
+// ==================== GLOBAL MEDIA CONTEXT ====================
+
+interface MediaContextType {
+  // Music
+  currentSong: Song | null;
+  currentIndex: number;
+  isPlaying: boolean;
+  isLoading: boolean;
+  progress: number;
+  duration: number;
+  currentTime: number;
+  volume: number;
+  setVolume: (v: number) => void;
+  playSong: (song: Song, index: number, playlist: Song[]) => void;
+  togglePlayPause: () => void;
+  closeMusicPlayer: () => void;
+  skipForward: () => void;
+  skipBack: () => void;
+  seekTo: (percent: number) => void;
+  playlist: Song[];
+  
+  // Live TV
+  activeChannel: LiveChannel | null;
+  setActiveChannel: (channel: LiveChannel | null) => void;
+  closeLiveTV: () => void;
+}
+
+const MediaContext = createContext<MediaContextType | null>(null);
+
+function MediaProvider({ children }: { children: React.ReactNode }) {
+  // ===== MUSIC STATE =====
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [playlist, setPlaylist] = useState<Song[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentIndexRef = useRef<number>(-1);
+  const playlistRef = useRef<Song[]>([]);
+
+  // ===== LIVE TV STATE =====
+  const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
+
+  // Refs sync
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+    playlistRef.current = playlist;
+  }, [currentIndex, playlist]);
+
+  // ===== AUDIO INITIALIZATION =====
+  useEffect(() => {
+    const audio = new Audio();
+    audio.volume = volume;
+    audio.preload = 'metadata';
+    audioRef.current = audio;
+
+    const handleTimeUpdate = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setCurrentTime(audio.currentTime);
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
+    const handleEnded = () => {
+      const idx = currentIndexRef.current;
+      const songs = playlistRef.current;
+      
+      if (songs.length > 0) {
+        const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
+        const nextSong = songs[nextIndex];
+        
+        if (nextSong && audioRef.current) {
+          setCurrentSong(nextSong);
+          setCurrentIndex(nextIndex);
+          setProgress(0);
+          setCurrentTime(0);
+          setIsLoading(true);
+          
+          audioRef.current.src = nextSong.url;
+          audioRef.current.load();
+          audioRef.current.play()
+            .then(() => { setIsPlaying(true); setIsLoading(false); })
+            .catch(() => { setIsPlaying(false); setIsLoading(false); });
+        }
+      }
+    };
+
+    const handleError = () => { 
+      setIsLoading(false); 
+      setIsPlaying(false); 
+    };
+    
+    const handleCanPlay = () => { 
+      setIsLoading(false); 
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
+    };
+  }, []);
+
+  // Volume sync
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // ===== MUSIC FUNCTIONS =====
+  
+  // Play Song - এটা call হলে TV তে কিছু হবে না, শুধু music চালু হবে
+  const playSong = useCallback((song: Song, index: number, newPlaylist: Song[]) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    setCurrentSong(song);
+    setCurrentIndex(index);
+    setPlaylist(newPlaylist);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsLoading(true);
+
+    audio.src = song.url;
+    audio.load();
+    
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => { setIsPlaying(true); setIsLoading(false); })
+        .catch(() => { setIsPlaying(false); setIsLoading(false); });
+    }
+  }, []);
+
+  // Toggle Play/Pause
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentSong) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    }
+  }, [currentSong, isPlaying]);
+
+  // Skip Forward
+  const skipForward = useCallback(() => {
+    const songs = playlistRef.current;
+    if (songs.length === 0) return;
+
+    let newIndex = currentIndexRef.current + 1;
+    if (newIndex >= songs.length) newIndex = 0;
+
+    const nextSong = songs[newIndex];
+    if (nextSong) {
+      playSong(nextSong, newIndex, songs);
+    }
+  }, [playSong]);
+
+  // Skip Back
+  const skipBack = useCallback(() => {
+    const audio = audioRef.current;
+    const songs = playlistRef.current;
+
+    // 3 সেকেন্ডের বেশি চললে restart
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+
+    if (songs.length === 0) return;
+
+    let newIndex = currentIndexRef.current - 1;
+    if (newIndex < 0) newIndex = songs.length - 1;
+
+    const prevSong = songs[newIndex];
+    if (prevSong) {
+      playSong(prevSong, newIndex, songs);
+    }
+  }, [playSong]);
+
+  // Seek To
+  const seekTo = useCallback((percent: number) => {
+    const audio = audioRef.current;
+    if (!audio || !duration || isNaN(duration)) return;
+    audio.currentTime = (percent / 100) * duration;
+  }, [duration]);
+
+  // Close Music Player
+  const closeMusicPlayer = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.src = '';
+    }
+    setCurrentSong(null);
+    setCurrentIndex(-1);
+    setPlaylist([]);
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+  }, []);
+
+  // ===== LIVE TV FUNCTIONS =====
+  
+  // Set Active Channel - Music বন্ধ করে TV চালু
+  const setActiveChannel = useCallback((channel: LiveChannel | null) => {
+    if (channel) {
+      // Music চালু থাকলে pause করি
+      if (audioRef.current && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+    setActiveChannelState(channel);
+  }, [isPlaying]);
+
+  // Close Live TV
+  const closeLiveTV = useCallback(() => {
+    setActiveChannelState(null);
+  }, []);
+
+  return (
+    <MediaContext.Provider value={{
+      // Music
+      currentSong,
+      currentIndex,
+      isPlaying,
+      isLoading,
+      progress,
+      duration,
+      currentTime,
+      volume,
+      setVolume,
+      playSong,
+      togglePlayPause,
+      closeMusicPlayer,
+      skipForward,
+      skipBack,
+      seekTo,
+      playlist,
+      // Live TV
+      activeChannel,
+      setActiveChannel,
+      closeLiveTV
+    }}>
+      {children}
+    </MediaContext.Provider>
+  );
+}
+
+function useMedia() {
+  const context = useContext(MediaContext);
+  if (!context) {
+    throw new Error('useMedia must be used within MediaProvider');
+  }
+  return context;
+}
+
 // Hooks
 function useCountdown(targetDate: string): CountdownTime {
   const [timeLeft, setTimeLeft] = useState<CountdownTime>({ 
@@ -211,7 +519,7 @@ function useCountdown(targetDate: string): CountdownTime {
 
   return timeLeft;
 }
-// Data Loader Hook
+
 function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   const [data, setData] = useState<T>(fallback);
   const [isLoading, setIsLoading] = useState(true);
@@ -237,7 +545,6 @@ function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
 
   return [data, isLoading, error];
 }
-
 // Components
 function CountdownDisplay({ targetDate, title }: { targetDate: string; title: string }) {
   const time = useCountdown(targetDate);
@@ -304,6 +611,7 @@ function Header() {
     { path: '/saraswati', label: 'সরস্বতী পূজা', icon: Calendar },
     { path: '/rath', label: 'রথযাত্রা', icon: Calendar },
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
+    { path: '/quiz', label: 'কুইজ', icon: FileText },
     { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
     { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/pdf', label: 'PDF', icon: FileText },
@@ -401,7 +709,7 @@ function Footer() {
             <ul className="space-y-2 text-sm text-orange-200">
               <li><Link to="/durga" className="hover:text-white">দূর্গাপূজা</Link></li>
               <li><Link to="/shyama" className="hover:text-white">শ্যামাপূজা</Link></li>
-              <li><Link to="/gallery" className="hover:text-white">ফটো গ্যালারি</Link></li>
+              <li><Link to="/" className="hover:text-white">ফটো গ্যালারি</Link></li>
             </ul>
           </div>
           <div>
@@ -419,10 +727,13 @@ function Footer() {
     </footer>
   );
 }
-
 function HomePage() {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
   
+  // Notices থেকে সর্বশেষ ৫টা নিবে
+  const latestNotices = (dynamicContent.notices || []).slice(0, 5);
+
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-2xl">
@@ -471,26 +782,76 @@ function HomePage() {
         </div>
       </section>
 
+      {/* সর্বশেষ আপডেট - Dynamic from notices */}
       <section className="bg-white rounded-2xl p-6 shadow-lg">
         <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center gap-2">
           <Clock className="w-6 h-6" />
           সর্বশেষ আপডেট
         </h2>
-        <div className="space-y-4">
-          {[
-            { title: 'নতুন কমিটি গঠন সম্পন্ন', date: '৪ অক্টোবর ২০২৫', type: 'সংবাদ' },
-          ].map((item, index) => (
-            <div key={index} className="flex items-start gap-4 p-4 rounded-xl hover:bg-orange-50 transition">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 font-bold text-xs">
-                {item.type}
+        
+        {latestNotices.length > 0 ? (
+          <div className="space-y-4">
+            {latestNotices.map((notice: any, index: number) => (
+              <div 
+                key={notice.id || index} 
+                className={cn(
+                  "flex items-start gap-4 p-4 rounded-xl hover:shadow-md transition border-l-4",
+                  notice.priority === 'high' ? 'border-red-500 bg-red-50/50' : 
+                  notice.priority === 'medium' ? 'border-yellow-500 bg-yellow-50/50' : 
+                  'border-blue-500 bg-blue-50/50'
+                )}
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0",
+                  notice.priority === 'high' ? 'bg-red-500' : 
+                  notice.priority === 'medium' ? 'bg-yellow-500' : 
+                  'bg-blue-500'
+                )}>
+                  {notice.category === 'পূজা' ? '🙏' : 
+                   notice.category === 'সভা' ? '👥' : 
+                   notice.category === 'অনুষ্ঠান' ? '🎉' : 
+                   notice.category === 'জরুরী' ? '🚨' : '📢'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-semibold text-gray-900">{notice.title}</h4>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0",
+                      notice.priority === 'high' ? 'bg-red-100 text-red-600' : 
+                      notice.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
+                      'bg-blue-100 text-blue-600'
+                    )}>
+                      {notice.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">{notice.date}</p>
+                  {notice.details && (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">{notice.details}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                <p className="text-sm text-gray-500">{item.date}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p>কোনো আপডেট নেই</p>
+          </div>
+        )}
+
+        {/* সব দেখুন বাটন */}
+        {latestNotices.length > 0 && (
+          <div className="mt-6 text-center">
+            <Link 
+              to="/login" 
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition"
+            >
+              <Bell className="w-4 h-4" />
+              সব বিজ্ঞপ্তি দেখুন
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -499,8 +860,6 @@ function HomePage() {
 function PujaPage({ pujaId }: { pujaId: string }) {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
   const puja = pujaData.find(p => p.id === pujaId);
-
-  // ✅ JSON থেকে schedules লোড করুন
   const [schedulesData] = useDataLoader<{ [key: string]: any[] }>('/data/schedules.json', {});
   const schedule = schedulesData[pujaId] || [];
 
@@ -511,7 +870,7 @@ function PujaPage({ pujaId }: { pujaId: string }) {
   return (
     <div className="space-y-8">
       <div className="relative rounded-2xl overflow-hidden">
-        <img src={puja.image} alt={puja.name} className="w-full h-64 md:h-80 object-cover" />
+        <OptimizedImage src={puja.image} alt={puja.name} className="w-full h-64 md:h-80"/>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">{puja.name}</h1>
@@ -581,7 +940,7 @@ function DeitiesPage() {
         {deities.map((deity) => (
           <div key={deity.id} className="card-hover bg-white rounded-2xl overflow-hidden shadow-lg">
             <div className="h-56 overflow-hidden">
-              <img src={deity.image} alt={deity.name} className="w-full h-full object-cover" />
+              <OptimizedImage src={deity.image} alt={deity.name} className="w-full h-56"/> 
             </div>
             <div className="p-6">
               <h3 className="text-xl font-bold mb-1">{deity.name}</h3>
@@ -594,7 +953,6 @@ function DeitiesPage() {
     </div>
   );
 }
-
 function GalleryPage() {
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [selectedPuja, setSelectedPuja] = useState<string>('সব');
@@ -602,43 +960,57 @@ function GalleryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
-
-  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2008];
+  
+  const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
- useEffect(() => {
-  const fetchImages = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const cacheBuster = `?t=${new Date().getTime()}`;
-      const response = await fetch(
-        `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
-        { cache: 'no-store' }
-      );
-
-      if (!response.ok) {
-        throw new Error('নেটওয়ার্ক রেসপন্স সঠিক নয়');
+  useEffect(() => {
+    const fetchImages = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        const response = await fetch(
+          `https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json${cacheBuster}`,
+          { cache: 'no-store' }
+        );
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error('Invalid data format');
+        setGalleryImages(data);
+      } catch (err) {
+        setError('ছবি লোড করতে সমস্যা হয়েছে।');
+      } finally {
+        setIsLoading(false);
       }
-      
-      const data = await response.json();
-      setGalleryImages(data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError('ছবি লোড করতে সমস্যা হয়েছে।');
-    } finally {
-      setIsLoading(false);
+    };
+    fetchImages();
+  }, []);
+
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = 'unset'; };
+    }
+  }, [selectedImage]);
+
+  const filteredImages = useMemo(() => {
+    return galleryImages.filter((img) => {
+      const yearMatch = img.year === selectedYear;
+      const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
+      return yearMatch && pujaMatch;
+    });
+  }, [galleryImages, selectedYear, selectedPuja]);
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (!selectedImage) return;
+    const currentIndex = filteredImages.findIndex((img) => img.id === selectedImage.id);
+    if (direction === 'prev' && currentIndex > 0) {
+      setSelectedImage(filteredImages[currentIndex - 1]);
+    } else if (direction === 'next' && currentIndex < filteredImages.length - 1) {
+      setSelectedImage(filteredImages[currentIndex + 1]);
     }
   };
-
-  fetchImages();
-}, []); // Dependency array ঠিক আছে
-
-  const filteredImages = galleryImages.filter(img => {
-    const yearMatch = img.year === selectedYear;
-    const pujaMatch = selectedPuja === 'সব' || img.pujaType === selectedPuja;
-    return yearMatch && pujaMatch;
-  });
 
   return (
     <div className="space-y-6">
@@ -656,9 +1028,7 @@ function GalleryPage() {
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
             >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
+              {years.map(year => (<option key={year} value={year}>{year}</option>))}
             </select>
           </div>
           <div className="flex-1">
@@ -668,9 +1038,7 @@ function GalleryPage() {
               onChange={(e) => setSelectedPuja(e.target.value)}
               className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
             >
-              {pujaTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
+              {pujaTypes.map(type => (<option key={type} value={type}>{type}</option>))}
             </select>
           </div>
         </div>
@@ -685,8 +1053,8 @@ function GalleryPage() {
 
       {error && !isLoading && (
         <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
-          <p className="text-red-500 text-lg mb-2">⚠️ {error}</p>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+          <p className="text-red-500 text-lg mb-4">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-orange-500 text-white rounded-lg">
             🔄 আবার চেষ্টা করুন
           </button>
         </div>
@@ -694,26 +1062,17 @@ function GalleryPage() {
 
       {!isLoading && !error && (
         <>
-          {filteredImages.length > 0 && (
-            <p className="text-sm text-gray-500 text-right">মোট {filteredImages.length}টি ছবি</p>
-          )}
-
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredImages.map((img) => (
-              <div key={img.id} onClick={() => setSelectedImage(img)} className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer">
-<img 
-  src={img.url} 
-  alt={img.title} 
-  className="w-full h-48 object-cover" 
-  loading="lazy"
-  onError={(e) => {
-    const target = e.target as HTMLImageElement;
-    target.src = 'https://via.placeholder.com/400x300?text=ছবি+নেই';
-  }} 
-/>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div 
+                key={img.id} 
+                onClick={() => setSelectedImage(img)} 
+                className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100"
+              >
+                <OptimizedImage src={img.url} alt={img.title} className="w-full h-48"/> 
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                    <p className="text-sm font-medium">{img.title}</p>
+                    <p className="text-sm font-medium line-clamp-1">{img.title}</p>
                     <p className="text-xs text-gray-300">{img.pujaType} • {img.year}</p>
                   </div>
                 </div>
@@ -722,22 +1081,27 @@ function GalleryPage() {
           </div>
 
           {filteredImages.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <div className="text-5xl mb-4">🖼️</div>
-              <p className="text-gray-500 text-lg">এই সালের ছবি এখনো যুক্ত হয়নি</p>
+            <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+              <p className="text-gray-500 text-lg">{selectedYear} সালের ছবি পাওয়া যায়নি</p>
             </div>
           )}
         </>
       )}
 
       {selectedImage && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
-          <div className="relative max-w-4xl w-full" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
+          <div className="relative max-w-5xl w-full" onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedImage(null)} className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400">✕</button>
+            {filteredImages.findIndex((img) => img.id === selectedImage.id) > 0 && (
+              <button onClick={() => navigateImage('prev')} className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">‹</button>
+            )}
+            {filteredImages.findIndex((img) => img.id === selectedImage.id) < filteredImages.length - 1 && (
+              <button onClick={() => navigateImage('next')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">›</button>
+            )}
             <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
-            <div className="mt-3 text-center text-white">
+            <div className="mt-4 text-center text-white">
               <p className="font-bold text-lg">{selectedImage.title}</p>
-              <p className="text-gray-400 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
+              <p className="text-gray-300 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
             </div>
           </div>
         </div>
@@ -746,117 +1110,117 @@ function GalleryPage() {
   );
 }
 
-function MusicPage() {
-  const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
-  const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('সব');
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+function QuizArchivePage() {
+  const [quizData, setQuizData] = useState<any[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [visibleAnswers, setVisibleAnswers] = useState<Record<number, boolean>>({});
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentIndexRef = useRef<number>(-1);
-
-  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
-
-  const filteredSongs = selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory);
-
-  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+  const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
 
   useEffect(() => {
-    const audio = new Audio();
-    audio.volume = volume;
-    audio.preload = 'metadata';
-    audioRef.current = audio;
-
-    const handleTimeUpdate = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
-        setCurrentTime(audio.currentTime);
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
+    const fetchQuizData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed');
+        setQuizData(await response.json());
+      } catch { setError('কুইজ লোড করতে সমস্যা হয়েছে।'); }
+      finally { setIsLoading(false); }
     };
-
-    const handleLoadedMetadata = () => { setDuration(audio.duration); setIsLoading(false); };
-
-    const handleEnded = () => {
-      const idx = currentIndexRef.current;
-      const nextIndex = idx + 1 >= songs.length ? 0 : idx + 1;
-      const nextSong = songs[nextIndex];
-      if (nextSong && audioRef.current) {
-        setCurrentSong(nextSong); setCurrentIndex(nextIndex); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
-        audioRef.current.src = nextSong.url; audioRef.current.load();
-        audioRef.current.play().then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
-      }
-    };
-
-    const handleError = () => { setIsLoading(false); setIsPlaying(false); };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
-
-    return () => {
-      audio.pause(); audio.src = '';
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-    };
-  }, [songs]);
-
-  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
-
-  const playSong = useCallback((song: Song, index: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    setCurrentSong(song); setCurrentIndex(index); setProgress(0); setCurrentTime(0); setDuration(0); setIsLoading(true);
-    audio.src = song.url; audio.load();
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => { setIsPlaying(true); setIsLoading(false); }).catch(() => { setIsPlaying(false); setIsLoading(false); });
-    }
+    fetchQuizData();
   }, []);
 
-  const togglePlayPause = () => {
-    const audio = audioRef.current;
-    if (!audio || !currentSong) return;
-    if (isPlaying) { audio.pause(); setIsPlaying(false); }
-    else { audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
+  useEffect(() => { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
+
+  const currentYearQuiz = useMemo(() => quizData.find(q => q.year === selectedYear), [quizData, selectedYear]);
+
+  const toggleAnswer = (questionId: number) => {
+    setVisibleAnswers(prev => ({ ...prev, [questionId]: !prev[questionId] }));
   };
 
-  const handleSkipBack = () => {
-    if (filteredSongs.length === 0) return;
-    const audio = audioRef.current;
-    if (audio && audio.currentTime > 3) { audio.currentTime = 0; return; }
-    let newIndex = currentIndex - 1;
-    if (newIndex < 0) newIndex = filteredSongs.length - 1;
-    playSong(filteredSongs[newIndex], newIndex);
+  const toggleAllAnswers = () => {
+    if (showAllAnswers) { setVisibleAnswers({}); }
+    else {
+      const allVisible: Record<number, boolean> = {};
+      currentYearQuiz?.questions.forEach((q: any) => { allVisible[q.id] = true; });
+      setVisibleAnswers(allVisible);
+    }
+    setShowAllAnswers(!showAllAnswers);
   };
 
-  const handleSkipForward = () => {
-    if (filteredSongs.length === 0) return;
-    let newIndex = currentIndex + 1;
-    if (newIndex >= filteredSongs.length) newIndex = 0;
-    playSong(filteredSongs[newIndex], newIndex);
-  };
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold gradient-text mb-2">📚 দূর্গাপূজা কুইজ</h1>
+        <p className="text-gray-600">প্রতিবছর মহানবমীতে অনুষ্ঠিত কুইজ</p>
+      </div>
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const audio = audioRef.current;
-    if (!audio || !duration || isNaN(duration)) return;
-    const bar = e.currentTarget;
-    const rect = bar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const barWidth = rect.width;
-    const newTime = (clickX / barWidth) * duration;
-    audio.currentTime = newTime;
-  };
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="w-full px-4 py-3 rounded-xl border">
+          {years.map(year => (<option key={year} value={year}>{year}</option>))}
+        </select>
+      </div>
+
+      {isLoading && (
+        <div className="text-center py-16 bg-white rounded-2xl">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        </div>
+      )}
+
+      {!isLoading && !error && currentYearQuiz && (
+        <>
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">{currentYearQuiz.title}</h2>
+              <p className="text-orange-100">📅 {currentYearQuiz.eventDate}</p>
+            </div>
+            <button onClick={toggleAllAnswers} className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold flex items-center gap-2">
+              {showAllAnswers ? <><EyeOff className="w-5 h-5" /> সব উত্তর লুকান</> : <><Eye className="w-5 h-5" /> সব উত্তর দেখুন</>}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {currentYearQuiz.questions.map((q: any, index: number) => (
+              <div key={q.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3">
+                  <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm font-bold">প্রশ্ন {index + 1}</span>
+                </div>
+                <div className="p-4">
+                  <p className="font-medium text-gray-800 min-h-[60px]">{q.question}</p>
+                  <button onClick={() => toggleAnswer(q.id)} className="w-full mt-4 py-2.5 bg-orange-50 text-orange-600 rounded-xl text-sm flex items-center justify-center gap-2">
+                    {visibleAnswers[q.id] ? <><EyeOff className="w-4 h-4" /> উত্তর লুকান</> : <><Eye className="w-4 h-4" /> উত্তর দেখুন</>}
+                  </button>
+                  {visibleAnswers[q.id] && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                      <p className="text-xs text-green-600 font-medium mb-1 flex items-center gap-1"><Check className="w-4 h-4" /> সঠিক উত্তর</p>
+                      <p className="text-green-800 font-semibold">{q.answer}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {!isLoading && !currentYearQuiz && (
+        <div className="text-center py-16 bg-white rounded-2xl"><p className="text-gray-500">{selectedYear} সালের কুইজ নেই</p></div>
+      )}
+    </div>
+  );
+}
+function MusicPage() {
+  const [songs] = useDataLoader<Song[]>('/data/songs.json', []);
+  const [selectedCategory, setSelectedCategory] = useState('সব');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const { currentSong, isPlaying, isLoading, progress, duration, currentTime, volume, setVolume, playSong, togglePlayPause, skipForward, skipBack, seekTo } = useMedia();
+
+  const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
+  const filteredSongs = useMemo(() => selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory), [songs, selectedCategory]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
@@ -865,13 +1229,24 @@ function MusicPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+    seekTo(percent);
+  };
+
   const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
     if (!song.url || song.url === '#') { alert('ডাউনলোড লিংক নেই'); return; }
     setDownloadingId(song.id);
     const link = document.createElement('a');
-    link.href = song.url; link.download = `${song.title} - ${song.artist}.mp3`; link.target = '_blank';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    link.href = song.url;
+    link.download = `${song.title} - ${song.artist}.mp3`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setTimeout(() => setDownloadingId(null), 1000);
   };
 
@@ -887,20 +1262,19 @@ function MusicPage() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
               {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
-                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
+                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
                 : (<Music className="w-8 h-8" />)}
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
               <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
-              {isLoading && <p className="text-orange-200 text-xs">লোড হচ্ছে...</p>}
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={handleSkipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipBack className="w-5 h-5" /></button>
-              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
+              <button onClick={skipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipBack className="w-5 h-5" /></button>
+              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 disabled:opacity-50">
                 {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
               </button>
-              <button onClick={handleSkipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><SkipForward className="w-5 h-5" /></button>
+              <button onClick={skipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipForward className="w-5 h-5" /></button>
             </div>
             <div className="hidden md:flex items-center gap-2">
               <Volume2 className="w-5 h-5" />
@@ -919,17 +1293,13 @@ function MusicPage() {
 
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
-            {cat}
-          </button>
+          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSongs.map((song, index) => (
-          <div key={song.id} onClick={() => playSong(song, index)}
-            className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
+          <div key={song.id} onClick={() => playSong(song, index, filteredSongs)} className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
             <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
               {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
                 : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
@@ -973,10 +1343,7 @@ function PDFPage() {
       </div>
       <div className="flex flex-wrap gap-2">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>
-            {cat}
-          </button>
+          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -999,9 +1366,9 @@ function PDFPage() {
 
 function LiveTVPage() {
   const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
-  const [activeChannel, setActiveChannel] = useState<LiveChannel | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const { activeChannel, setActiveChannel } = useMedia();
+  const [localLoading, setLocalLoading] = useState(true);
+  const [localError, setLocalError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<any>(null);
 
@@ -1009,7 +1376,7 @@ function LiveTVPage() {
     if (liveChannels.length > 0 && !activeChannel) {
       setActiveChannel(liveChannels[0]);
     }
-  }, [liveChannels, activeChannel]);
+  }, [liveChannels, activeChannel, setActiveChannel]);
 
   useEffect(() => {
     if (!activeChannel) return;
@@ -1018,7 +1385,8 @@ function LiveTVPage() {
       const video = videoRef.current;
       if (!video) return;
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-      setIsLoading(true); setHasError(false);
+      setLocalLoading(true);
+      setLocalError(false);
 
       try {
         const Hls = (await import('hls.js')).default;
@@ -1028,16 +1396,17 @@ function LiveTVPage() {
           hls.loadSource(activeChannel.streamUrl);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            setIsLoading(false);
+            setLocalLoading(false);
             video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
           });
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setHasError(true); setIsLoading(false); } });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setLocalError(true); setLocalLoading(false); } });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
-          video.addEventListener('loadedmetadata', () => { setIsLoading(false); video.play().catch(() => {}); });
+          video.addEventListener('loadedmetadata', () => { setLocalLoading(false); video.play().catch(() => {}); });
         }
-      } catch { setHasError(true); setIsLoading(false); }
+      } catch { setLocalError(true); setLocalLoading(false); }
     };
+
     loadStream();
     return () => { if (hlsRef.current) hlsRef.current.destroy(); };
   }, [activeChannel]);
@@ -1052,10 +1421,11 @@ function LiveTVPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
         <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
       </div>
+      
       <div className="bg-black rounded-2xl overflow-hidden relative">
         <div className="aspect-video relative">
           <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
-          {isLoading && !hasError && (
+          {localLoading && !localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center text-white">
                 <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -1063,7 +1433,7 @@ function LiveTVPage() {
               </div>
             </div>
           )}
-          {hasError && (
+          {localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90">
               <div className="text-center text-white">
                 <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
@@ -1072,11 +1442,15 @@ function LiveTVPage() {
             </div>
           )}
         </div>
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center gap-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+          <span className="text-white font-medium">🔴 LIVE: {activeChannel.name}</span>
+        </div>
       </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {liveChannels.map((channel) => (
-          <button key={channel.id} onClick={() => setActiveChannel(channel)}
-            className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
+          <button key={channel.id} onClick={() => setActiveChannel(channel)} className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
             <div className="text-3xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
@@ -1122,17 +1496,578 @@ function ContactPage() {
     </div>
   );
 }
+// Notice Board Component
+function NoticeBoard() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const [selectedNotice, setSelectedNotice] = useState<any | null>(null);
+  const noticesList = dynamicContent.notices || [];
 
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+          <Bell className="w-7 h-7" />
+          জরুরী বিজ্ঞপ্তি
+        </h2>
+        <span className="text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-medium">
+          {noticesList.length}টি নোটিশ
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3">
+        {noticesList.map((notice: any) => (
+          <div 
+            key={notice.id} 
+            onClick={() => setSelectedNotice(notice)}
+            className={cn(
+              "bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4",
+              notice.priority === 'high' ? 'border-red-500' : 
+              notice.priority === 'medium' ? 'border-yellow-500' : 'border-blue-500'
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-1">{notice.title}</h3>
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {notice.date}
+                  </span>
+                  <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-medium">
+                    {notice.category}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {noticesList.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">কোনো বিজ্ঞপ্তি নেই</p>
+        </div>
+      )}
+
+      {selectedNotice && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedNotice(null)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className={cn(
+              "p-6 rounded-t-2xl text-white",
+              selectedNotice.priority === 'high' ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+              selectedNotice.priority === 'medium' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+              'bg-gradient-to-r from-blue-500 to-blue-600'
+            )}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">{selectedNotice.title}</h2>
+                  <p className="text-sm opacity-90">{selectedNotice.date}</p>
+                </div>
+                <button onClick={() => setSelectedNotice(null)} className="text-white hover:bg-white/20 p-2 rounded-full transition">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                {selectedNotice.details}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Live Broadcasting Component
+function LiveBroadcasting() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const stream = dynamicContent.liveStream || {};
+
+  const getBengaliMonth = (monthIndex: number) => {
+    const months = ['জানু', 'ফেব', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগ', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিসে'];
+    return months[monthIndex] || '';
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+        <Tv className="w-7 h-7" />
+        সরাসরি সম্প্রচার
+      </h2>
+
+      {stream.isLive ? (
+        <div className="space-y-4">
+          <div className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 w-fit animate-pulse">
+            <div className="w-3 h-3 bg-white rounded-full" />
+            <span className="font-bold">🔴 LIVE</span>
+          </div>
+          <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
+            <iframe 
+              src={stream.streamUrl} 
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-12 text-center text-white">
+          <Tv className="w-24 h-24 mx-auto mb-6 opacity-30" />
+          <h3 className="text-2xl font-bold mb-3">সম্প্রচার বন্ধ আছে</h3>
+          <p className="text-gray-300 mb-6 max-w-md mx-auto">{stream.offlineMessage}</p>
+        </div>
+      )}
+
+      {stream.upcomingEvents && stream.upcomingEvents.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-orange-500" />
+            আসন্ন লাইভ ইভেন্ট
+          </h3>
+          <div className="space-y-3">
+            {stream.upcomingEvents.map((event: any) => {
+              const dateParts = event.dateEn?.split('-') || [];
+              const day = dateParts[2] || '00';
+              const monthIndex = parseInt(dateParts[1]) - 1;
+              
+              return (
+                <div key={event.id} className="flex items-start gap-4 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition">
+                  <div className="w-16 h-16 bg-orange-500 rounded-xl flex flex-col items-center justify-center text-white flex-shrink-0">
+                    <div className="text-2xl font-bold">{day}</div>
+                    <div className="text-xs">{getBengaliMonth(monthIndex)}</div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-800">{event.name}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                    <p className="text-sm text-orange-600 font-medium mt-2">⏰ {event.time}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {stream.recentRecordings && stream.recentRecordings.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold mb-4">📹 সাম্প্রতিক রেকর্ডিং</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {stream.recentRecordings.map((video: any) => (
+              <a 
+                key={video.id} 
+                href={video.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition"
+              >
+                <div className="aspect-video bg-gray-200 relative">
+                  <img 
+                    src={video.thumbnail} 
+                    alt={video.title} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x225?text=Video';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <Play className="w-16 h-16 text-white" />
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                    {video.duration}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h4 className="font-semibold text-gray-800 group-hover:text-orange-600 transition">{video.title}</h4>
+                  <p className="text-sm text-gray-500 mt-1">{video.views} views • {video.date}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Fund Collection Component
+function FundCollection({ userRole, loggedInUserId }: { userRole: string; loggedInUserId: string }) {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const fundData = dynamicContent.fundCollection || {};
+
+  const visibleMembers = userRole === 'Member' 
+    ? (fundData.members || []).filter((m: any) => m.id === loggedInUserId) 
+    : fundData.members || [];
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'paid': return 'bg-green-100 text-green-600';
+      case 'partial': return 'bg-yellow-100 text-yellow-600';
+      case 'unpaid': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch(status) {
+      case 'paid': return '✓ পরিশোধিত';
+      case 'partial': return '◐ আংশিক';
+      case 'unpaid': return '✕ বকেয়া';
+      default: return '';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <DollarSign className="w-7 h-7" />
+          {fundData.pujaName || 'তহবিল সংগ্রহ'} - চাঁদা তহবিল
+        </h2>
+        <p className="text-orange-100">সর্বশেষ আপডেট: {fundData.lastUpdated || 'N/A'}</p>
+      </div>
+
+      {fundData.message && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+          <p className="text-yellow-800 font-medium mb-2">📢 {fundData.message}</p>
+          {fundData.instructions && (
+            <div className="mt-3 space-y-1 text-sm text-yellow-700">
+              {fundData.instructions.map((inst: string, i: number) => (
+                <p key={i}>{inst}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {userRole !== 'Member' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-blue-600">৳{fundData.totalDue?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট দায্যকৃত</p>
+            </div>
+            <div className="bg-green-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-green-600">৳{fundData.totalPaid?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট জমা</p>
+            </div>
+            <div className="bg-red-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-red-600">৳{fundData.totalRemaining?.toLocaleString() || 0}</div>
+              <p className="text-sm text-gray-600 mt-1">মোট বাকি</p>
+            </div>
+            <div className="bg-orange-50 rounded-xl p-6 text-center">
+              <div className="text-3xl font-bold text-orange-600">{fundData.paymentStats?.paymentPercentage || 0}%</div>
+              <p className="text-sm text-gray-600 mt-1">সংগ্রহ হয়েছে</p>
+            </div>
+          </div>
+
+          {fundData.paymentStats && (
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <h3 className="font-bold mb-4">📊 পেমেন্ট পরিসংখ্যান</h3>
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div><div className="text-2xl font-bold">{fundData.paymentStats.totalMembers}</div><p className="text-xs text-gray-500">মোট সদস্য</p></div>
+                <div><div className="text-2xl font-bold text-green-600">{fundData.paymentStats.paidMembers}</div><p className="text-xs text-gray-500">পরিশোধিত</p></div>
+                <div><div className="text-2xl font-bold text-yellow-600">{fundData.paymentStats.partialMembers}</div><p className="text-xs text-gray-500">আংশিক</p></div>
+                <div><div className="text-2xl font-bold text-red-600">{fundData.paymentStats.unpaidMembers}</div><p className="text-xs text-gray-500">বকেয়া</p></div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="space-y-3">
+        <h3 className="font-bold text-lg">
+          {userRole === 'Member' ? 'আপনার চাঁদা হিসাব' : 'সদস্যদের চাঁদা তালিকা'}
+        </h3>
+        {visibleMembers.map((member: any) => (
+          <div key={member.id} className="bg-white rounded-xl p-5 shadow-lg">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h4 className="font-bold text-lg">{member.name}</h4>
+                {member.lastPaymentDate && (
+                  <p className="text-sm text-gray-500">শেষ পেমেন্ট: {member.lastPaymentDate}</p>
+                )}
+              </div>
+              <span className={cn("px-3 py-1 rounded-full text-sm font-medium", getStatusColor(member.status))}>
+                {getStatusText(member.status)}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-sm text-gray-500">দায্যকৃত</div>
+                <div className="text-xl font-bold text-blue-600">৳{member.dueAmount}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-500">জমা</div>
+                <div className="text-xl font-bold text-green-600">৳{member.paidAmount}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-500">বাকি</div>
+                <div className={cn("text-xl font-bold", member.remainingAmount > 0 ? "text-red-600" : "text-green-600")}>
+                  ৳{member.remainingAmount}
+                </div>
+              </div>
+            </div>
+
+            {member.transactionId && (
+              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                <span className="text-gray-600">Transaction ID: </span>
+                <span className="font-mono font-semibold">{member.transactionId}</span>
+                <span className="ml-3 text-gray-600">({member.paymentMethod})</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {visibleMembers.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">কোনো তথ্য পাওয়া যায়নি</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// AI Chatbox Component
+function AIChatbox() {
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const chatbot = dynamicContent.aiChatbot || {};
+  
+  const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatbot.welcomeMessage && messages.length === 0) {
+      setMessages([{ role: 'bot', text: chatbot.welcomeMessage }]);
+    }
+  }, [chatbot.welcomeMessage]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
+  const findAnswer = (question: string) => {
+    const lowerQuestion = question.toLowerCase();
+    const faq = chatbot.faq || [];
+    
+    for (const item of faq) {
+      const keywords = item.keywords || [];
+      if (keywords.some((keyword: string) => lowerQuestion.includes(keyword.toLowerCase()))) {
+        return item.answer;
+      }
+    }
+    
+    const fallbacks = chatbot.fallbackMessages || ['দুঃখিত, আমি বুঝতে পারিনি।'];
+    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  };
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    setMessages(prev => [...prev, { role: 'user', text: input }]);
+    
+    setTimeout(() => {
+      const answer = findAnswer(input);
+      setMessages(prev => [...prev, { role: 'bot', text: answer }]);
+    }, 500);
+    
+    setInput('');
+  };
+
+  const handleQuickReply = (reply: string) => {
+    setInput(reply);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ height: '600px' }}>
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 p-5 rounded-t-2xl text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+            🤖
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">আমাকে জানুন</h3>
+            <p className="text-xs text-orange-100">ভার্চুয়াল সহায়ক</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        {messages.map((msg, i) => (
+          <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+            <div className={cn(
+              "max-w-[75%] p-4 rounded-2xl shadow-md",
+              msg.role === 'user' 
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-br-none' 
+                : 'bg-white text-gray-800 rounded-bl-none'
+            )}>
+              <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {chatbot.quickReplies && messages.length <= 1 && (
+        <div className="px-4 py-2 border-t bg-gray-50">
+          <p className="text-xs text-gray-500 mb-2">দ্রুত প্রশ্ন:</p>
+          <div className="flex flex-wrap gap-2">
+            {chatbot.quickReplies.map((reply: string, i: number) => (
+              <button 
+                key={i}
+                onClick={() => handleQuickReply(reply)}
+                className="px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-xs hover:bg-orange-50 transition"
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 border-t bg-white rounded-b-2xl">
+        <div className="flex gap-2">
+          <input 
+            value={input} 
+            onChange={e => setInput(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleSend()}
+            placeholder="প্রশ্ন করুন..."
+            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange-500 transition"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// JSON Editor Component for Super Admin
+function JSONEditor() {
+  const [jsonContent, setJsonContent] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [selectedFile, setSelectedFile] = useState('dynamicContent');
+
+  useEffect(() => {
+    const fetchJSON = async () => {
+      try {
+        let url = '';
+        switch(selectedFile) {
+          case 'dynamicContent': url = GITHUB_DYNAMIC_CONTENT_URL; break;
+          case 'membersData': url = GITHUB_MEMBERS_DATA_URL; break;
+          case 'loginData': url = GITHUB_LOGIN_URL; break;
+        }
+        const response = await fetch(url, { cache: 'no-cache' });
+        const data = await response.json();
+        setJsonContent(JSON.stringify(data, null, 2));
+      } catch {
+        setJsonContent('// ডেটা লোড করতে সমস্যা হয়েছে');
+      }
+    };
+    fetchJSON();
+  }, [selectedFile]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(jsonContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold gradient-text flex items-center gap-2">
+          <Settings className="w-7 h-7" />
+          JSON এডিটর (Super Admin)
+        </h2>
+      </div>
+
+      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+        <p className="text-yellow-800 font-medium">⚠️ সতর্কতা:</p>
+        <p className="text-sm text-yellow-700 mt-1">
+          এই JSON ফাইলগুলো GitHub এ সরাসরি এডিট করতে হবে। নিচে থেকে কপি করে GitHub এ পেস্ট করুন।
+        </p>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { id: 'dynamicContent', label: 'Dynamic Content' },
+          { id: 'membersData', label: 'Members Data' },
+          { id: 'loginData', label: 'Login Data' }
+        ].map(file => (
+          <button
+            key={file.id}
+            onClick={() => setSelectedFile(file.id)}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium transition",
+              selectedFile === file.id 
+                ? "bg-orange-500 text-white" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
+            {file.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-gray-900 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-800">
+          <span className="text-gray-400 text-sm">{selectedFile}.json</span>
+          <button 
+            onClick={handleCopy}
+            className="flex items-center gap-2 px-3 py-1 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'কপি হয়েছে!' : 'কপি করুন'}
+          </button>
+        </div>
+        <textarea
+          value={jsonContent}
+          onChange={(e) => setJsonContent(e.target.value)}
+          className="w-full h-96 p-4 bg-gray-900 text-green-400 font-mono text-sm outline-none resize-none"
+          spellCheck={false}
+        />
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow-lg">
+        <h3 className="font-bold mb-3">📝 GitHub এ এডিট করার পদ্ধতি:</h3>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+          <li>উপরের JSON কপি করুন</li>
+          <li>GitHub Repository তে যান: <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline">github.com/tkmani91/KHD</a></li>
+          <li>সংশ্লিষ্ট JSON ফাইলটি খুলুন</li>
+          <li>Edit বাটনে (✏️) ক্লিক করুন</li>
+          <li>পরিবর্তন করুন বা নতুন কনটেন্ট পেস্ট করুন</li>
+          <li>"Commit changes" বাটনে ক্লিক করুন</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
 function LoginPage() {
-  const [loginType, setLoginType] = useState<'general' | 'accounts'>('general');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'members' | 'contacts' | 'invitation' | 'accounts'>('members');
+  const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
+  const [userPhoto, setUserPhoto] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('members');
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
   const [membersData, setMembersData] = useState<Member[]>([]);
   const [contactsData, setContactsData] = useState<ContactPerson[]>([]);
@@ -1142,8 +2077,32 @@ function LoginPage() {
   const [selectedContact, setSelectedContact] = useState<ContactPerson | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showMemberDetails, setShowMemberDetails] = useState<Member | null>(null);
-  const [loginData, setLoginData] = useState<any>(null);
+  const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
+
+  // ===== SESSION PERSISTENCE - Check saved login =====
+  useEffect(() => {
+    const checkSavedSession = async () => {
+      try {
+        const savedUser = localStorage.getItem('khd_logged_in_user');
+        const savedPhoto = localStorage.getItem('khd_user_photo');
+        
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          setLoggedInUser(user);
+          setUserPhoto(savedPhoto || '');
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.log('Session check failed:', error);
+        localStorage.removeItem('khd_logged_in_user');
+        localStorage.removeItem('khd_user_photo');
+      }
+      setIsCheckingSession(false);
+    };
+
+    checkSavedSession();
+  }, []);
 
   // Load login data
   useEffect(() => {
@@ -1152,7 +2111,7 @@ function LoginPage() {
         const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed');
         const data = await response.json();
-        if (data.normalMembers && data.accountsMembers) { 
+        if (data.accountsMembers && data.normalMembers) { 
           setLoginData(data); 
           setDataSource('github'); 
         }
@@ -1163,16 +2122,30 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Load member data after login
+  // Load member data after login + Find user photo
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || !loggedInUser) return;
+    
     const fetchAllData = async () => {
       setIsDataLoading(true);
       try {
         const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        if (data.members) setMembersData(data.members);
+        
+        if (data.members) {
+          setMembersData(data.members);
+          
+          // Find logged in user's photo from members data
+          const currentUserMember = data.members.find(
+            (m: Member) => m.mobile === loggedInUser.mobile || m.email === loggedInUser.email
+          );
+          
+          if (currentUserMember?.photo) {
+            setUserPhoto(currentUserMember.photo);
+            localStorage.setItem('khd_user_photo', currentUserMember.photo);
+          }
+        }
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
@@ -1183,7 +2156,6 @@ function LoginPage() {
     };
     fetchAllData();
 
-    // Load accounts PDFs
     const loadAccountsPDFs = async () => {
       try {
         const response = await fetch('/data/accountsPDFs.json');
@@ -1196,8 +2168,9 @@ function LoginPage() {
       }
     };
     loadAccountsPDFs();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, loggedInUser]);
 
+  // ===== UPDATED LOGIN HANDLER =====
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -1213,21 +2186,50 @@ function LoginPage() {
     setTimeout(() => {
       const trimmedUsername = usernameInput.trim().toLowerCase();
       const trimmedPassword = passwordInput.trim();
-      let foundUser: { mobile: string; email: string; password: string; name: string } | undefined;
-      if (loginType === 'general') {
-        foundUser = loginData.normalMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
-      } else {
-        foundUser = loginData.accountsMembers.find((m: any) => (m.mobile === trimmedUsername || m.email.toLowerCase() === trimmedUsername) && m.password === trimmedPassword);
-      }
+      
+      const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
+      
+      const foundUser = allUsers.find((u: LoginUser) => 
+        (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
+        u.password === trimmedPassword
+      );
+
       if (foundUser) { 
+        const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
+
+        const userWithRole: LoginUser = {
+          id: foundUser.id,
+          name: foundUser.name,
+          mobile: foundUser.mobile || '',
+          email: foundUser.email || '',
+          password: '', // Don't save password
+          role: userRole
+        };
+
+        // Save to localStorage for persistence
+        localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
+
         setIsLoggedIn(true); 
-        setLoggedInUser(foundUser.name); 
+        setLoggedInUser(userWithRole);
         setUsernameInput(''); 
         setPasswordInput(''); 
       }
       else { setLoginError('ভুল তথ্য দিয়েছেন'); }
       setIsLoading(false);
     }, 800);
+  };
+
+  // ===== UPDATED LOGOUT HANDLER =====
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('khd_logged_in_user');
+    localStorage.removeItem('khd_user_photo');
+    
+    setIsLoggedIn(false);
+    setLoggedInUser(null);
+    setUserPhoto('');
+    setShowMemberDetails(null);
+    setActiveTab('members');
   };
 
   const handlePdfDownload = (url: string, filename: string) => {
@@ -1237,7 +2239,28 @@ function LoginPage() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // Member Details Modal
+  const getAvailableTabs = () => {
+    const baseTabs = [
+      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
+      { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
+      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
+      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
+      { id: 'ai', label: 'আমাকে জানুন', icon: MessageCircle },
+    ];
+
+    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'accounts', label: 'হিসাব', icon: FileText });
+    }
+
+    if (loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'json-editor', label: 'JSON এডিটর', icon: Settings });
+    }
+
+    return baseTabs;
+  };
+
   const MemberDetailsModal = ({ member, onClose }: { member: Member; onClose: () => void }) => (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -1264,6 +2287,7 @@ function LoginPage() {
               <h3 className="text-2xl font-bold text-gray-800">{member.name}</h3>
               <p className="text-orange-600 font-semibold text-lg">{member.designation}</p>
               <p className="text-gray-500 text-sm mt-1">সদস্য নং: #{member.id.padStart(3, '0')}</p>
+              <p className="text-red-600 font-medium text-sm mt-1">🩸 রক্তের গ্রুপ: {member.bloodGroup}</p>
             </div>
           </div>
 
@@ -1272,37 +2296,30 @@ function LoginPage() {
               <p className="text-xs text-orange-500 font-medium mb-1">📱 মোবাইল</p>
               <p className="font-semibold text-gray-800">{member.mobile}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">📧 ইমেইল</p>
               <p className="font-semibold text-gray-800 text-sm break-all">{member.email || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">👨 পিতার নাম</p>
               <p className="font-semibold text-gray-800">{member.fatherName || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">👩 মাতার নাম</p>
               <p className="font-semibold text-gray-800">{member.motherName || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">🔱 গোত্র</p>
               <p className="font-semibold text-gray-800">{member.gotra || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl">
               <p className="text-xs text-orange-500 font-medium mb-1">💼 পেশা</p>
               <p className="font-semibold text-gray-800">{member.occupation || '—'}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
               <p className="text-xs text-orange-500 font-medium mb-1">📍 বর্তমান ঠিকানা</p>
               <p className="font-semibold text-gray-800">{member.address}</p>
             </div>
-            
             <div className="bg-orange-50 p-3 rounded-xl sm:col-span-2">
               <p className="text-xs text-orange-500 font-medium mb-1">🏠 স্থায়ী ঠিকানা</p>
               <p className="font-semibold text-gray-800">{member.permanentAddress || '—'}</p>
@@ -1322,19 +2339,33 @@ function LoginPage() {
     </div>
   );
 
-  // Group invitations by area
   const groupedInvitations = invitationData.reduce((acc, item) => {
-    if (!acc[item.area]) {
-      acc[item.area] = [];
-    }
+    if (!acc[item.area]) acc[item.area] = [];
     acc[item.area].push(item);
     return acc;
   }, {} as { [key: string]: InvitationList[] });
 
+  // ===== SESSION CHECKING LOADING =====
+  if (isCheckingSession) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 font-medium">সেশন যাচাই করা হচ্ছে...</p>
+          <p className="text-gray-400 text-sm mt-2">অনুগ্রহ করে অপেক্ষা করুন</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== LOGIN FORM =====
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-8"><h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1></div>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1>
+          <p className="text-gray-600 text-sm">একটি অ্যাকাউন্ট দিয়ে সব সুবিধা</p>
+        </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           {dataSource === 'github' && (
             <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
@@ -1342,60 +2373,171 @@ function LoginPage() {
               ✓ সার্ভার থেকে ডেটা লোড হয়েছে
             </div>
           )}
-          <div className="flex gap-2 mb-6">
-            <button onClick={() => { setLoginType('general'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'general' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>সদস্য</button>
-            <button onClick={() => { setLoginType('accounts'); setLoginError(''); }} className={cn("flex-1 py-2 rounded-lg text-sm font-medium transition", loginType === 'accounts' ? "bg-orange-500 text-white" : "bg-gray-100 hover:bg-gray-200")}>অ্যাডমিন</button>
-          </div>
-          {loginError && (<div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"><AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" /><p className="text-sm text-red-600">{loginError}</p></div>)}
+
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-600">{loginError}</p>
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল / ইমেইল</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="text" value={usernameInput} onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="মোবাইল বা ইমেইল" />
+                <input 
+                  type="text" 
+                  value={usernameInput} 
+                  onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} 
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
+                  placeholder="মোবাইল বা ইমেইল" 
+                />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type={showPassword ? 'text' : 'password'} value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" placeholder="পাসওয়ার্ড" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={passwordInput} 
+                  onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} 
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
+                  placeholder="পাসওয়ার্ড" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)} 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            <button type="submit" disabled={isLoading} className={cn("w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg")}>
-              {isLoading ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />যাচাই করা হচ্ছে...</>) : (<><LogIn className="w-5 h-5" />লগইন</>)}
+            <button 
+              type="submit" 
+              disabled={isLoading} 
+              className={cn(
+                "w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", 
+                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg"
+              )}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  যাচাই করা হচ্ছে...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  লগইন
+                </>
+              )}
             </button>
           </form>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"><p className="text-xs text-yellow-700">🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313</p></div>
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs text-yellow-700">
+              🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ===== DASHBOARD =====
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><h1 className="text-2xl font-bold gradient-text">সদস্য এলাকা</h1><p className="text-sm text-gray-500">স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser}</span></p></div>
-        <button onClick={() => { setIsLoggedIn(false); setLoggedInUser(''); setShowMemberDetails(null); }} className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"><LogIn className="w-4 h-4" /> লগআউট</button>
+      {/* ===== UPDATED HEADER WITH PHOTO ===== */}
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            {/* User Photo */}
+            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+              <img 
+                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                alt={loggedInUser?.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { 
+                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+                }}
+              />
+            </div>
+            
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p className="text-sm text-gray-500">
+                  স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
+                </p>
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                  loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
+                  loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
+                  'bg-green-100 text-green-600'
+                )}>
+                  {loggedInUser?.role}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                {loggedInUser?.mobile}
+              </p>
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleLogout} 
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> লগআউট
+          </button>
+        </div>
       </div>
+
+      {/* Tabs */}
       <div className="flex flex-wrap gap-2">
-        {[{ id: 'members', label: 'সদস্য তালিকা', icon: Users }, { id: 'contacts', label: 'জরুরী ফোন নাম্বার সমূহ', icon: Phone }, { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText }, ...(loginType === 'accounts' ? [{ id: 'accounts', label: 'হিসাব', icon: FileText }] : [])].map((tab) => (
-          <button key={tab.id} onClick={() => { setActiveTab(tab.id as typeof activeTab); setSelectedContact(null); }}
-            className={cn("px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", activeTab === tab.id ? "bg-orange-500 text-white shadow-lg" : "bg-white text-gray-700 hover:bg-orange-50")}>
+        {getAvailableTabs().map((tab) => (
+          <button 
+            key={tab.id} 
+            onClick={() => { setActiveTab(tab.id); setSelectedContact(null); }}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
+              activeTab === tab.id 
+                ? "bg-orange-500 text-white shadow-lg" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
       </div>
-      {isDataLoading && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-gray-500">ডেটা লোড হচ্ছে...</p></div>)}
 
+      {/* Loading */}
+      {isDataLoading && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা</h3><p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p></div>
-            <button onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Users className="w-5 h-5" /> সম্পূর্ণ সদস্য তালিকা
+              </h3>
+              <p className="text-sm text-orange-100">মোট {membersData.length} জন সদস্য</p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.membersList, 'সদস্য-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-orange-600 rounded-lg font-medium flex items-center gap-2 hover:bg-orange-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1419,9 +2561,12 @@ function LoginPage() {
                   </div>
                 </div>
 
-                <div className="mb-4 pb-3 border-b border-gray-100">
+                <div className="mb-4 pb-3 border-b border-gray-100 flex gap-3 items-center">
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                     সদস্য নং: #{member.id.padStart(3, '0')}
+                  </span>
+                  <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-medium">
+                    🩸 {member.bloodGroup}
                   </span>
                 </div>
 
@@ -1435,19 +2580,36 @@ function LoginPage() {
               </div>
             ))}
           </div>
-          {membersData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Users className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো সদস্য তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
+      {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-white text-center sm:text-left"><h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start"><Phone className="w-5 h-5" /> যোগাযোগ তালিকা</h3><p className="text-sm text-blue-100">মোট {contactsData.length} জন</p></div>
-            <button onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"><Download className="w-5 h-5" />PDF ডাউনলোড</button>
+            <div className="text-white text-center sm:text-left">
+              <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
+                <Phone className="w-5 h-5" /> যোগাযোগ তালিকা
+              </h3>
+              <p className="text-sm text-blue-100">মোট {contactsData.length} জন</p>
+            </div>
+            <button 
+              onClick={() => handlePdfDownload(pdfLinks.contactsList, 'যোগাযোগ-তালিকা.pdf')} 
+              className="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-medium flex items-center gap-2 hover:bg-blue-50 transition shadow-lg"
+            >
+              <Download className="w-5 h-5" />PDF ডাউনলোড
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contactsData.map((person) => (
-              <div key={person.id} onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} className={cn("bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50")}>
+              <div 
+                key={person.id} 
+                onClick={() => setSelectedContact(selectedContact?.id === person.id ? null : person)} 
+                className={cn(
+                  "bg-white rounded-xl p-4 shadow-lg cursor-pointer transition-all", 
+                  selectedContact?.id === person.id && "ring-2 ring-blue-500 bg-blue-50"
+                )}
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-200 shadow flex-shrink-0">
                     <img 
@@ -1465,17 +2627,23 @@ function LoginPage() {
                 </div>
                 {selectedContact?.id === person.id && (
                   <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-blue-400" /><a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a></p>
-                    <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{person.address}</span></p>
+                    <p className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-blue-400" />
+                      <a href={`tel:${person.mobile}`} className="text-blue-600 font-medium hover:underline">{person.mobile}</a>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span>{person.address}</span>
+                    </p>
                   </div>
                 )}
               </div>
             ))}
           </div>
-          {contactsData.length === 0 && (<div className="text-center py-12 bg-white rounded-2xl shadow-lg"><Phone className="w-16 h-16 mx-auto mb-4 text-gray-300" /><p className="text-gray-500">কোনো যোগাযোগ তথ্য পাওয়া যায়নি</p></div>)}
         </div>
       )}
 
+      {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -1515,22 +2683,14 @@ function LoginPage() {
                         <p className="text-sm text-gray-500">মোট: {totalMembers} জন</p>
                       </div>
                     </div>
-                    <ChevronDown 
-                      className={cn(
-                        "w-5 h-5 text-gray-400 transition-transform",
-                        isExpanded && "rotate-180"
-                      )} 
-                    />
+                    <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform", isExpanded && "rotate-180")} />
                   </button>
 
                   {isExpanded && (
                     <div className="border-t border-gray-100">
                       <div className="p-4 space-y-2">
                         {items.map((item) => (
-                          <div 
-                            key={item.id} 
-                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-                          >
+                          <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                                 <User className="w-4 h-4 text-green-600" />
@@ -1552,17 +2712,28 @@ function LoginPage() {
               );
             })}
           </div>
-
-          {invitationData.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">কোনো নিমন্ত্রণ তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
         </div>
       )}
 
-      {activeTab === 'accounts' && loginType === 'accounts' && !isDataLoading && (
+      {/* Notice Tab */}
+      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+
+      {/* Live Broadcasting Tab */}
+      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
+
+      {/* Fund Collection Tab */}
+      {activeTab === 'fund' && !isDataLoading && (
+        <FundCollection 
+          userRole={loggedInUser?.role || 'Member'} 
+          loggedInUserId={loggedInUser?.id || ''} 
+        />
+      )}
+
+      {/* AI Chatbox Tab */}
+      {activeTab === 'ai' && !isDataLoading && <AIChatbox />}
+
+      {/* Accounts Tab (Admin/Super Admin only) */}
+      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
@@ -1574,12 +2745,7 @@ function LoginPage() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
-                  <a 
-                    key={year} 
-                    href={url} 
-                    download 
-                    className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                  >
+                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
                     <Download className="w-4 h-4 text-orange-600" />
                     <span className="text-sm font-medium">{year}</span>
                   </a>
@@ -1590,23 +2756,392 @@ function LoginPage() {
         </div>
       )}
 
-      {showMemberDetails && (
-        <MemberDetailsModal 
-          member={showMemberDetails} 
-          onClose={() => setShowMemberDetails(null)} 
-        />
-      )}
+      {/* JSON Editor Tab (Super Admin only) */}
+      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
+
+      {/* Member Details Modal */}
+      {showMemberDetails && <MemberDetailsModal member={showMemberDetails} onClose={() => setShowMemberDetails(null)} />}
+    </div>
+  );
+}
+// ==================== GLOBAL MINI PLAYERS ====================
+
+function GlobalMusicPlayer() {
+  const { currentSong, isPlaying, isLoading, progress, togglePlayPause, closeMusicPlayer, skipForward, skipBack } = useMedia();
+  const location = useLocation();
+
+  if (!currentSong || location.pathname === '/music') return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div className="h-1 bg-orange-300">
+        <div className="h-full bg-white transition-all duration-300" style={{ width: `${progress}%` }} />
+      </div>
+      
+      <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-3 shadow-2xl">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
+              <div className="flex items-center gap-0.5">
+                <div className="w-0.5 h-3 bg-white rounded-full animate-bounce" />
+                <div className="w-0.5 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-0.5 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            ) : (
+              <Music className="w-5 h-5" />
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm truncate">{currentSong.title}</p>
+            <p className="text-xs text-orange-100 truncate">{currentSong.artist}</p>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button onClick={skipBack} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+              <SkipBack className="w-4 h-4" />
+            </button>
+            
+            <button onClick={togglePlayPause} disabled={isLoading} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 transition disabled:opacity-50">
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-5 h-5" />
+              ) : (
+                <Play className="w-5 h-5 ml-0.5" />
+              )}
+            </button>
+            
+            <button onClick={skipForward} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+              <SkipForward className="w-4 h-4" />
+            </button>
+            
+            <button onClick={closeMusicPlayer} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-red-500 transition ml-2">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// Main App Component
+function GlobalLiveTVPlayer() {
+  const { activeChannel, closeLiveTV, isPlaying: isMusicPlaying, togglePlayPause } = useMedia();
+  const location = useLocation();
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [position, setPosition] = useState({ x: 16, y: 64 }); // right-4, bottom-16
+  const [isDragging, setIsDragging] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<any>(null);
+  const loadedChannelIdRef = useRef<string | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const shouldShow = activeChannel && location.pathname !== '/live';
+
+  // Stream load - শুধু নতুন channel হলে
+  useEffect(() => {
+    if (!activeChannel || location.pathname === '/live') return;
+    if (loadedChannelIdRef.current === activeChannel.id) return;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    loadedChannelIdRef.current = activeChannel.id;
+    setIsLoading(true);
+    setHasError(false);
+
+    const loadStream = async () => {
+      try {
+        const Hls = (await import('hls.js')).default;
+        
+        if (Hls.isSupported()) {
+          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+          hlsRef.current = hls;
+          
+          hls.loadSource(activeChannel.streamUrl);
+          hls.attachMedia(video);
+          
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setIsLoading(false);
+            if (!isMusicPlaying) {
+              video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+            }
+          });
+          
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data.fatal) { setHasError(true); setIsLoading(false); }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = activeChannel.streamUrl;
+          video.addEventListener('loadedmetadata', () => {
+            setIsLoading(false);
+            if (!isMusicPlaying) video.play().catch(() => {});
+          }, { once: true });
+        }
+      } catch { setHasError(true); setIsLoading(false); }
+    };
+
+    loadStream();
+  }, [activeChannel?.id, location.pathname, isMusicPlaying]);
+
+  // Music চালু/বন্ধ হলে video control
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || isLoading || hasError || !activeChannel || location.pathname === '/live') return;
+
+    if (isMusicPlaying) {
+      video.pause();
+    } else {
+      video.play().catch(() => {});
+    }
+  }, [isMusicPlaying, isLoading, hasError, activeChannel, location.pathname]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+    };
+  }, []);
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('video')) return;
+    
+    setIsDragging(true);
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: position.x,
+      initialY: position.y
+    };
+    e.preventDefault();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('video')) return;
+    
+    const touch = e.touches[0];
+    setIsDragging(true);
+    dragRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      initialX: position.x,
+      initialY: position.y
+    };
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      
+      const deltaX = dragRef.current.startX - e.clientX;
+      const deltaY = dragRef.current.startY - e.clientY;
+      
+      const newX = Math.max(16, Math.min(window.innerWidth - 320, dragRef.current.initialX + deltaX));
+      const newY = Math.max(64, Math.min(window.innerHeight - 300, dragRef.current.initialY + deltaY));
+      
+      setPosition({ x: newX, y: newY });
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!dragRef.current) return;
+      
+      const touch = e.touches[0];
+      const deltaX = dragRef.current.startX - touch.clientX;
+      const deltaY = dragRef.current.startY - touch.clientY;
+      
+      const newX = Math.max(16, Math.min(window.innerWidth - 320, dragRef.current.initialX + deltaX));
+      const newY = Math.max(64, Math.min(window.innerHeight - 300, dragRef.current.initialY + deltaY));
+      
+      setPosition({ x: newX, y: newY });
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+      dragRef.current = null;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging]);
+
+  const handleRetry = () => {
+    loadedChannelIdRef.current = null;
+    setHasError(false);
+    setIsLoading(true);
+  };
+
+  // Minimize toggle - video চলতে থাকবে
+  const handleMinimizeToggle = () => {
+    setIsMinimized(!isMinimized);
+    // Video play state বজায় রাখা
+    const video = videoRef.current;
+    if (video && !isMusicPlaying && !isLoading && !hasError) {
+      video.play().catch(() => {});
+    }
+  };
+
+  if (!shouldShow) return null;
+
+  return (
+    <div 
+      ref={containerRef}
+      className={cn(
+        "fixed z-50 transition-all shadow-2xl select-none",
+        isDragging ? "cursor-grabbing" : "cursor-grab",
+        isMinimized ? "w-56" : "w-80 md:w-96"
+      )}
+      style={{ 
+        right: `${position.x}px`, 
+        bottom: `${position.y}px`,
+        transition: isDragging ? 'none' : 'all 0.3s ease'
+      }}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+    >
+      <div className="bg-black rounded-2xl overflow-hidden border-2 border-red-500">
+        {/* Header - Drag Handle */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 py-2 flex items-center justify-between cursor-grab active:cursor-grabbing">
+          <div className="flex items-center gap-2 text-white flex-1 min-w-0">
+            {/* Drag indicator */}
+            <div className="flex flex-col gap-0.5 mr-1 opacity-50">
+              <div className="w-4 h-0.5 bg-white rounded"></div>
+              <div className="w-4 h-0.5 bg-white rounded"></div>
+            </div>
+            <div className={cn("w-2 h-2 rounded-full flex-shrink-0", isMusicPlaying ? "bg-yellow-400" : "bg-white animate-pulse")} />
+            <span className="font-bold text-xs truncate">{isMusicPlaying ? "⏸️ " : "🔴 "}{activeChannel.name}</span>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleMinimizeToggle(); }} 
+              className="text-white hover:bg-white/20 p-1.5 rounded transition"
+            >
+              <ChevronDown className={cn("w-4 h-4 transition-transform", isMinimized && "rotate-180")} />
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); closeLiveTV(); }} 
+              className="text-white hover:bg-red-800 p-1.5 rounded transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Video - Always rendered but hidden when minimized */}
+        <div className={cn("aspect-video bg-gray-900 relative", isMinimized && "hidden")}>
+          <video ref={videoRef} autoPlay playsInline controls className="w-full h-full" />
+          
+          {isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="w-10 h-10 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          
+          {isMusicPlaying && !isLoading && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+              <div className="text-center text-white">
+                <Music className="w-10 h-10 mx-auto mb-2" />
+                <p className="text-sm">মিউজিক চালু আছে</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); togglePlayPause(); }} 
+                  className="mt-2 px-4 py-1.5 bg-orange-500 rounded-lg text-xs hover:bg-orange-600"
+                >
+                  মিউজিক বন্ধ করুন
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-white">
+              <div className="text-center">
+                <p className="text-sm mb-2">📡 সংযোগ ত্রুটি</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleRetry(); }} 
+                  className="px-4 py-1.5 bg-orange-500 rounded-lg text-xs"
+                >
+                  আবার চেষ্টা
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Minimized State */}
+        {isMinimized && (
+          <div className="p-3 flex items-center justify-between bg-gray-900">
+            <div className="flex items-center gap-2">
+              {!isMusicPlaying && !isLoading && !hasError && (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="w-1 h-4 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              )}
+              <span className="text-white text-xs">
+                {isMusicPlaying ? "⏸️ Paused" : isLoading ? "Loading..." : hasError ? "Error" : "▶️ Playing"}
+              </span>
+            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleMinimizeToggle(); }}
+              className="text-white bg-white/20 px-2 py-1 rounded text-xs hover:bg-white/30"
+            >
+              বড় করুন
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Drag hint */}
+      {!isMinimized && (
+        <p className="text-center text-xs text-gray-400 mt-1 pointer-events-none">
+          ধরে সরান
+        </p>
+      )}
+    </div>
+  );
+}
+// ==================== MAIN APP COMPONENT ====================
+
 function App() {
   return (
-    <Router>
+    <MediaProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </MediaProvider>
+  );
+}
+
+function AppContent() {
+  return (
+    <>
+      <InstallPrompt /> 
       <div className="min-h-screen sacred-pattern">
         <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/durga" element={<DurgaPujaPage />} />
@@ -1614,6 +3149,7 @@ function App() {
             <Route path="/saraswati" element={<SaraswatiPujaPage />} />
             <Route path="/rath" element={<RathYatraPage />} />
             <Route path="/deities" element={<DeitiesPage />} />
+            <Route path="/quiz" element={<QuizArchivePage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/pdf" element={<PDFPage />} />
@@ -1622,9 +3158,13 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
+        
+        <GlobalMusicPlayer />
+        <GlobalLiveTVPlayer />
+        
         <Footer />
       </div>
-    </Router>
+    </>
   );
 }
 
