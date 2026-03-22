@@ -1,5 +1,6 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+// ✅ সঠিক API URL (মডেল নাম পরিবর্তন করা হয়েছে)
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 export default async function handler(req: any, res: any) {
   // CORS Headers
@@ -96,6 +97,14 @@ export default async function handler(req: any, res: any) {
           {
             category: 'HARM_CATEGORY_HATE_SPEECH',
             threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+          },
+          {
+            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+          },
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
           }
         ]
       })
@@ -107,7 +116,20 @@ export default async function handler(req: any, res: any) {
     // Check for API errors
     if (data.error) {
       console.error('Gemini API Error:', data.error);
-      throw new Error(data.error.message || 'Gemini API error');
+      
+      // বিস্তারিত এরর মেসেজ
+      const errorMessage = data.error.message || 'Unknown error';
+      const errorStatus = data.error.status || 'UNKNOWN';
+      
+      return res.status(200).json({ 
+        reply: `🙏 দুঃখিত, AI সমস্যা হচ্ছে।
+
+ত্রুটি: ${errorMessage}
+স্ট্যাটাস: ${errorStatus}
+
+সরাসরি যোগাযোগ করুন:
+📞 ০১৭৩৩১১৮৩১৩`
+      });
     }
 
     // Extract reply
