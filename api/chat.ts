@@ -1,6 +1,7 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-// ✅ সঠিক API URL (মডেল নাম পরিবর্তন করা হয়েছে)
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+
+// ✅ সঠিক URL - gemini-2.0-flash-exp ব্যবহার করুন
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
 export default async function handler(req: any, res: any) {
   // CORS Headers
@@ -18,13 +19,13 @@ export default async function handler(req: any, res: any) {
 
   // Check API Key
   if (!GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY missing in environment variables');
     return res.status(200).json({ 
-      reply: '🙏 API সমস্যা। Admin এর সাথে যোগাযোগ করুন: ০১৭৩৩১১৮৩১৩' 
+      reply: '🙏 API Key সমস্যা। Admin এর সাথে যোগাযোগ করুন: ০১৭৩৩১১৮৩১৩' 
     });
   }
 
   try {
-    // Parse request body
     const { message, history } = req.body;
 
     if (!message || typeof message !== 'string') {
@@ -57,7 +58,7 @@ export default async function handler(req: any, res: any) {
       }
     ];
 
-    // Add history if exists
+    // Add history
     if (history && Array.isArray(history)) {
       history.slice(-6).forEach((msg: any) => {
         if (msg.role && msg.text) {
@@ -74,6 +75,8 @@ export default async function handler(req: any, res: any) {
       role: 'user',
       parts: [{ text: message }]
     });
+
+    console.log('🔵 Calling Gemini API:', GEMINI_API_URL);
 
     // Call Gemini API
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -110,22 +113,19 @@ export default async function handler(req: any, res: any) {
       })
     });
 
-    // Parse response
     const data = await response.json();
+
+    console.log('🔵 Gemini Response Status:', response.status);
 
     // Check for API errors
     if (data.error) {
-      console.error('Gemini API Error:', data.error);
-      
-      // বিস্তারিত এরর মেসেজ
-      const errorMessage = data.error.message || 'Unknown error';
-      const errorStatus = data.error.status || 'UNKNOWN';
+      console.error('❌ Gemini API Error:', JSON.stringify(data.error, null, 2));
       
       return res.status(200).json({ 
         reply: `🙏 দুঃখিত, AI সমস্যা হচ্ছে।
 
-ত্রুটি: ${errorMessage}
-স্ট্যাটাস: ${errorStatus}
+ত্রুটি: ${data.error.message || 'Unknown error'}
+কোড: ${data.error.code || 'N/A'}
 
 সরাসরি যোগাযোগ করুন:
 📞 ০১৭৩৩১১৮৩১৩`
@@ -136,15 +136,16 @@ export default async function handler(req: any, res: any) {
     const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!reply) {
-      console.error('No reply in response:', JSON.stringify(data));
+      console.error('❌ No reply in response:', JSON.stringify(data, null, 2));
       throw new Error('Empty response from AI');
     }
 
-    // Success
+    console.log('✅ Reply generated successfully');
     return res.status(200).json({ reply: reply.trim() });
 
   } catch (error: any) {
-    console.error('Handler Error:', error.message);
+    console.error('❌ Handler Error:', error.message);
+    console.error('Stack:', error.stack);
     
     return res.status(200).json({ 
       reply: `🙏 দুঃখিত, আমি এই মুহূর্তে উত্তর দিতে পারছি না।
