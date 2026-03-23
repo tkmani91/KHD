@@ -2256,12 +2256,10 @@ function LoginPage() {
 
       {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
-
-      {/* Member Details Modal */}
-      {showMemberDetails && <MemberDetailsModal member={showMemberDetails} onClose={() => setShowMemberDetails(null)} />}
-    </div>
+   </div>
   );
 }
+
 // ==================== GLOBAL MINI PLAYERS ====================
 
 function GlobalMusicPlayer() {
