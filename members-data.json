@@ -3,7 +3,7 @@
   {
     "id": "3",
     "name": "ড. শ্যামল কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/ymVPnwc1/SHAMON.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -19,7 +19,7 @@
   {
     "id": "4",
     "name": "অচিন্ত্য কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/bgDyTLn1/ACHINTA.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -35,7 +35,7 @@
   {
     "id": "5",
     "name": "আশীষ কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/0pWzzvxV/ASASH.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -51,7 +51,7 @@
   {
     "id": "6",
     "name": "তপন কুমার ঘোষ",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/Y4mSYxYK/TAPAN.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -67,7 +67,7 @@
   {
     "id": "7",
     "name": "নয়ন কুমার ঘোষ",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/21MLt6NZ/NAYAN.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -83,7 +83,7 @@
   {
     "id": "8",
     "name": "লিটন কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/JRgW5XBK/LITON.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -99,7 +99,7 @@
   {
     "id": "9",
     "name": "সুজিত কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/3YhVTT4p/SUJIT.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -115,7 +115,7 @@
   {
     "id": "10",
     "name": "সুমন কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/V0BTZMZx/SUMON.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -131,7 +131,7 @@
   {
     "id": "11",
     "name": "চঞ্চল কুমার সাহা",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/Xf5R2chW/CHANCAL.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -147,7 +147,7 @@
   {
     "id": "12",
     "name": "বাপ্পি কুমার কুন্ডু",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/c5NQvbc/BAPPI.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -163,7 +163,7 @@
   {
     "id": "13",
     "name": "সনৎ কুমার পাল",
-    "designation": "",
+    "designation": "উপদেষ্টা",
     "photo": "https://i.ibb.co.com/8g6T1Mrx/SANAT.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -179,7 +179,7 @@
   {
     "id": "14",
     "name": "পিনাকী কুমার কুন্ডু",
-    "designation": "",
+    "designation": "সভাপতি",
     "photo": "https://i.ibb.co.com/35ytm8cM/PINAKI.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -195,7 +195,7 @@
   {
     "id": "15",
     "name": "শুভ্র জ্যোতি পোদ্দার",
-    "designation": "",
+    "designation": "সাধারণ সম্পাদক",
     "photo": "https://i.ibb.co.com/Kp4mLRPh/SUVROJOTI.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -211,7 +211,7 @@
   {
     "id": "16",
     "name": "অনুপম কুমার মানী",
-    "designation": "",
+    "designation": "যুগ্ম সাধারণ সম্পাদক",
     "photo": "https://i.ibb.co.com/ks3CqJ4D/ANUPAM.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -227,7 +227,7 @@
   {
     "id": "17",
     "name": "শুভ কুমার ঘোষ",
-    "designation": "",
+    "designation": "সাংগঠনিক সম্পাদক",
     "photo": "https://i.ibb.co.com/0p90sWyQ/SUVO.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -259,7 +259,7 @@
   {
     "id": "19",
     "name": "তন্ময় কুমার কুন্ডু",
-    "designation": "প্রচার সম্পাদক",
+    "designation": "সাংস্কৃতিক সম্পাদক",
     "photo": "https://i.ibb.co.com/vC0Qq4FR/TANMOY.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -275,13 +275,13 @@
   {
     "id": "20",
     "name": "পাপ্পু কুমার বিশ্বাস",
-    "designation": "",
+    "designation": "সমাজকল্যাণ সম্পাদক",
     "photo": "https://i.ibb.co.com/DDq0vddx/PAPPU.png",
     "bloodGroup": "",
     "birthDate": "",
     "address": "",
     "permanentAddress": "",
-    "mobile": "",
+    "mobile": "01729312822",
     "gotra": "",
     "email": "",
     "fatherName": "",
@@ -291,13 +291,13 @@
   {
     "id": "21",
     "name": "নিরেন কুমার মানী (মোংলা)",
-    "designation": "",
+    "designation": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
     "photo": "https://i.ibb.co.com/1fq4Rc9q/MONGLA.png",
     "bloodGroup": "",
     "birthDate": "",
     "address": "",
     "permanentAddress": "",
-    "mobile": "",
+    "mobile": "01710437040",
     "gotra": "",
     "email": "",
     "fatherName": "",
