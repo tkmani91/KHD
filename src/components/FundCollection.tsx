@@ -44,7 +44,6 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
   const [membersData] = useDataLoader<any>(GITHUB_MEMBERS_DATA_URL, {});
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
-  const [isPrinting, setIsPrinting] = useState(false);
   
   const fundData = dynamicContent.fundCollection || {};
   const allMembersInfo = membersData.members || [];
@@ -90,6 +89,7 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
     }
   };
 
+
   const filterButtons = [
     { id: 'all', label: 'সকল', count: allMembers.length, color: 'bg-blue-500', lightColor: 'bg-blue-100 text-blue-700' },
     { id: 'paid', label: 'পরিশোধিত', count: paidCount, color: 'bg-green-500', lightColor: 'bg-green-100 text-green-700' },
@@ -97,406 +97,253 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
     { id: 'unpaid', label: 'বকেয়া', count: unpaidCount, color: 'bg-red-500', lightColor: 'bg-red-100 text-red-700' },
   ];
 
-  // =============================================
-  // FIXED PRINT HANDLER FOR MOBILE CHROME
-  // =============================================
   const handlePrint = () => {
-    setIsPrinting(true);
-    
-    // Force layout recalculation
-    document.body.offsetHeight;
-    
-    // Small delay for mobile Chrome
-    setTimeout(() => {
-      window.print();
-      
-      // Reset after print dialog closes
-      setTimeout(() => {
-        setIsPrinting(false);
-      }, 500);
-    }, 300);
+    window.print();
   };
-
-  // Listen for print events
-  useEffect(() => {
-    const beforePrint = () => {
-      setIsPrinting(true);
-    };
-    
-    const afterPrint = () => {
-      setIsPrinting(false);
-    };
-    
-    window.addEventListener('beforeprint', beforePrint);
-    window.addEventListener('afterprint', afterPrint);
-    
-    return () => {
-      window.removeEventListener('beforeprint', beforePrint);
-      window.removeEventListener('afterprint', afterPrint);
-    };
-  }, []);
 
   return (
     <div className="space-y-6">
       {/* ============================================ */}
-      {/* FIXED PRINT STYLES FOR MOBILE CHROME */}
+      {/* PRINT STYLES - Beautiful & Compact */}
       {/* ============================================ */}
       <style>{`
-        /* ========================================= */
-        /* PRINT MEDIA QUERY - MOBILE CHROME FIX */
-        /* ========================================= */
         @media print {
-          /* Force color printing - ALL browsers */
-          *, *::before, *::after {
+          * {
             -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           
-          /* Reset HTML & Body */
-          html {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-          }
-          
           body {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            background: white !important;
+            margin: 0;
+            padding: 0;
           }
           
-          /* Hide ALL non-print elements */
-          .no-print,
-          .no-print * {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            width: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            left: -9999px !important;
+          body * {
+            visibility: hidden;
           }
           
-          /* Show print area */
+          .print-area, .print-area * {
+            visibility: visible;
+          }
+          
           .print-area {
-            display: block !important;
-            visibility: visible !important;
-            position: relative !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 0;
           }
           
-          .print-area * {
-            visibility: visible !important;
+          .no-print {
+            display: none !important;
           }
           
-          /* Show print-only content */
           .print-only {
             display: block !important;
-            visibility: visible !important;
-            position: relative !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: auto !important;
           }
           
           /* Print Container */
           .print-container {
-            display: block !important;
-            visibility: visible !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 8px !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
-            font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
+            padding: 12px;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
           }
           
-          /* ===================== */
-          /* HEADER STYLES */
-          /* ===================== */
+          /* Header Styles */
           .print-header-box {
-            display: block !important;
-            visibility: visible !important;
-            background: #ea580c !important;
-            background-color: #ea580c !important;
+            background: linear-gradient(135deg, #f97316, #dc2626) !important;
             color: white !important;
-            padding: 12px 16px !important;
-            border-radius: 8px !important;
-            margin-bottom: 12px !important;
-            text-align: center !important;
-            page-break-inside: avoid !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: center;
           }
           
           .print-header-box h1 {
-            display: block !important;
-            font-size: 18px !important;
-            font-weight: bold !important;
-            margin: 0 0 4px 0 !important;
-            color: white !important;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0 0 4px 0;
           }
           
           .print-header-box h2 {
-            display: block !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            margin: 0 0 4px 0 !important;
-            color: white !important;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            opacity: 0.95;
           }
           
           .print-header-box p {
-            display: block !important;
-            font-size: 11px !important;
-            margin: 0 !important;
-            color: white !important;
+            font-size: 10px;
+            margin: 0;
+            opacity: 0.85;
           }
           
-          /* ===================== */
-          /* SUMMARY GRID */
-          /* ===================== */
+          /* Summary Cards */
           .print-summary-grid {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            margin-bottom: 12px !important;
-            page-break-inside: avoid !important;
-            width: 100% !important;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
           }
           
           .print-summary-card {
-            display: inline-block !important;
-            flex: 1 1 22% !important;
-            min-width: 80px !important;
-            text-align: center !important;
-            padding: 8px 4px !important;
-            border-radius: 6px !important;
-            border: 1px solid #d1d5db !important;
-            page-break-inside: avoid !important;
-            box-sizing: border-box !important;
-            -webkit-print-color-adjust: exact !important;
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
           }
           
           .print-summary-card.blue {
-            background-color: #dbeafe !important;
-            border-color: #93c5fd !important;
+            background: #eff6ff !important;
+            border-color: #bfdbfe !important;
           }
           
           .print-summary-card.green {
-            background-color: #dcfce7 !important;
-            border-color: #86efac !important;
+            background: #f0fdf4 !important;
+            border-color: #bbf7d0 !important;
           }
           
           .print-summary-card.red {
-            background-color: #fee2e2 !important;
-            border-color: #fca5a5 !important;
+            background: #fef2f2 !important;
+            border-color: #fecaca !important;
           }
           
           .print-summary-card.orange {
-            background-color: #ffedd5 !important;
-            border-color: #fdba74 !important;
+            background: #fff7ed !important;
+            border-color: #fed7aa !important;
           }
           
           .print-summary-card .value {
-            display: block !important;
-            font-size: 14px !important;
-            font-weight: bold !important;
-            margin-bottom: 2px !important;
+            font-size: 14px;
+            font-weight: bold;
           }
           
           .print-summary-card .label {
-            display: block !important;
-            font-size: 9px !important;
-            color: #4b5563 !important;
+            font-size: 9px;
+            color: #6b7280;
+            margin-top: 2px;
           }
           
-          /* ===================== */
-          /* STATS ROW */
-          /* ===================== */
+          /* Stats Row */
           .print-stats-row {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            gap: 8px !important;
-            margin-bottom: 10px !important;
-            font-size: 10px !important;
-            page-break-inside: avoid !important;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 10px;
+            font-size: 10px;
           }
           
           .print-stats-row span {
-            display: inline-block !important;
-            padding: 3px 8px !important;
-            border-radius: 10px !important;
-            font-weight: 500 !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: 500;
           }
           
-          /* ===================== */
-          /* TABLE STYLES */
-          /* ===================== */
+          /* Table Styles */
           .print-table {
-            display: table !important;
-            width: 100% !important;
-            border-collapse: collapse !important;
-            font-size: 10px !important;
-            border: 1px solid #9ca3af !important;
-            margin: 0 !important;
-            page-break-inside: auto !important;
-          }
-          
-          .print-table thead {
-            display: table-header-group !important;
-          }
-          
-          .print-table tbody {
-            display: table-row-group !important;
-          }
-          
-          .print-table tfoot {
-            display: table-footer-group !important;
-          }
-          
-          .print-table tr {
-            display: table-row !important;
-            page-break-inside: avoid !important;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden;
           }
           
           .print-table th {
-            display: table-cell !important;
-            background-color: #1f2937 !important;
+            background: #1f2937 !important;
             color: white !important;
-            padding: 8px 6px !important;
-            font-weight: 600 !important;
-            font-size: 10px !important;
-            border: 1px solid #374151 !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 8px 6px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 10px;
           }
           
-          .print-table th:nth-child(1) { width: 5% !important; text-align: center !important; }
-          .print-table th:nth-child(2) { width: 35% !important; text-align: left !important; }
-          .print-table th:nth-child(3) { width: 12% !important; text-align: center !important; }
-          .print-table th:nth-child(4) { width: 16% !important; text-align: right !important; }
-          .print-table th:nth-child(5) { width: 16% !important; text-align: right !important; }
-          .print-table th:nth-child(6) { width: 16% !important; text-align: right !important; }
+          .print-table th:nth-child(1) { width: 5%; text-align: center; }
+          .print-table th:nth-child(2) { width: 35%; }
+          .print-table th:nth-child(3) { width: 12%; text-align: center; }
+          .print-table th:nth-child(4) { width: 16%; text-align: right; }
+          .print-table th:nth-child(5) { width: 16%; text-align: right; }
+          .print-table th:nth-child(6) { width: 16%; text-align: right; }
           
           .print-table td {
-            display: table-cell !important;
-            padding: 6px !important;
-            border: 1px solid #d1d5db !important;
-            font-size: 10px !important;
-            vertical-align: middle !important;
+            padding: 6px;
+            border-bottom: 1px solid #e5e7eb;
           }
           
           .print-table tbody tr:nth-child(even) {
-            background-color: #f3f4f6 !important;
-            -webkit-print-color-adjust: exact !important;
+            background: #f9fafb !important;
           }
           
-          .print-table tbody tr:nth-child(odd) {
-            background-color: white !important;
+          .print-table tbody tr:hover {
+            background: #fef3c7 !important;
           }
           
-          /* Status badges in table */
           .print-table .status-paid {
-            display: inline-block !important;
-            background-color: #dcfce7 !important;
+            background: #dcfce7 !important;
             color: #166534 !important;
-            padding: 2px 6px !important;
-            border-radius: 8px !important;
-            font-size: 9px !important;
-            font-weight: 600 !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
           }
           
           .print-table .status-partial {
-            display: inline-block !important;
-            background-color: #fef9c3 !important;
+            background: #fef9c3 !important;
             color: #854d0e !important;
-            padding: 2px 6px !important;
-            border-radius: 8px !important;
-            font-size: 9px !important;
-            font-weight: 600 !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
           }
           
           .print-table .status-unpaid {
-            display: inline-block !important;
-            background-color: #fee2e2 !important;
+            background: #fee2e2 !important;
             color: #991b1b !important;
-            padding: 2px 6px !important;
-            border-radius: 8px !important;
-            font-size: 9px !important;
-            font-weight: 600 !important;
-            -webkit-print-color-adjust: exact !important;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
           }
           
-          .print-table tfoot tr {
-            background-color: #e5e7eb !important;
-            -webkit-print-color-adjust: exact !important;
+          .print-table tfoot {
+            background: #f3f4f6 !important;
+            font-weight: bold;
           }
           
           .print-table tfoot td {
-            padding: 8px 6px !important;
-            font-weight: bold !important;
-            border-top: 2px solid #6b7280 !important;
+            padding: 8px 6px;
+            border-top: 2px solid #9ca3af;
           }
           
-          /* ===================== */
-          /* UTILITY CLASSES */
-          /* ===================== */
-          .text-right { text-align: right !important; }
-          .text-center { text-align: center !important; }
-          .text-left { text-align: left !important; }
-          .text-blue { color: #2563eb !important; }
-          .text-green { color: #16a34a !important; }
-          .text-red { color: #dc2626 !important; }
-          .font-bold { font-weight: bold !important; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .text-blue { color: #2563eb; }
+          .text-green { color: #16a34a; }
+          .text-red { color: #dc2626; }
+          .font-bold { font-weight: bold; }
           
-          /* ===================== */
-          /* FOOTER */
-          /* ===================== */
+          /* Footer */
           .print-footer {
-            display: block !important;
-            margin-top: 12px !important;
-            padding-top: 8px !important;
-            border-top: 1px dashed #9ca3af !important;
-            text-align: center !important;
-            font-size: 9px !important;
-            color: #6b7280 !important;
-            page-break-inside: avoid !important;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px dashed #9ca3af;
+            text-align: center;
+            font-size: 9px;
+            color: #6b7280;
           }
           
-          /* ===================== */
-          /* PAGE SETTINGS */
-          /* ===================== */
+          /* Page Settings */
           @page {
-            size: A4 portrait;
-            margin: 8mm;
+            size: A4;
+            margin: 10mm;
+          }
+          
+          tr {
+            page-break-inside: avoid;
           }
         }
         
-        /* ========================================= */
-        /* SCREEN STYLES */
-        /* ========================================= */
         .print-only {
-          display: none !important;
-        }
-        
-        @media screen {
-          .print-only {
-            display: none !important;
-          }
+          display: none;
         }
       `}</style>
 
@@ -596,14 +443,10 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
 
               <button
                 onClick={handlePrint}
-                disabled={isPrinting}
-                className={cn(
-                  "flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm font-medium transition shadow-md",
-                  isPrinting ? "opacity-50 cursor-wait" : "hover:from-green-600 hover:to-emerald-700"
-                )}
+                className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg text-sm font-medium hover:from-green-600 hover:to-emerald-700 transition shadow-md"
               >
                 <Printer className="w-4 h-4" />
-                <span>{isPrinting ? 'প্রসেসিং...' : 'প্রিন্ট / PDF'}</span>
+                <span>প্রিন্ট / PDF</span>
               </button>
             </div>
           </div>
@@ -639,13 +482,10 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
       </div>
 
       {/* ============================================ */}
-      {/* PRINT AREA - Contains print-only content */}
+      {/* PRINT AREA */}
       {/* ============================================ */}
       <div className="print-area">
-        {/* ========================================= */}
-        {/* PRINT ONLY CONTENT */}
-        {/* ========================================= */}
-        <div className="print-only print-container">
+        <div className="print-container print-only">
           {/* Print Header */}
           <div className="print-header-box">
             <h1>🙏 কলম হিন্দু ধর্মসভা</h1>
@@ -660,29 +500,29 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
           {/* Print Summary */}
           <div className="print-summary-grid">
             <div className="print-summary-card blue">
-              <span className="value text-blue">৳{fundData.totalDue?.toLocaleString() || 0}</span>
-              <span className="label">মোট দায্যকৃত</span>
+              <div className="value text-blue">৳{fundData.totalDue?.toLocaleString() || 0}</div>
+              <div className="label">মোট দায্যকৃত</div>
             </div>
             <div className="print-summary-card green">
-              <span className="value text-green">৳{fundData.totalPaid?.toLocaleString() || 0}</span>
-              <span className="label">মোট জমা</span>
+              <div className="value text-green">৳{fundData.totalPaid?.toLocaleString() || 0}</div>
+              <div className="label">মোট জমা</div>
             </div>
             <div className="print-summary-card red">
-              <span className="value text-red">৳{fundData.totalRemaining?.toLocaleString() || 0}</span>
-              <span className="label">মোট বাকি</span>
+              <div className="value text-red">৳{fundData.totalRemaining?.toLocaleString() || 0}</div>
+              <div className="label">মোট বাকি</div>
             </div>
             <div className="print-summary-card orange">
-              <span className="value">{fundData.paymentStats?.paymentPercentage || 0}%</span>
-              <span className="label">সংগ্রহ সম্পন্ন</span>
+              <div className="value">{fundData.paymentStats?.paymentPercentage || 0}%</div>
+              <div className="label">সংগ্রহ সম্পন্ন</div>
             </div>
           </div>
 
           {/* Stats Row */}
           <div className="print-stats-row">
-            <span style={{backgroundColor: '#dbeafe'}}>👥 মোট: {allMembers.length}</span>
-            <span style={{backgroundColor: '#dcfce7'}}>✓ পরিশোধিত: {paidCount}</span>
-            <span style={{backgroundColor: '#fef9c3'}}>◐ আংশিক: {partialCount}</span>
-            <span style={{backgroundColor: '#fee2e2'}}>✕ বকেয়া: {unpaidCount}</span>
+            <span style={{background: '#dbeafe'}}>👥 মোট: {allMembers.length}</span>
+            <span style={{background: '#dcfce7'}}>✓ পরিশোধিত: {paidCount}</span>
+            <span style={{background: '#fef9c3'}}>◐ আংশিক: {partialCount}</span>
+            <span style={{background: '#fee2e2'}}>✕ বকেয়া: {unpaidCount}</span>
           </div>
 
           {/* Print Table */}
@@ -690,7 +530,7 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
             <thead>
               <tr>
                 <th className="text-center">#</th>
-                <th className="text-left">সদস্যের নাম</th>
+                <th>সদস্যের নাম</th>
                 <th className="text-center">স্ট্যাটাস</th>
                 <th className="text-right">দায্যকৃত</th>
                 <th className="text-right">জমা</th>
@@ -701,7 +541,7 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
               {visibleMembers.map((member: any, index: number) => (
                 <tr key={member.id}>
                   <td className="text-center">{index + 1}</td>
-                  <td className="text-left">{member.name}</td>
+                  <td>{member.name}</td>
                   <td className="text-center">
                     <span className={`status-${member.status}`}>
                       {getStatusText(member.status)}
