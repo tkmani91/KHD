@@ -17,7 +17,7 @@ interface InvitationListProps {
   pdfLink: string;
 }
 
-const InvitationList: React.FC<InvitationListProps> = ({ invitationData, pdfLink }) => {
+const InvitationListComponent: React.FC<InvitationListProps> = ({ invitationData, pdfLink }) => {
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
 
   const handlePdfDownload = () => {
