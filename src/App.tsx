@@ -5,7 +5,7 @@ import JSONEditor from './components/JSONEditor';
 import FundCollection from './components/FundCollection';
 import MembersList from './components/MembersList';
 import ContactsList from './components/ContactsList';
-import InvitationList from './components/InvitationList';
+import InvitationListComponent from './components/InvitationList';
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -132,7 +132,7 @@ interface ContactPerson {
   photo?: string;
 }
 
-interface InvitationList {
+interface InvitationItem {
   id: string;
   area: string;
   personName: string;
@@ -1822,7 +1822,6 @@ function AIChatbox() {
   );
 }
 
-
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -1837,7 +1836,7 @@ function LoginPage() {
   const [dataSource, setDataSource] = useState<'local' | 'github'>('local');
   const [membersData, setMembersData] = useState<Member[]>([]);
   const [contactsData, setContactsData] = useState<ContactPerson[]>([]);
-  const [invitationData, setInvitationData] = useState<InvitationList[]>([]);
+  const [invitationData, setInvitationData] = useState<InvitationItem[]>([]);
   const [accountsPDFs, setAccountsPDFs] = useState<AccountsPDFs>({});
   const [pdfLinks, setPdfLinks] = useState({ membersList: '', contactsList: '', invitationList: '' });
   const [isDataLoading, setIsDataLoading] = useState(false);
@@ -2207,7 +2206,7 @@ function LoginPage() {
 
       {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
-        <InvitationList 
+        <InvitationListComponent 
           invitationData={invitationData} 
           pdfLink={pdfLinks.invitationList} 
         />
