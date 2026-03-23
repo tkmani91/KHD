@@ -257,13 +257,13 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
 
   // Refs sync
-  useEffect(() => {
+   {
     currentIndexRef.current = currentIndex;
     playlistRef.current = playlist;
   }, [currentIndex, playlist]);
 
   // ===== AUDIO INITIALIZATION =====
-  useEffect(() => {
+   {
     const audio = new Audio();
     audio.volume = volume;
     audio.preload = 'metadata';
@@ -332,7 +332,7 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Volume sync
-  useEffect(() => {
+   {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
@@ -504,7 +504,7 @@ function useCountdown(targetDate: string): CountdownTime {
     seconds: 0 
   });
 
-  useEffect(() => {
+   {
     const calculateTimeLeft = () => {
       const difference = new Date(targetDate).getTime() - new Date().getTime();
       if (difference > 0) {
@@ -531,7 +531,7 @@ function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+   {
     const fetchData = async () => {
       try {
         const response = await fetch(url, { cache: 'no-cache' });
@@ -970,7 +970,7 @@ function GalleryPage() {
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
-  useEffect(() => {
+   {
     const fetchImages = async () => {
       setIsLoading(true);
       setError('');
@@ -993,7 +993,7 @@ function GalleryPage() {
     fetchImages();
   }, []);
 
-  useEffect(() => {
+   {
     if (selectedImage) {
       document.body.style.overflow = 'hidden';
       return () => { document.body.style.overflow = 'unset'; };
@@ -1126,7 +1126,7 @@ function QuizArchivePage() {
 
   const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
 
-  useEffect(() => {
+   {
     const fetchQuizData = async () => {
       setIsLoading(true);
       try {
@@ -1139,7 +1139,7 @@ function QuizArchivePage() {
     fetchQuizData();
   }, []);
 
-  useEffect(() => { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
+   { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
 
   const currentYearQuiz = useMemo(() => quizData.find(q => q.year === selectedYear), [quizData, selectedYear]);
 
@@ -1378,13 +1378,13 @@ function LiveTVPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<any>(null);
 
-  useEffect(() => {
+   {
     if (liveChannels.length > 0 && !activeChannel) {
       setActiveChannel(liveChannels[0]);
     }
   }, [liveChannels, activeChannel, setActiveChannel]);
 
-  useEffect(() => {
+   {
     if (!activeChannel) return;
 
     const loadStream = async () => {
@@ -1708,7 +1708,7 @@ function AIChatbox() {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+   {
     if (chatbot.welcomeMessage && messages.length === 0) {
       setMessages([{ role: 'bot', text: chatbot.welcomeMessage }]);
     }
@@ -1884,52 +1884,101 @@ function LoginPage() {
   }, []);
 
   // Load member data after login + Find user photo
-  useEffect(() => {
-    if (!isLoggedIn || !loggedInUser) return;
-    
-    const fetchAllData = async () => {
-      setIsDataLoading(true);
-      try {
-        const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+useEffect(() => {
+  if (!isLoggedIn || !loggedInUser) return;
+  
+  const fetchAllData = async () => {
+    setIsDataLoading(true);
+    try {
+      const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      
+      if (data.members) {
+        setMembersData(data.members);
         
-        if (data.members) {
-          setMembersData(data.members);
+        // ✅ ULTIMATE FIX: Match by ID first (most reliable)
+        const currentUserMember = data.members.find((m: Member) => {
+          // Primary: Match by ID (string comparison)
+          const memberId = String(m.id || '').trim();
+          const userId = String(loggedInUser.id || '').trim();
           
-          const currentUserMember = data.members.find(
-            (m: Member) => m.mobile === loggedInUser.mobile || m.email === loggedInUser.email
-          );
-          
-          if (currentUserMember?.photo) {
-            setUserPhoto(currentUserMember.photo);
-            localStorage.setItem('khd_user_photo', currentUserMember.photo);
+          if (memberId && userId && memberId === userId) {
+            console.log('✅ Photo matched by ID:', userId, '→', m.name);
+            return true;
           }
+          
+          // Secondary: Match by mobile (if both exist and non-empty)
+          if (m.mobile && loggedInUser.mobile) {
+            const memberMobile = m.mobile.replace(/\s/g, '').trim();
+            const userMobile = loggedInUser.mobile.replace(/\s/g, '').trim();
+            
+            if (memberMobile && userMobile && memberMobile === userMobile) {
+              console.log('✅ Photo matched by Mobile:', userMobile, '→', m.name);
+              return true;
+            }
+          }
+          
+          // Tertiary: Match by email (if both exist and non-empty)
+          if (m.email && loggedInUser.email) {
+            const memberEmail = m.email.toLowerCase().trim();
+            const userEmail = loggedInUser.email.toLowerCase().trim();
+            
+            if (memberEmail && userEmail && memberEmail === userEmail) {
+              console.log('✅ Photo matched by Email:', userEmail, '→', m.name);
+              return true;
+            }
+          }
+          
+          return false;
+        });
+        
+        // Debug logs
+        console.log('🔍 Looking for user:', {
+          id: loggedInUser.id,
+          name: loggedInUser.name,
+          mobile: loggedInUser.mobile,
+          email: loggedInUser.email
+        });
+        console.log('🎯 Found member data:', currentUserMember);
+        
+        // Set photo
+        if (currentUserMember?.photo) {
+          console.log('📸 Setting photo URL:', currentUserMember.photo);
+          setUserPhoto(currentUserMember.photo);
+          localStorage.setItem('khd_user_photo', currentUserMember.photo);
+        } else {
+          console.log('⚠️ No photo found - using default avatar');
+          setUserPhoto('');
+          localStorage.removeItem('khd_user_photo');
         }
-        if (data.contacts) setContactsData(data.contacts);
-        if (data.invitations) setInvitationData(data.invitations);
-        if (data.pdfLinks) setPdfLinks(data.pdfLinks);
-      } catch (error) { 
-        console.log('Using local data:', error); 
       }
-      finally { setIsDataLoading(false); }
-    };
-    fetchAllData();
+      
+      if (data.contacts) setContactsData(data.contacts);
+      if (data.invitations) setInvitationData(data.invitations);
+      if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+    } catch (error) { 
+      console.error('❌ Data fetch error:', error); 
+    } finally { 
+      setIsDataLoading(false); 
+    }
+  };
+  
+  fetchAllData();
 
-    const loadAccountsPDFs = async () => {
-      try {
-        const response = await fetch('/data/accountsPDFs.json');
-        if (response.ok) {
-          const data = await response.json();
-          setAccountsPDFs(data);
-        }
-      } catch (error) {
-        console.log('Failed to load accounts PDFs:', error);
+  const loadAccountsPDFs = async () => {
+    try {
+      const response = await fetch('/data/accountsPDFs.json');
+      if (response.ok) {
+        const data = await response.json();
+        setAccountsPDFs(data);
       }
-    };
-    loadAccountsPDFs();
-  }, [isLoggedIn, loggedInUser]);
-
+    } catch (error) {
+      console.log('Failed to load accounts PDFs:', error);
+    }
+  };
+  loadAccountsPDFs();
+}, [isLoggedIn, loggedInUser]);
   // ===== LOGIN HANDLER =====
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
