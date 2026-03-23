@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -10,7 +10,7 @@ interface JSONFile {
   label: string;
   url: string;
   path: string;
-  type: 'simple-array' | 'complex-object' | 'nested-sections';
+  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special';
   sections?: string[];
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
@@ -30,6 +30,13 @@ const JSONEditor: React.FC = () => {
   const [copied, setCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  
+  // Gallery special states
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedPujaType, setSelectedPujaType] = useState<string>('');
+  
+  // Accounts PDF special states
+  const [selectedPdfYear, setSelectedPdfYear] = useState<string>('');
 
   // ============================================
   // JSON FILES CONFIGURATION
@@ -38,11 +45,11 @@ const JSONEditor: React.FC = () => {
   const JSON_FILES: JSONFile[] = [
     {
       id: 'dynamicContent',
-      label: '📰 সদস্য আয় হিসাব ',
+      label: '📰 সদস্য আয় হিসাব',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json',
       path: 'dynamicContent.json',
       type: 'nested-sections',
-      sections: ['notices', 'liveStream', 'fundCollection']
+      sections: ['notices', 'liveStream', 'fundCollection', 'members', 'paymentStats']
     },
     {
       id: 'membersData',
@@ -74,7 +81,7 @@ const JSONEditor: React.FC = () => {
       label: '🖼️ গ্যালারি',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json',
       path: 'gallery-images.json',
-      type: 'simple-array',
+      type: 'gallery-special',
       hasImagePreview: true
     },
     {
@@ -82,7 +89,7 @@ const JSONEditor: React.FC = () => {
       label: '📊 বাৎসরিক হিসাব',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json',
       path: 'public/data/accountsPDFs.json',
-      type: 'nested-sections',
+      type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
     {
@@ -128,6 +135,18 @@ const JSONEditor: React.FC = () => {
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
   // ============================================
+  // PUJA TYPES FOR GALLERY
+  // ============================================
+
+  const PUJA_TYPES = [
+    { id: 'durga', label: '🎉 দুর্গাপূজা', value: 'দুর্গাপূজা' },
+    { id: 'shyama', label: '🔱 শ্যামাপূজা', value: 'শ্যামাপূজা' },
+    { id: 'saraswati', label: '📚 সরস্বতী পূজা', value: 'সরস্বতী পূজা' },
+    { id: 'rath', label: '🎪 রথযাত্রা', value: 'রথযাত্রা' },
+    { id: 'other', label: '🙏 অন্যান্য', value: 'অন্যান্য' }
+  ];
+
+  // ============================================
   // SECTION LABELS
   // ============================================
 
@@ -136,9 +155,10 @@ const JSONEditor: React.FC = () => {
     notices: '📢 ঘোষণা',
     liveStream: '📺 লাইভ স্ট্রিম',
     fundCollection: '💰 চাঁদা সংগ্রহ',
+    members: '👥 সদস্য তালিকা',
+    paymentStats: '📊 পেমেন্ট পরিসংখ্যান',
     
     // members-data
-    members: '👥 সদস্য তালিকা',
     contacts: '📞 যোগাযোগ',
     invitations: '💌 নিমন্ত্রণ',
     pdfLinks: '📄 PDF লিংক',
@@ -154,16 +174,36 @@ const JSONEditor: React.FC = () => {
     fallbackMessages: '🔄 Fallback মেসেজ',
     
     // accountsPDFs
-    durgaPuja: '🎉 দূর্গাপূজা',
+    durgaPuja: '🎉 দুর্গাপূজা',
     shyamaPuja: '🔱 শ্যামাপূজা',
     saraswatiPuja: '📚 সরস্বতী পূজা',
     rathYatra: '🎪 রথযাত্রা',
     
     // schedules
-    durga: '🎉 দূর্গাপূজা',
+    durga: '🎉 দুর্গাপূজা',
     shyama: '🔱 শ্যামাপূজা',
     saraswati: '📚 সরস্বতী পূজা',
     rath: '🎪 রথযাত্রা'
+  };
+
+  // ============================================
+  // SCHEDULE DAY LABELS (for schedules.json)
+  // ============================================
+
+  const scheduleDayLabels: Record<string, string> = {
+    'mahalaya': 'মহালয়া',
+    'panchami': 'পঞ্চমী',
+    'shasthi': 'ষষ্ঠী',
+    'saptami': 'সপ্তমী',
+    'ashtami': 'অষ্টমী',
+    'navami': 'নবমী',
+    'dashami': 'দশমী',
+    'ekadashi': 'একাদশী',
+    'kaliPuja': 'কালীপূজা',
+    'lakshmiPuja': 'লক্ষ্মীপূজা',
+    'saraswatiPuja': 'সরস্বতী পূজা',
+    'rathYatra': 'রথযাত্রা',
+    'ultoRath': 'উল্টোরথ'
   };
 
   // ============================================
@@ -174,6 +214,10 @@ const JSONEditor: React.FC = () => {
     const fetchJSON = async () => {
       setLoading(true);
       setError('');
+      setSelectedYear('');
+      setSelectedPujaType('');
+      setSelectedPdfYear('');
+      
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
         if (!file) {
@@ -194,6 +238,13 @@ const JSONEditor: React.FC = () => {
           setSelectedItemIndex(0);
           setFormData(data[0] || {});
           setSelectedSection('');
+        } else if (file.type === 'gallery-special') {
+          // Gallery special handling
+          handleGalleryData(data);
+        } else if (file.type === 'accounts-special') {
+          // Accounts PDF special handling
+          setSelectedSection(file.sections?.[0] || 'durgaPuja');
+          handleAccountsPdfData(data, file.sections?.[0] || 'durgaPuja');
         } else if (file.type === 'nested-sections' && file.sections) {
           setSelectedSection(file.sections[0]);
           processSection(data, file.sections[0]);
@@ -214,6 +265,63 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   // ============================================
+  // HANDLE GALLERY DATA
+  // ============================================
+
+  const handleGalleryData = (data: any[]) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
+
+    // Extract unique years
+    const years = [...new Set(data.map(item => item.year))].sort((a, b) => b - a);
+    const firstYear = years[0]?.toString() || '';
+    setSelectedYear(firstYear);
+
+    // Extract unique puja types for first year
+    const yearData = data.filter(item => item.year?.toString() === firstYear);
+    const pujaTypes = [...new Set(yearData.map(item => item.pujaType || item.category))];
+    const firstPujaType = pujaTypes[0] || '';
+    setSelectedPujaType(firstPujaType);
+
+    // Filter data
+    const filteredData = yearData.filter(item => (item.pujaType || item.category) === firstPujaType);
+    setJsonData(filteredData);
+    setSelectedItemIndex(0);
+    setFormData(filteredData[0] || {});
+  };
+
+  // ============================================
+  // HANDLE ACCOUNTS PDF DATA
+  // ============================================
+
+  const handleAccountsPdfData = (data: any, section: string) => {
+    if (!data || !data[section]) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
+
+    const sectionData = data[section];
+    if (sectionData.years && typeof sectionData.years === 'object') {
+      const years = Object.keys(sectionData.years).sort((a, b) => parseInt(b) - parseInt(a));
+      const firstYear = years[0] || '';
+      setSelectedPdfYear(firstYear);
+      
+      if (firstYear && sectionData.years[firstYear]) {
+        setFormData({ 
+          year: firstYear, 
+          url: sectionData.years[firstYear] 
+        });
+        setJsonData(years.map(y => ({ year: y, url: sectionData.years[y] })));
+        setSelectedItemIndex(0);
+      }
+    }
+  };
+
+  // ============================================
   // PROCESS SECTION
   // ============================================
 
@@ -226,6 +334,22 @@ const JSONEditor: React.FC = () => {
 
     const sectionData = data[section];
 
+    // Special handling for quickReplies and fallbackMessages (string arrays)
+    if (section === 'quickReplies' || section === 'fallbackMessages') {
+      if (Array.isArray(sectionData)) {
+        const converted = sectionData.map((item, index) => {
+          if (typeof item === 'string') {
+            return { id: index + 1, text: item };
+          }
+          return item;
+        });
+        setJsonData(converted);
+        setSelectedItemIndex(0);
+        setFormData(converted[0] || {});
+        return;
+      }
+    }
+
     if (Array.isArray(sectionData)) {
       setJsonData(sectionData);
       setSelectedItemIndex(0);
@@ -235,7 +359,6 @@ const JSONEditor: React.FC = () => {
       setFormData(sectionData);
       setSelectedItemIndex(0);
     } else if (typeof sectionData === 'string') {
-      // For welcomeMessage
       setJsonData([{ value: sectionData }]);
       setFormData({ value: sectionData });
       setSelectedItemIndex(0);
@@ -243,8 +366,12 @@ const JSONEditor: React.FC = () => {
   };
 
   useEffect(() => {
-    if (rawData && selectedSection && currentFile?.type !== 'simple-array') {
-      processSection(rawData, selectedSection);
+    if (rawData && selectedSection && currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special') {
+      if (currentFile?.type === 'accounts-special') {
+        handleAccountsPdfData(rawData, selectedSection);
+      } else {
+        processSection(rawData, selectedSection);
+      }
     }
   }, [selectedSection]);
 
@@ -253,6 +380,44 @@ const JSONEditor: React.FC = () => {
       setFormData({ ...jsonData[selectedItemIndex] });
     }
   }, [selectedItemIndex, jsonData]);
+
+  // ============================================
+  // GALLERY FILTER HANDLERS
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
+      const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
+      const pujaTypes = [...new Set(yearData.map((item: any) => item.pujaType || item.category))];
+      
+      if (!pujaTypes.includes(selectedPujaType) && pujaTypes.length > 0) {
+        setSelectedPujaType(pujaTypes[0] as string);
+      }
+      
+      const filteredData = selectedPujaType 
+        ? yearData.filter((item: any) => (item.pujaType || item.category) === selectedPujaType)
+        : yearData;
+      
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    }
+  }, [selectedYear, selectedPujaType]);
+
+  // ============================================
+  // GET UNIQUE YEARS FROM GALLERY DATA
+  // ============================================
+
+  const getGalleryYears = (): string[] => {
+    if (!rawData || !Array.isArray(rawData)) return [];
+    return [...new Set(rawData.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a));
+  };
+
+  const getGalleryPujaTypes = (): string[] => {
+    if (!rawData || !Array.isArray(rawData) || !selectedYear) return [];
+    const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
+    return [...new Set(yearData.map((item: any) => item.pujaType || item.category))].filter(Boolean);
+  };
 
   // ============================================
   // HANDLERS
@@ -267,12 +432,33 @@ const JSONEditor: React.FC = () => {
     updatedData[selectedItemIndex] = { ...formData };
     setJsonData(updatedData);
     
-    // Update rawData if needed
-    if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
+    // Update rawData based on file type
+    if (currentFile?.type === 'gallery-special' && rawData) {
+      // For gallery, we need to update the specific item in rawData
+      const newRawData = rawData.map((item: any) => {
+        if (item.id === formData.id) {
+          return { ...formData };
+        }
+        return item;
+      });
+      setRawData(newRawData);
+    } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
+      // For accounts PDF, update the years object
       const newRawData = { ...rawData };
-      newRawData[selectedSection] = Array.isArray(newRawData[selectedSection]) 
-        ? updatedData 
-        : updatedData[0];
+      if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
+      newRawData[selectedSection].years[formData.year] = formData.url;
+      setRawData(newRawData);
+    } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
+      const newRawData = { ...rawData };
+      
+      // Special handling for quickReplies and fallbackMessages
+      if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+        newRawData[selectedSection] = updatedData.map(item => item.text);
+      } else {
+        newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
+          ? updatedData 
+          : updatedData[0];
+      }
       setRawData(newRawData);
     }
     
@@ -281,6 +467,60 @@ const JSONEditor: React.FC = () => {
 
   const handleAddItem = () => {
     if (!Array.isArray(jsonData)) return;
+    
+    // For gallery special
+    if (currentFile?.type === 'gallery-special') {
+      // Generate unique ID based on timestamp
+      const newId = `img_${Date.now()}`;
+      const template = {
+        id: newId,
+        url: '',
+        caption: '',
+        year: parseInt(selectedYear) || new Date().getFullYear(),
+        pujaType: selectedPujaType || 'দুর্গাপূজা'
+      };
+      
+      const newRawData = [...(rawData || []), template];
+      setRawData(newRawData);
+      
+      const filteredData = [...jsonData, template];
+      setJsonData(filteredData);
+      setSelectedItemIndex(filteredData.length - 1);
+      setFormData(template);
+      alert('➕ নতুন ছবি যোগ হয়েছে!');
+      return;
+    }
+
+    // For accounts special
+    if (currentFile?.type === 'accounts-special') {
+      const currentYear = new Date().getFullYear();
+      const existingYears = jsonData.map(item => parseInt(item.year));
+      let newYear = currentYear;
+      while (existingYears.includes(newYear)) {
+        newYear--;
+      }
+      
+      const template = { year: newYear.toString(), url: '' };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      setSelectedPdfYear(newYear.toString());
+      alert('➕ নতুন বছর যোগ হয়েছে!');
+      return;
+    }
+
+    // For quickReplies and fallbackMessages
+    if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, item.id || 0), 0);
+      const template = { id: maxId + 1, text: '' };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      alert('➕ নতুন আইটেম যোগ হয়েছে!');
+      return;
+    }
     
     const template = jsonData[0] ? { ...jsonData[0] } : {};
     Object.keys(template).forEach(key => {
@@ -309,6 +549,13 @@ const JSONEditor: React.FC = () => {
     }
     if (!window.confirm('⚠️ মুছতে চান?')) return;
     
+    // For gallery special
+    if (currentFile?.type === 'gallery-special' && rawData) {
+      const itemToDelete = jsonData[selectedItemIndex];
+      const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
+      setRawData(newRawData);
+    }
+    
     const updatedData = jsonData.filter((_, i) => i !== selectedItemIndex);
     setJsonData(updatedData);
     const newIndex = Math.max(0, selectedItemIndex - 1);
@@ -322,6 +569,17 @@ const JSONEditor: React.FC = () => {
 
     if (currentFile?.type === 'simple-array') {
       finalData = jsonData;
+    } else if (currentFile?.type === 'gallery-special') {
+      finalData = rawData;
+    } else if (currentFile?.type === 'accounts-special' && rawData) {
+      finalData = { ...rawData };
+      if (selectedSection) {
+        const yearsObj: Record<string, string> = {};
+        jsonData.forEach(item => {
+          yearsObj[item.year] = item.url;
+        });
+        finalData[selectedSection] = { years: yearsObj };
+      }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
@@ -334,6 +592,8 @@ const JSONEditor: React.FC = () => {
       if (selectedSection) {
         if (selectedSection === 'welcomeMessage') {
           finalData[selectedSection] = formData.value || '';
+        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+          finalData[selectedSection] = jsonData.map(item => item.text);
         } else {
           finalData[selectedSection] = jsonData;
         }
@@ -343,6 +603,36 @@ const JSONEditor: React.FC = () => {
     navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ============================================
+  // GET ITEM DISPLAY NAME
+  // ============================================
+
+  const getItemDisplayName = (item: any, index: number): string => {
+    // For schedules - use day labels
+    if (selectedFile === 'schedules' && item.day) {
+      const dayKey = item.day.toLowerCase().replace(/\s/g, '');
+      return scheduleDayLabels[dayKey] || item.day || item.event || `আইটেম ${index + 1}`;
+    }
+    
+    // For invitations - use person name
+    if (selectedSection === 'invitations') {
+      return item.personName || item.name || item.familyName || `আইটেম ${index + 1}`;
+    }
+    
+    // For members in dynamicContent
+    if (selectedSection === 'members') {
+      return item.name || item.personName || `সদস্য ${index + 1}`;
+    }
+    
+    // For quickReplies and fallbackMessages
+    if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
+    }
+    
+    // Default
+    return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
   // ============================================
@@ -377,7 +667,9 @@ const JSONEditor: React.FC = () => {
     lastUpdated: 'সর্বশেষ আপডেট',
     facebookLink: 'Facebook লিংক',
     event: 'অনুষ্ঠান',
-    value: 'মান'
+    value: 'মান',
+    text: 'টেক্সট',
+    familyName: 'পরিবারের নাম'
   };
 
   // ============================================
@@ -397,6 +689,22 @@ const JSONEditor: React.FC = () => {
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
           <input type="text" value={String(formData[key] || '')} disabled 
             className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" />
+        </div>
+      );
+    }
+
+    // PujaType - dropdown for gallery
+    if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <select value={String(formData[key] || '')} 
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            {PUJA_TYPES.map(puja => (
+              <option key={puja.id} value={puja.value}>{puja.label}</option>
+            ))}
+          </select>
         </div>
       );
     }
@@ -445,7 +753,7 @@ const JSONEditor: React.FC = () => {
     }
 
     // Long text - textarea
-    if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'permanentAddress'].includes(key))) {
+    if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'permanentAddress', 'text'].includes(key))) {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
@@ -602,6 +910,112 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
+  // RENDER PAYMENT STATS EDITOR
+  // ============================================
+
+  const renderPaymentStatsEditor = () => {
+    if (selectedSection !== 'paymentStats' || !formData) return null;
+    
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="form-field">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label>
+            <input type="number" value={formData.totalDue || 0} 
+              onChange={(e) => handleFieldChange('totalDue', parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          </div>
+          <div className="form-field">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label>
+            <input type="number" value={formData.totalPaid || 0} 
+              onChange={(e) => handleFieldChange('totalPaid', parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          </div>
+          <div className="form-field">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label>
+            <input type="number" value={formData.totalRemaining || 0} 
+              onChange={(e) => handleFieldChange('totalRemaining', parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          </div>
+          <div className="form-field">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">📅 সর্বশেষ আপডেট</label>
+            <input type="text" value={formData.lastUpdated || ''} 
+              onChange={(e) => handleFieldChange('lastUpdated', e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================
+  // RENDER ACCOUNTS PDF EDITOR
+  // ============================================
+
+  const renderAccountsPdfEditor = () => {
+    if (currentFile?.type !== 'accounts-special') return null;
+
+    return (
+      <div className="space-y-4">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-800 mb-3">📊 {sectionLabels[selectedSection]} - বছর অনুযায়ী PDF</h4>
+          
+          {/* Year selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর নির্বাচন:</label>
+            <div className="flex flex-wrap gap-2">
+              {jsonData.map((item, index) => (
+                <button
+                  key={item.year}
+                  onClick={() => {
+                    setSelectedPdfYear(item.year);
+                    setSelectedItemIndex(index);
+                    setFormData(item);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    selectedPdfYear === item.year 
+                      ? 'bg-blue-500 text-white shadow-lg' 
+                      : 'bg-white text-gray-700 hover:bg-blue-50 border'
+                  }`}
+                >
+                  {item.year}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Edit form for selected year */}
+          {formData && (
+            <div className="bg-white p-4 rounded-lg border space-y-4">
+              <div className="form-field">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর</label>
+                <input type="text" value={formData.year || ''} 
+                  onChange={(e) => handleFieldChange('year', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div className="form-field">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  PDF লিংক
+                </label>
+                <input type="text" value={formData.url || ''} 
+                  onChange={(e) => handleFieldChange('url', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+                {formData.url && (
+                  <a href={formData.url} target="_blank" rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-1 mt-2 text-blue-600 text-sm hover:underline">
+                    <FileText className="w-4 h-4" /> PDF দেখুন
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================
   // GENERATE JSON
   // ============================================
 
@@ -612,6 +1026,17 @@ const JSONEditor: React.FC = () => {
       const updated = [...jsonData];
       if (updated.length > 0) updated[selectedItemIndex] = formData;
       finalData = updated;
+    } else if (currentFile?.type === 'gallery-special') {
+      finalData = rawData;
+    } else if (currentFile?.type === 'accounts-special' && rawData) {
+      finalData = { ...rawData };
+      if (selectedSection) {
+        const yearsObj: Record<string, string> = {};
+        jsonData.forEach(item => {
+          yearsObj[item.year] = item.url;
+        });
+        finalData[selectedSection] = { years: yearsObj };
+      }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
@@ -623,6 +1048,8 @@ const JSONEditor: React.FC = () => {
       finalData = { ...rawData };
       if (selectedSection === 'welcomeMessage') {
         finalData[selectedSection] = formData.value || '';
+      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+        finalData[selectedSection] = jsonData.map(item => item.text);
       } else if (selectedSection) {
         finalData[selectedSection] = jsonData;
       }
@@ -676,8 +1103,8 @@ const JSONEditor: React.FC = () => {
         )}
       </div>
 
-      {/* Section Selector */}
-      {currentFile?.sections && currentFile.sections.length > 0 && (
+      {/* Section Selector - for nested-sections, complex-object, accounts-special */}
+      {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <label className="block text-sm font-bold text-gray-700 mb-3">📂 সেকশন নির্বাচন:</label>
           <div className="flex flex-wrap gap-2">
@@ -691,8 +1118,58 @@ const JSONEditor: React.FC = () => {
         </div>
       )}
 
-      {/* Item Selector + Actions */}
-      {Array.isArray(jsonData) && jsonData.length > 0 && (
+      {/* Gallery Special Filters */}
+      {currentFile?.type === 'gallery-special' && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Year Filter */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-3">📅 বছর নির্বাচন:</label>
+              <div className="flex flex-wrap gap-2">
+                {getGalleryYears().map(year => (
+                  <button key={year} onClick={() => setSelectedYear(year)}
+                    className={btnClass(selectedYear === year)}>
+                    {year}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Puja Type Filter */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-3">🙏 পূজার ধরন:</label>
+              <div className="flex flex-wrap gap-2">
+                {getGalleryPujaTypes().map(puja => (
+                  <button key={puja} onClick={() => setSelectedPujaType(puja)}
+                    className={btnClass(selectedPujaType === puja)}>
+                    {PUJA_TYPES.find(p => p.value === puja)?.label || puja}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Gallery Stats */}
+          <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+            <p className="text-sm text-purple-800">
+              📊 <strong>{selectedYear}</strong> সালের <strong>{selectedPujaType}</strong>: 
+              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি ছবি</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Accounts PDF Editor */}
+      {currentFile?.type === 'accounts-special' && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          {renderAccountsPdfEditor()}
+        </div>
+      )}
+
+      {/* Item Selector + Actions - Not for accounts-special or paymentStats */}
+      {Array.isArray(jsonData) && jsonData.length > 0 && 
+       currentFile?.type !== 'accounts-special' && 
+       selectedSection !== 'paymentStats' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             <label className="text-sm font-bold text-gray-700">
@@ -715,7 +1192,7 @@ const JSONEditor: React.FC = () => {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
               {jsonData.map((item: any, i: number) => (
                 <option key={i} value={i}>
-                  #{i + 1} - {item.title || item.name || item.question || item.channelName || `আইটেম ${i + 1}`}
+                  #{i + 1} - {getItemDisplayName(item, i)}
                 </option>
               ))}
             </select>
@@ -739,6 +1216,13 @@ const JSONEditor: React.FC = () => {
               <div className="text-center py-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
                 <p className="mt-3 text-gray-600">লোডিং...</p>
+              </div>
+            ) : selectedSection === 'paymentStats' ? (
+              renderPaymentStatsEditor()
+            ) : currentFile?.type === 'accounts-special' ? (
+              // Already rendered above
+              <div className="text-center py-6 text-gray-500">
+                👆 উপরে বছর সিলেক্ট করে এডিট করুন
               </div>
             ) : Object.keys(formData).length > 0 ? (
               Object.keys(formData).map(key => renderFormField(key, formData[key]))
