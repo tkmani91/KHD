@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+
+// ============================================
+// TYPE DEFINITIONS
+// ============================================
 
 interface JSONFile {
   id: string;
   label: string;
   url: string;
   path: string;
-  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special';
+  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special' | 'fund-collection-special';
   sections?: string[];
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
@@ -33,6 +37,13 @@ const JSONEditor: React.FC = () => {
   
   // Accounts PDF special states
   const [selectedPdfYear, setSelectedPdfYear] = useState<string>('');
+  
+  // Fund collection special states
+  const [fundSubSection, setFundSubSection] = useState<string>('settings');
+  const [memberFilter, setMemberFilter] = useState<string>('all');
+  const [fundMembers, setFundMembers] = useState<any[]>([]);
+  const [fundSettings, setFundSettings] = useState<any>({});
+  const [paymentStats, setPaymentStats] = useState<any>({});
 
   // ============================================
   // JSON FILES CONFIGURATION
@@ -44,8 +55,8 @@ const JSONEditor: React.FC = () => {
       label: '📰 সদস্য আয় হিসাব',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json',
       path: 'dynamicContent.json',
-      type: 'nested-sections',
-      sections: ['notices', 'liveStream', 'fundCollection', 'members', 'paymentStats']
+      type: 'fund-collection-special',
+      sections: ['notices', 'liveStream', 'fundCollection']
     },
     {
       id: 'membersData',
@@ -147,45 +158,30 @@ const JSONEditor: React.FC = () => {
   // ============================================
 
   const sectionLabels: Record<string, string> = {
-    // dynamicContent
     notices: '📢 ঘোষণা',
     liveStream: '📺 লাইভ স্ট্রিম',
     fundCollection: '💰 চাঁদা সংগ্রহ',
     members: '👥 সদস্য তালিকা',
-    paymentStats: '📊 পেমেন্ট পরিসংখ্যান',
-    
-    // members-data
     contacts: '📞 যোগাযোগ',
     invitations: '💌 নিমন্ত্রণ',
     pdfLinks: '📄 PDF লিংক',
-    
-    // members-login
     accountsMembers: '🔑 Admin সদস্য',
     normalMembers: '👤 সাধারণ সদস্য',
-    
-    // chatbot
     welcomeMessage: '👋 স্বাগত বার্তা',
     quickReplies: '⚡ দ্রুত উত্তর',
     faq: '❓ FAQ',
     fallbackMessages: '🔄 Fallback মেসেজ',
-    
-    // accountsPDFs
     durgaPuja: '🎉 দুর্গাপূজা',
     shyamaPuja: '🔱 শ্যামাপূজা',
     saraswatiPuja: '📚 সরস্বতী পূজা',
     rathYatra: '🎪 রথযাত্রা',
-    
-    // schedules
     durga: '🎉 দুর্গাপূজা',
     shyama: '🔱 শ্যামাপূজা',
     saraswati: '📚 সরস্বতী পূজা',
     rath: '🎪 রথযাত্রা'
   };
 
-  // ============================================
-  // SCHEDULE DAY LABELS (for schedules.json)
-  // ============================================
-
+  // Schedule day labels
   const scheduleDayLabels: Record<string, string> = {
     'mahalaya': 'মহালয়া',
     'panchami': 'পঞ্চমী',
@@ -193,13 +189,7 @@ const JSONEditor: React.FC = () => {
     'saptami': 'সপ্তমী',
     'ashtami': 'অষ্টমী',
     'navami': 'নবমী',
-    'dashami': 'দশমী',
-    'ekadashi': 'একাদশী',
-    'kaliPuja': 'কালীপূজা',
-    'lakshmiPuja': 'লক্ষ্মীপূজা',
-    'saraswatiPuja': 'সরস্বতী পূজা',
-    'rathYatra': 'রথযাত্রা',
-    'ultoRath': 'উল্টোরথ'
+    'dashami': 'দশমী'
   };
 
   // ============================================
@@ -213,6 +203,8 @@ const JSONEditor: React.FC = () => {
       setSelectedYear('');
       setSelectedPujaType('');
       setSelectedPdfYear('');
+      setFundSubSection('settings');
+      setMemberFilter('all');
       
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
@@ -228,19 +220,19 @@ const JSONEditor: React.FC = () => {
         const data = await response.json();
         setRawData(data);
 
-        // Handle different file types
         if (file.type === 'simple-array') {
           setJsonData(Array.isArray(data) ? data : []);
           setSelectedItemIndex(0);
           setFormData(data[0] || {});
           setSelectedSection('');
         } else if (file.type === 'gallery-special') {
-          // Gallery special handling
           handleGalleryData(data);
         } else if (file.type === 'accounts-special') {
-          // Accounts PDF special handling
           setSelectedSection(file.sections?.[0] || 'durgaPuja');
           handleAccountsPdfData(data, file.sections?.[0] || 'durgaPuja');
+        } else if (file.type === 'fund-collection-special') {
+          setSelectedSection('notices');
+          processFundCollectionFile(data, 'notices');
         } else if (file.type === 'nested-sections' && file.sections) {
           setSelectedSection(file.sections[0]);
           processSection(data, file.sections[0]);
@@ -261,6 +253,49 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   // ============================================
+  // PROCESS FUND COLLECTION FILE (dynamicContent.json)
+  // ============================================
+
+  const processFundCollectionFile = (data: any, section: string) => {
+    if (section === 'fundCollection') {
+      const fc = data.fundCollection || {};
+      
+      // Extract settings
+      const settings = {
+        isActive: fc.isActive ?? true,
+        year: fc.year || '',
+        pujaName: fc.pujaName || '',
+        message: fc.message || '',
+        instructions: fc.instructions || [],
+        totalDue: fc.totalDue || 0,
+        totalPaid: fc.totalPaid || 0,
+        totalRemaining: fc.totalRemaining || 0,
+        lastUpdated: fc.lastUpdated || ''
+      };
+      setFundSettings(settings);
+      
+      // Extract members
+      const members = fc.members || [];
+      setFundMembers(members);
+      
+      // Extract payment stats
+      const stats = fc.paymentStats || {
+        totalMembers: members.length,
+        paidMembers: members.filter((m: any) => m.status === 'paid').length,
+        partialMembers: members.filter((m: any) => m.status === 'partial').length,
+        unpaidMembers: members.filter((m: any) => m.status === 'unpaid').length,
+        paymentPercentage: 0
+      };
+      setPaymentStats(stats);
+      
+      setJsonData([]);
+      setFormData({});
+    } else {
+      processSection(data, section);
+    }
+  };
+
+  // ============================================
   // HANDLE GALLERY DATA
   // ============================================
 
@@ -271,18 +306,15 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
-    // Extract unique years
     const years = [...new Set(data.map(item => item.year))].sort((a, b) => b - a);
     const firstYear = years[0]?.toString() || '';
     setSelectedYear(firstYear);
 
-    // Extract unique puja types for first year
     const yearData = data.filter(item => item.year?.toString() === firstYear);
     const pujaTypes = [...new Set(yearData.map(item => item.pujaType || item.category))];
     const firstPujaType = pujaTypes[0] || '';
     setSelectedPujaType(firstPujaType);
 
-    // Filter data
     const filteredData = yearData.filter(item => (item.pujaType || item.category) === firstPujaType);
     setJsonData(filteredData);
     setSelectedItemIndex(0);
@@ -308,6 +340,7 @@ const JSONEditor: React.FC = () => {
       
       if (firstYear && sectionData.years[firstYear]) {
         setFormData({ 
+          title: sectionData.title || '',
           year: firstYear, 
           url: sectionData.years[firstYear] 
         });
@@ -330,7 +363,6 @@ const JSONEditor: React.FC = () => {
 
     const sectionData = data[section];
 
-    // Special handling for quickReplies and fallbackMessages (string arrays)
     if (section === 'quickReplies' || section === 'fallbackMessages') {
       if (Array.isArray(sectionData)) {
         const converted = sectionData.map((item, index) => {
@@ -361,11 +393,14 @@ const JSONEditor: React.FC = () => {
     }
   };
 
+  // Section change effect
   useEffect(() => {
-    if (rawData && selectedSection && currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special') {
-      if (currentFile?.type === 'accounts-special') {
+    if (rawData && selectedSection) {
+      if (currentFile?.type === 'fund-collection-special') {
+        processFundCollectionFile(rawData, selectedSection);
+      } else if (currentFile?.type === 'accounts-special') {
         handleAccountsPdfData(rawData, selectedSection);
-      } else {
+      } else if (currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special') {
         processSection(rawData, selectedSection);
       }
     }
@@ -377,10 +412,7 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedItemIndex, jsonData]);
 
-  // ============================================
-  // GALLERY FILTER HANDLERS
-  // ============================================
-
+  // Gallery filter effect
   useEffect(() => {
     if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
       const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
@@ -401,7 +433,7 @@ const JSONEditor: React.FC = () => {
   }, [selectedYear, selectedPujaType]);
 
   // ============================================
-  // GET UNIQUE YEARS FROM GALLERY DATA
+  // HELPER FUNCTIONS
   // ============================================
 
   const getGalleryYears = (): string[] => {
@@ -415,6 +447,28 @@ const JSONEditor: React.FC = () => {
     return [...new Set(yearData.map((item: any) => item.pujaType || item.category))].filter(Boolean);
   };
 
+  const getFilteredMembers = () => {
+    if (memberFilter === 'all') return fundMembers;
+    return fundMembers.filter(m => m.status === memberFilter);
+  };
+
+  const getItemDisplayName = (item: any, index: number): string => {
+    if (selectedFile === 'schedules' && item.day) {
+      const dayKey = item.day.toLowerCase().replace(/\s/g, '');
+      return scheduleDayLabels[dayKey] || item.day || item.event || `আইটেম ${index + 1}`;
+    }
+    
+    if (selectedSection === 'invitations') {
+      return item.personName || item.name || item.familyName || `আইটেম ${index + 1}`;
+    }
+    
+    if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
+    }
+    
+    return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
+  };
+
   // ============================================
   // HANDLERS
   // ============================================
@@ -423,14 +477,60 @@ const JSONEditor: React.FC = () => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleFundSettingsChange = (key: string, value: any) => {
+    setFundSettings((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const handleMemberChange = (memberId: string, key: string, value: any) => {
+    setFundMembers(prev => prev.map(m => 
+      m.id === memberId ? { ...m, [key]: value } : m
+    ));
+  };
+
+  const handlePaymentStatsChange = (key: string, value: any) => {
+    setPaymentStats((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const recalculateStats = () => {
+    const totalMembers = fundMembers.length;
+    const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
+    const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
+    const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
+    const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
+    const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
+    const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
+    const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+
+    setPaymentStats({
+      totalMembers,
+      paidMembers,
+      partialMembers,
+      unpaidMembers,
+      paymentPercentage
+    });
+
+    setFundSettings((prev: any) => ({
+      ...prev,
+      totalDue,
+      totalPaid,
+      totalRemaining
+    }));
+
+    alert('✅ পরিসংখ্যান পুনরায় গণনা করা হয়েছে!');
+  };
+
   const handleSaveItem = () => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
+      // Will be saved when copying JSON
+      alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+      return;
+    }
+
     const updatedData = [...jsonData];
     updatedData[selectedItemIndex] = { ...formData };
     setJsonData(updatedData);
     
-    // Update rawData based on file type
     if (currentFile?.type === 'gallery-special' && rawData) {
-      // For gallery, we need to update the specific item in rawData
       const newRawData = rawData.map((item: any) => {
         if (item.id === formData.id) {
           return { ...formData };
@@ -439,7 +539,6 @@ const JSONEditor: React.FC = () => {
       });
       setRawData(newRawData);
     } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
-      // For accounts PDF, update the years object
       const newRawData = { ...rawData };
       if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
       newRawData[selectedSection].years[formData.year] = formData.url;
@@ -447,7 +546,6 @@ const JSONEditor: React.FC = () => {
     } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
       const newRawData = { ...rawData };
       
-      // Special handling for quickReplies and fallbackMessages
       if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
         newRawData[selectedSection] = updatedData.map(item => item.text);
       } else {
@@ -462,11 +560,27 @@ const JSONEditor: React.FC = () => {
   };
 
   const handleAddItem = () => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
+      const maxId = fundMembers.reduce((max, m) => Math.max(max, parseInt(m.id) || 0), 0);
+      const newMember = {
+        id: String(maxId + 1),
+        name: '',
+        dueAmount: 5000,
+        paidAmount: 0,
+        remainingAmount: 5000,
+        lastPaymentDate: null,
+        paymentMethod: null,
+        status: 'unpaid',
+        transactionId: null
+      };
+      setFundMembers([...fundMembers, newMember]);
+      alert('➕ নতুন সদস্য যোগ হয়েছে!');
+      return;
+    }
+
     if (!Array.isArray(jsonData)) return;
     
-    // For gallery special
     if (currentFile?.type === 'gallery-special') {
-      // Generate unique ID based on timestamp
       const newId = `img_${Date.now()}`;
       const template = {
         id: newId,
@@ -487,7 +601,6 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
-    // For accounts special
     if (currentFile?.type === 'accounts-special') {
       const currentYear = new Date().getFullYear();
       const existingYears = jsonData.map(item => parseInt(item.year));
@@ -500,13 +613,12 @@ const JSONEditor: React.FC = () => {
       const updatedData = [...jsonData, template];
       setJsonData(updatedData);
       setSelectedItemIndex(updatedData.length - 1);
-      setFormData(template);
+      setFormData({ ...formData, year: newYear.toString(), url: '' });
       setSelectedPdfYear(newYear.toString());
       alert('➕ নতুন বছর যোগ হয়েছে!');
       return;
     }
 
-    // For quickReplies and fallbackMessages
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, item.id || 0), 0);
       const template = { id: maxId + 1, text: '' };
@@ -539,13 +651,27 @@ const JSONEditor: React.FC = () => {
   };
 
   const handleDeleteItem = () => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
+      if (fundMembers.length <= 1) {
+        alert('❌ কমপক্ষে একজন সদস্য থাকতে হবে!');
+        return;
+      }
+      const memberToDelete = getFilteredMembers()[selectedItemIndex];
+      if (!memberToDelete) return;
+      if (!window.confirm(`⚠️ "${memberToDelete.name}" মুছতে চান?`)) return;
+      
+      setFundMembers(prev => prev.filter(m => m.id !== memberToDelete.id));
+      setSelectedItemIndex(0);
+      alert('🗑️ সদস্য মুছে ফেলা হয়েছে!');
+      return;
+    }
+
     if (jsonData.length <= 1) {
       alert('❌ কমপক্ষে একটি আইটেম থাকতে হবে!');
       return;
     }
     if (!window.confirm('⚠️ মুছতে চান?')) return;
     
-    // For gallery special
     if (currentFile?.type === 'gallery-special' && rawData) {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
@@ -567,6 +693,14 @@ const JSONEditor: React.FC = () => {
       finalData = jsonData;
     } else if (currentFile?.type === 'gallery-special') {
       finalData = rawData;
+    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
+      finalData = { ...rawData };
+      // Rebuild fundCollection
+      finalData.fundCollection = {
+        ...fundSettings,
+        members: fundMembers,
+        paymentStats: paymentStats
+      };
     } else if (currentFile?.type === 'accounts-special' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
@@ -574,7 +708,10 @@ const JSONEditor: React.FC = () => {
         jsonData.forEach(item => {
           yearsObj[item.year] = item.url;
         });
-        finalData[selectedSection] = { years: yearsObj };
+        finalData[selectedSection] = { 
+          title: formData.title || rawData[selectedSection]?.title || '',
+          years: yearsObj 
+        };
       }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
@@ -602,36 +739,6 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // GET ITEM DISPLAY NAME
-  // ============================================
-
-  const getItemDisplayName = (item: any, index: number): string => {
-    // For schedules - use day labels
-    if (selectedFile === 'schedules' && item.day) {
-      const dayKey = item.day.toLowerCase().replace(/\s/g, '');
-      return scheduleDayLabels[dayKey] || item.day || item.event || `আইটেম ${index + 1}`;
-    }
-    
-    // For invitations - use person name
-    if (selectedSection === 'invitations') {
-      return item.personName || item.name || item.familyName || `আইটেম ${index + 1}`;
-    }
-    
-    // For members in dynamicContent
-    if (selectedSection === 'members') {
-      return item.name || item.personName || `সদস্য ${index + 1}`;
-    }
-    
-    // For quickReplies and fallbackMessages
-    if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-      return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
-    }
-    
-    // Default
-    return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
-  };
-
-  // ============================================
   // LABEL MAPPING
   // ============================================
 
@@ -649,10 +756,6 @@ const JSONEditor: React.FC = () => {
     channelName: 'চ্যানেল', fileName: 'ফাইল নাম', size: 'সাইজ',
     pujaName: 'পূজার নাম', pujaType: 'পূজার ধরন',
     mobile: 'মোবাইল', occupation: 'পেশা', designation: 'পদবী',
-    bloodGroup: 'রক্তের গ্রুপ', birthDate: 'জন্ম তারিখ', gotra: 'গোত্র',
-    fatherName: 'পিতার নাম', motherName: 'মাতার নাম',
-    permanentAddress: 'স্থায়ী ঠিকানা',
-    area: 'এলাকা', personName: 'ব্যক্তির নাম', familyCount: 'পরিবার সংখ্যা',
     dueAmount: 'বকেয়া', paidAmount: 'পরিশোধিত', remainingAmount: 'অবশিষ্ট',
     lastPaymentDate: 'শেষ পেমেন্ট', paymentMethod: 'পেমেন্ট মাধ্যম',
     transactionId: 'ট্রানজেকশন ID',
@@ -661,11 +764,8 @@ const JSONEditor: React.FC = () => {
     message: 'মেসেজ', instructions: 'নির্দেশনা',
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
-    facebookLink: 'Facebook লিংক',
-    event: 'অনুষ্ঠান',
-    value: 'মান',
-    text: 'টেক্সট',
-    familyName: 'পরিবারের নাম'
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট', familyName: 'পরিবারের নাম',
+    personName: 'ব্যক্তির নাম'
   };
 
   // ============================================
@@ -678,7 +778,6 @@ const JSONEditor: React.FC = () => {
     const label = labelMap[key] || key;
     const fileConfig = currentFile;
 
-    // ID - readonly
     if (key === 'id') {
       return (
         <div key={key} className="form-field">
@@ -689,7 +788,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // PujaType - dropdown for gallery
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
@@ -705,7 +803,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Image preview fields
     if (fileConfig?.hasImagePreview && (key === 'url' || key === 'imageUrl' || key === 'image' || key === 'photo' || key === 'thumbnail')) {
       return (
         <div key={key} className="form-field">
@@ -728,7 +825,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Audio preview fields
     if (fileConfig?.hasAudioPreview && (key === 'url' || key === 'audioUrl')) {
       return (
         <div key={key} className="form-field">
@@ -748,8 +844,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Long text - textarea
-    if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'permanentAddress', 'text'].includes(key))) {
+    if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'text'].includes(key))) {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
@@ -761,7 +856,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Priority
     if (key === 'priority') {
       return (
         <div key={key} className="form-field">
@@ -777,7 +871,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Status
     if (key === 'status') {
       return (
         <div key={key} className="form-field">
@@ -793,7 +886,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Role
     if (key === 'role') {
       return (
         <div key={key} className="form-field">
@@ -809,7 +901,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Boolean
     if (typeof value === 'boolean') {
       return (
         <div key={key} className="form-field flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -821,7 +912,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Array - simple
     if (Array.isArray(value) && value.every(v => typeof v === 'string')) {
       return (
         <div key={key} className="form-field">
@@ -838,29 +928,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Array - objects (complex)
-    if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
-      return (
-        <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {label} <span className="text-xs text-gray-500">({value.length} items - JSON এডিট করুন)</span>
-          </label>
-          <textarea
-            value={JSON.stringify(formData[key], null, 2)}
-            onChange={(e) => {
-              try {
-                const parsed = JSON.parse(e.target.value);
-                handleFieldChange(key, parsed);
-              } catch {}
-            }}
-            rows={6}
-            className="w-full px-3 py-2 font-mono text-xs border rounded-lg focus:ring-2 focus:ring-orange-500 bg-gray-50"
-          />
-        </div>
-      );
-    }
-
-    // Number
     if (typeof value === 'number') {
       return (
         <div key={key} className="form-field">
@@ -872,29 +939,6 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Nested object
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      return (
-        <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {label} <span className="text-xs text-gray-500">(Nested Object - JSON এডিট করুন)</span>
-          </label>
-          <textarea
-            value={JSON.stringify(formData[key], null, 2)}
-            onChange={(e) => {
-              try {
-                const parsed = JSON.parse(e.target.value);
-                handleFieldChange(key, parsed);
-              } catch {}
-            }}
-            rows={8}
-            className="w-full px-3 py-2 font-mono text-xs border rounded-lg focus:ring-2 focus:ring-blue-500 bg-blue-50"
-          />
-        </div>
-      );
-    }
-
-    // Default text input
     return (
       <div key={key} className="form-field">
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
@@ -906,40 +950,306 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // RENDER PAYMENT STATS EDITOR
+  // RENDER FUND COLLECTION EDITOR
   // ============================================
 
-  const renderPaymentStatsEditor = () => {
-    if (selectedSection !== 'paymentStats' || !formData) return null;
-    
+  const renderFundCollectionEditor = () => {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="form-field">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label>
-            <input type="number" value={formData.totalDue || 0} 
-              onChange={(e) => handleFieldChange('totalDue', parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-          </div>
-          <div className="form-field">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label>
-            <input type="number" value={formData.totalPaid || 0} 
-              onChange={(e) => handleFieldChange('totalPaid', parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-          </div>
-          <div className="form-field">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label>
-            <input type="number" value={formData.totalRemaining || 0} 
-              onChange={(e) => handleFieldChange('totalRemaining', parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-          </div>
-          <div className="form-field">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">📅 সর্বশেষ আপডেট</label>
-            <input type="text" value={formData.lastUpdated || ''} 
-              onChange={(e) => handleFieldChange('lastUpdated', e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-          </div>
+        {/* Sub-section tabs */}
+        <div className="flex flex-wrap gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+          <button onClick={() => setFundSubSection('settings')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+              fundSubSection === 'settings' ? 'bg-green-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-green-50'
+            }`}>
+            <Settings className="w-4 h-4" /> সেটিংস
+          </button>
+          <button onClick={() => setFundSubSection('members')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+              fundSubSection === 'members' ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-blue-50'
+            }`}>
+            <Users className="w-4 h-4" /> সদস্য ({fundMembers.length})
+          </button>
+          <button onClick={() => setFundSubSection('stats')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+              fundSubSection === 'stats' ? 'bg-purple-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-purple-50'
+            }`}>
+            <TrendingUp className="w-4 h-4" /> পরিসংখ্যান
+          </button>
         </div>
+
+        {/* Settings Sub-section */}
+        {fundSubSection === 'settings' && (
+          <div className="space-y-4 p-4 bg-white rounded-lg border">
+            <h4 className="font-bold text-green-700 flex items-center gap-2">
+              <DollarSign className="w-5 h-5" /> চাঁদা সংগ্রহ সেটিংস
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <input type="checkbox" checked={fundSettings.isActive} 
+                  onChange={(e) => handleFundSettingsChange('isActive', e.target.checked)}
+                  className="w-5 h-5 text-green-500 rounded" />
+                <label className="font-semibold text-gray-700">সক্রিয়?</label>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
+                <input type="text" value={fundSettings.year || ''} 
+                  onChange={(e) => handleFundSettingsChange('year', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">পূজার নাম</label>
+                <input type="text" value={fundSettings.pujaName || ''} 
+                  onChange={(e) => handleFundSettingsChange('pujaName', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">সর্বশেষ আপডেট</label>
+                <input type="text" value={fundSettings.lastUpdated || ''} 
+                  onChange={(e) => handleFundSettingsChange('lastUpdated', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">মেসেজ</label>
+              <textarea value={fundSettings.message || ''} 
+                onChange={(e) => handleFundSettingsChange('message', e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                নির্দেশনা <span className="text-xs text-gray-500">(প্রতি লাইনে একটি)</span>
+              </label>
+              <textarea value={(fundSettings.instructions || []).join('\n')} 
+                onChange={(e) => handleFundSettingsChange('instructions', e.target.value.split('\n').filter(Boolean))}
+                rows={4}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label>
+                <input type="number" value={fundSettings.totalDue || 0} 
+                  onChange={(e) => handleFundSettingsChange('totalDue', parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label>
+                <input type="number" value={fundSettings.totalPaid || 0} 
+                  onChange={(e) => handleFundSettingsChange('totalPaid', parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label>
+                <input type="number" value={fundSettings.totalRemaining || 0} 
+                  onChange={(e) => handleFundSettingsChange('totalRemaining', parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Members Sub-section */}
+        {fundSubSection === 'members' && (
+          <div className="space-y-4">
+            {/* Filter and Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold text-blue-800">ফিল্টার:</span>
+                <select value={memberFilter} onChange={(e) => { setMemberFilter(e.target.value); setSelectedItemIndex(0); }}
+                  className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                  <option value="all">সকল ({fundMembers.length})</option>
+                  <option value="paid">✅ পরিশোধিত ({fundMembers.filter(m => m.status === 'paid').length})</option>
+                  <option value="partial">🟡 আংশিক ({fundMembers.filter(m => m.status === 'partial').length})</option>
+                  <option value="unpaid">❌ বকেয়া ({fundMembers.filter(m => m.status === 'unpaid').length})</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleAddItem}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                  <Plus className="w-4 h-4" /> সদস্য যোগ
+                </button>
+                <button onClick={handleDeleteItem} disabled={getFilteredMembers().length <= 1}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                  <Trash2 className="w-4 h-4" /> মুছুন
+                </button>
+              </div>
+            </div>
+
+            {/* Member Selector */}
+            <select value={selectedItemIndex} 
+              onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+              {getFilteredMembers().map((member, i) => (
+                <option key={member.id} value={i}>
+                  {member.status === 'paid' ? '✅' : member.status === 'partial' ? '🟡' : '❌'} {member.name || `সদস্য ${member.id}`} 
+                  - ৳{member.paidAmount || 0}/{member.dueAmount || 0}
+                </option>
+              ))}
+            </select>
+
+            {/* Member Edit Form */}
+            {getFilteredMembers()[selectedItemIndex] && (
+              <div className="p-4 bg-white rounded-lg border space-y-4">
+                <h4 className="font-bold text-blue-700 border-b pb-2">
+                  সদস্য #{getFilteredMembers()[selectedItemIndex].id} এডিট
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">নাম</label>
+                    <input type="text" value={getFilteredMembers()[selectedItemIndex].name || ''} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'name', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">স্ট্যাটাস</label>
+                    <select value={getFilteredMembers()[selectedItemIndex].status || 'unpaid'} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'status', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                      <option value="paid">✅ পরিশোধিত</option>
+                      <option value="partial">🟡 আংশিক</option>
+                      <option value="unpaid">❌ বকেয়া</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label>
+                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত</label>
+                    <input type="number" value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">অবশিষ্ট</label>
+                    <input type="number" value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'remainingAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
+                    <select value={getFilteredMembers()[selectedItemIndex].paymentMethod || ''} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paymentMethod', e.target.value || null)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                      <option value="">নির্বাচন করুন</option>
+                      <option value="বিকাশ">💳 বিকাশ</option>
+                      <option value="নগদ">💵 নগদ</option>
+                      <option value="রকেট">🚀 রকেট</option>
+                      <option value="ব্যাংক">🏦 ব্যাংক</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">শেষ পেমেন্ট তারিখ</label>
+                    <input type="text" value={getFilteredMembers()[selectedItemIndex].lastPaymentDate || ''} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'lastPaymentDate', e.target.value || null)}
+                      placeholder="২০২৬-০৯-২০"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">ট্রানজেকশন ID</label>
+                    <input type="text" value={getFilteredMembers()[selectedItemIndex].transactionId || ''} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'transactionId', e.target.value || null)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stats Sub-section */}
+        {fundSubSection === 'stats' && (
+          <div className="space-y-4 p-4 bg-white rounded-lg border">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-purple-700 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" /> পেমেন্ট পরিসংখ্যান
+              </h4>
+              <button onClick={recalculateStats}
+                className="px-3 py-1.5 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 flex items-center gap-1">
+                🔄 পুনরায় গণনা
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-blue-50 rounded-lg text-center">
+                <div className="text-3xl font-bold text-blue-600">{paymentStats.totalMembers || 0}</div>
+                <div className="text-sm text-blue-800">মোট সদস্য</div>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg text-center">
+                <div className="text-3xl font-bold text-green-600">{paymentStats.paidMembers || 0}</div>
+                <div className="text-sm text-green-800">পরিশোধিত</div>
+              </div>
+              <div className="p-4 bg-yellow-50 rounded-lg text-center">
+                <div className="text-3xl font-bold text-yellow-600">{paymentStats.partialMembers || 0}</div>
+                <div className="text-sm text-yellow-800">আংশিক</div>
+              </div>
+              <div className="p-4 bg-red-50 rounded-lg text-center">
+                <div className="text-3xl font-bold text-red-600">{paymentStats.unpaidMembers || 0}</div>
+                <div className="text-sm text-red-800">বকেয়া</div>
+              </div>
+              <div className="p-4 bg-purple-50 rounded-lg text-center col-span-2">
+                <div className="text-3xl font-bold text-purple-600">{paymentStats.paymentPercentage || 0}%</div>
+                <div className="text-sm text-purple-800">পেমেন্ট সম্পন্ন</div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div className="bg-purple-500 h-2 rounded-full transition-all" 
+                    style={{ width: `${paymentStats.paymentPercentage || 0}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">মোট সদস্য</label>
+                <input type="number" value={paymentStats.totalMembers || 0} 
+                  onChange={(e) => handlePaymentStatsChange('totalMembers', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত সদস্য</label>
+                <input type="number" value={paymentStats.paidMembers || 0} 
+                  onChange={(e) => handlePaymentStatsChange('paidMembers', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">আংশিক সদস্য</label>
+                <input type="number" value={paymentStats.partialMembers || 0} 
+                  onChange={(e) => handlePaymentStatsChange('partialMembers', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া সদস্য</label>
+                <input type="number" value={paymentStats.unpaidMembers || 0} 
+                  onChange={(e) => handlePaymentStatsChange('unpaidMembers', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট শতাংশ</label>
+                <input type="number" value={paymentStats.paymentPercentage || 0} 
+                  onChange={(e) => handlePaymentStatsChange('paymentPercentage', parseInt(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -949,61 +1259,111 @@ const JSONEditor: React.FC = () => {
   // ============================================
 
   const renderAccountsPdfEditor = () => {
-    if (currentFile?.type !== 'accounts-special') return null;
+    if (currentFile?.type !== 'accounts-special' || !rawData) return null;
+
+    const sectionData = rawData[selectedSection];
+    const years = sectionData?.years ? Object.keys(sectionData.years).sort((a, b) => parseInt(b) - parseInt(a)) : [];
 
     return (
       <div className="space-y-4">
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <h4 className="font-semibold text-blue-800 mb-3">📊 {sectionLabels[selectedSection]} - বছর অনুযায়ী PDF</h4>
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+          <h4 className="font-bold text-indigo-800 mb-4 flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            {sectionLabels[selectedSection]} - PDF লিংক
+          </h4>
           
-          {/* Year selector */}
+          {/* Title Edit */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label>
+            <input type="text" value={formData.title || sectionData?.title || ''} 
+              onChange={(e) => handleFieldChange('title', e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
+          </div>
+
+          {/* Year Buttons */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর নির্বাচন:</label>
             <div className="flex flex-wrap gap-2">
-              {jsonData.map((item, index) => (
+              {years.map((year, index) => (
                 <button
-                  key={item.year}
+                  key={year}
                   onClick={() => {
-                    setSelectedPdfYear(item.year);
+                    setSelectedPdfYear(year);
                     setSelectedItemIndex(index);
-                    setFormData(item);
+                    setFormData(prev => ({ ...prev, year, url: sectionData.years[year] }));
                   }}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                    selectedPdfYear === item.year 
-                      ? 'bg-blue-500 text-white shadow-lg' 
-                      : 'bg-white text-gray-700 hover:bg-blue-50 border'
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                    selectedPdfYear === year 
+                      ? 'bg-indigo-500 text-white shadow-lg' 
+                      : 'bg-white text-gray-700 hover:bg-indigo-50 border'
                   }`}
                 >
-                  {item.year}
+                  <Calendar className="w-4 h-4" />
+                  {year}
                 </button>
               ))}
+              <button
+                onClick={handleAddItem}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" /> নতুন বছর
+              </button>
             </div>
           </div>
 
-          {/* Edit form for selected year */}
-          {formData && (
+          {/* Selected Year Edit */}
+          {selectedPdfYear && (
             <div className="bg-white p-4 rounded-lg border space-y-4">
-              <div className="form-field">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর</label>
+              <div className="flex items-center justify-between">
+                <h5 className="font-semibold text-indigo-700">{selectedPdfYear} সালের PDF</h5>
+                <button
+                  onClick={() => {
+                    if (years.length <= 1) {
+                      alert('❌ কমপক্ষে একটি বছর থাকতে হবে!');
+                      return;
+                    }
+                    if (!window.confirm(`⚠️ ${selectedPdfYear} সাল মুছতে চান?`)) return;
+                    
+                    const newYears = { ...sectionData.years };
+                    delete newYears[selectedPdfYear];
+                    
+                    const newRawData = { ...rawData };
+                    newRawData[selectedSection] = { ...sectionData, years: newYears };
+                    setRawData(newRawData);
+                    
+                    const remainingYears = Object.keys(newYears).sort((a, b) => parseInt(b) - parseInt(a));
+                    setSelectedPdfYear(remainingYears[0] || '');
+                    setJsonData(remainingYears.map(y => ({ year: y, url: newYears[y] })));
+                    
+                    alert('🗑️ বছর মুছে ফেলা হয়েছে!');
+                  }}
+                  className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> মুছুন
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
                 <input type="text" value={formData.year || ''} 
                   onChange={(e) => handleFieldChange('year', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
               </div>
-              <div className="form-field">
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  PDF লিংক
-                </label>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">PDF URL</label>
                 <input type="text" value={formData.url || ''} 
                   onChange={(e) => handleFieldChange('url', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
-                {formData.url && (
-                  <a href={formData.url} target="_blank" rel="noopener noreferrer" 
-                    className="inline-flex items-center gap-1 mt-2 text-blue-600 text-sm hover:underline">
-                    <FileText className="w-4 h-4" /> PDF দেখুন
-                  </a>
-                )}
+                  placeholder="/pdfs/accounts/example-2024.pdf"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
               </div>
+              
+              {formData.url && (
+                <a href={formData.url} target="_blank" rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-2 text-indigo-600 text-sm hover:underline">
+                  <FileText className="w-4 h-4" /> PDF দেখুন →
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -1014,7 +1374,6 @@ const JSONEditor: React.FC = () => {
   // ============================================
   // GENERATE JSON
   // ============================================
-
   const generatedJSON = (() => {
     let finalData: any;
 
@@ -1024,30 +1383,47 @@ const JSONEditor: React.FC = () => {
       finalData = updated;
     } else if (currentFile?.type === 'gallery-special') {
       finalData = rawData;
+    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
+      finalData = { ...rawData };
+      finalData.fundCollection = {
+        ...fundSettings,
+        members: fundMembers,
+        paymentStats: paymentStats
+      };
     } else if (currentFile?.type === 'accounts-special' && rawData) {
       finalData = { ...rawData };
-      if (selectedSection) {
+      // Update all sections with current data
+      if (selectedSection && rawData[selectedSection]) {
         const yearsObj: Record<string, string> = {};
         jsonData.forEach(item => {
           yearsObj[item.year] = item.url;
         });
-        finalData[selectedSection] = { years: yearsObj };
+        // Update current year's URL
+        if (formData.year && formData.url) {
+          yearsObj[formData.year] = formData.url;
+        }
+        finalData[selectedSection] = { 
+          title: formData.title || rawData[selectedSection]?.title || '',
+          years: yearsObj 
+        };
       }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
         const updated = [...jsonData];
-        updated[selectedItemIndex] = formData;
+        if (updated.length > 0) updated[selectedItemIndex] = formData;
         finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
       }
     } else if (currentFile?.type === 'complex-object' && rawData) {
       finalData = { ...rawData };
-      if (selectedSection === 'welcomeMessage') {
-        finalData[selectedSection] = formData.value || '';
-      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-        finalData[selectedSection] = jsonData.map(item => item.text);
-      } else if (selectedSection) {
-        finalData[selectedSection] = jsonData;
+      if (selectedSection) {
+        if (selectedSection === 'welcomeMessage') {
+          finalData[selectedSection] = formData.value || '';
+        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+          finalData[selectedSection] = jsonData.map(item => item.text);
+        } else {
+          finalData[selectedSection] = jsonData;
+        }
       }
     }
 
@@ -1099,7 +1475,7 @@ const JSONEditor: React.FC = () => {
         )}
       </div>
 
-      {/* Section Selector - for nested-sections, complex-object, accounts-special */}
+      {/* Section Selector */}
       {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <label className="block text-sm font-bold text-gray-700 mb-3">📂 সেকশন নির্বাচন:</label>
@@ -1118,7 +1494,6 @@ const JSONEditor: React.FC = () => {
       {currentFile?.type === 'gallery-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Year Filter */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">📅 বছর নির্বাচন:</label>
               <div className="flex flex-wrap gap-2">
@@ -1131,7 +1506,6 @@ const JSONEditor: React.FC = () => {
               </div>
             </div>
             
-            {/* Puja Type Filter */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">🙏 পূজার ধরন:</label>
               <div className="flex flex-wrap gap-2">
@@ -1145,54 +1519,12 @@ const JSONEditor: React.FC = () => {
             </div>
           </div>
           
-          {/* Gallery Stats */}
           <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
             <p className="text-sm text-purple-800">
               📊 <strong>{selectedYear}</strong> সালের <strong>{selectedPujaType}</strong>: 
               <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি ছবি</span>
             </p>
           </div>
-        </div>
-      )}
-
-      {/* Accounts PDF Editor */}
-      {currentFile?.type === 'accounts-special' && (
-        <div className="bg-white rounded-xl p-4 shadow-lg">
-          {renderAccountsPdfEditor()}
-        </div>
-      )}
-
-      {/* Item Selector + Actions - Not for accounts-special or paymentStats */}
-      {Array.isArray(jsonData) && jsonData.length > 0 && 
-       currentFile?.type !== 'accounts-special' && 
-       selectedSection !== 'paymentStats' && (
-        <div className="bg-white rounded-xl p-4 shadow-lg">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <label className="text-sm font-bold text-gray-700">
-              📋 আইটেম ({jsonData.length} টি):
-            </label>
-            <div className="flex gap-2">
-              <button onClick={handleAddItem} 
-                className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-                <Plus className="w-4 h-4" /> যোগ
-              </button>
-              <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-                className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400 transition">
-                <Trash2 className="w-4 h-4" /> মুছুন
-              </button>
-            </div>
-          </div>
-          {jsonData.length > 1 && (
-            <select value={selectedItemIndex} 
-              onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-              {jsonData.map((item: any, i: number) => (
-                <option key={i} value={i}>
-                  #{i + 1} - {getItemDisplayName(item, i)}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
       )}
 
@@ -1207,23 +1539,58 @@ const JSONEditor: React.FC = () => {
               <Save className="w-4 h-4" /> সংরক্ষণ
             </button>
           </div>
-          <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4">
+          
+          <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
             {loading ? (
               <div className="text-center py-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
                 <p className="mt-3 text-gray-600">লোডিং...</p>
               </div>
-            ) : selectedSection === 'paymentStats' ? (
-              renderPaymentStatsEditor()
+            ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
+              renderFundCollectionEditor()
             ) : currentFile?.type === 'accounts-special' ? (
-              // Already rendered above
-              <div className="text-center py-6 text-gray-500">
-                👆 উপরে বছর সিলেক্ট করে এডিট করুন
-              </div>
-            ) : Object.keys(formData).length > 0 ? (
-              Object.keys(formData).map(key => renderFormField(key, formData[key]))
+              renderAccountsPdfEditor()
             ) : (
-              <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
+              <>
+                {/* Item Selector for other types */}
+                {Array.isArray(jsonData) && jsonData.length > 0 && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                      <label className="text-sm font-bold text-gray-700">
+                        📋 আইটেম ({jsonData.length} টি):
+                      </label>
+                      <div className="flex gap-2">
+                        <button onClick={handleAddItem} 
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                          <Plus className="w-4 h-4" /> যোগ
+                        </button>
+                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                          <Trash2 className="w-4 h-4" /> মুছুন
+                        </button>
+                      </div>
+                    </div>
+                    {jsonData.length > 1 && (
+                      <select value={selectedItemIndex} 
+                        onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+                        {jsonData.map((item: any, i: number) => (
+                          <option key={i} value={i}>
+                            #{i + 1} - {getItemDisplayName(item, i)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+
+                {/* Form Fields */}
+                {Object.keys(formData).length > 0 ? (
+                  Object.keys(formData).map(key => renderFormField(key, formData[key]))
+                ) : (
+                  <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -1241,7 +1608,7 @@ const JSONEditor: React.FC = () => {
               {copied ? '✅ কপি হয়েছে!' : '📋 কপি'}
             </button>
           </div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[600px]">
+          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
             <code>{generatedJSON}</code>
           </pre>
           <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
@@ -1271,3 +1638,4 @@ const JSONEditor: React.FC = () => {
 };
 
 export default JSONEditor;
+  
