@@ -235,6 +235,7 @@ interface MediaContextType {
 const MediaContext = createContext<MediaContextType | null>(null);
 
 function MediaProvider({ children }: { children: React.ReactNode }) {
+ 
   // ===== MUSIC STATE =====
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
