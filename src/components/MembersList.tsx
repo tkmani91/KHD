@@ -126,7 +126,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           .print-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 7.5px;
+            font-size: 9px;
             border: 1px solid #374151;
           }
           
@@ -135,7 +135,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
             color: white !important;
             padding: 4px 2px;
             font-weight: 700;
-            font-size: 7px;
+            font-size: 9px;
             text-transform: uppercase;
             border: 1px solid #4b5563;
           }
@@ -144,7 +144,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
             padding: 2px;
             border: 1px solid #d1d5db;
             vertical-align: middle;
-            font-size: 7.5px;
+            font-size: 9px;
             line-height: 1.1;
           }
           
@@ -163,7 +163,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           
           .print-table .name-cell {
             font-weight: 600;
-            font-size: 7.5px;
+            font-size: 9px;
             color: #111827;
             max-width: 65px;
             overflow: hidden;
@@ -172,7 +172,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           }
           
           .print-table .email-cell {
-            font-size: 6px !important;
+            font-size: 9px !important;
             max-width: 80px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -182,7 +182,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           .print-table .badge {
             padding: 1px 3px;
             border-radius: 6px;
-            font-size: 6px;
+            font-size: 9px;
             font-weight: 600;
             display: inline-block;
             white-space: nowrap;
