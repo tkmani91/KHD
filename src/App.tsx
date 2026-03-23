@@ -2254,11 +2254,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* JSON Editor Tab (Super Admin only) */}
-      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
-    </div>
-  );
-}
 
       {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
