@@ -248,26 +248,28 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
                 <div className="flex justify-between items-start mb-3">
                   {/* Left Side - Photo + Name */}
                   <div className="flex items-center gap-3">
-                    {/* Member Photo */}
-                    <div className="flex-shrink-0">
-                      {memberPhoto ? (
-                        <img 
-                          src={memberPhoto} 
-                          alt={member.name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                          }}
-                        />
-                      ) : null}
-                      <div className={cn(
-                        "w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-sm",
-                        memberPhoto ? "hidden" : ""
-                      )}>
-                        <User className="w-6 h-6 text-white" />
+                    {/* Member Photo - Only for Admin/Super Admin */}
+                    {userRole !== 'Member' && (
+                      <div className="flex-shrink-0">
+                        {memberPhoto ? (
+                          <img 
+                            src={memberPhoto} 
+                            alt={member.name}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-orange-200 shadow-sm"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <div className={cn(
+                          "w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-sm",
+                          memberPhoto ? "hidden" : ""
+                        )}>
+                          <User className="w-6 h-6 text-white" />
+                        </div>
                       </div>
-                    </div>
+                    )}
                     
                     {/* Name & Payment Date */}
                     <div>
@@ -373,19 +375,24 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
                       <td className="px-4 py-3 text-gray-500 font-medium">{index + 1}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {memberPhoto ? (
-                            <img 
-                              src={memberPhoto} 
-                              alt={member.name}
-                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
+                          {/* Photo - Only for Admin/Super Admin */}
+                          {userRole !== 'Member' && (
+                            <>
+                              {memberPhoto ? (
+                                <img 
+                                  src={memberPhoto} 
+                                  alt={member.name}
+                                  className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+                                  <User className="w-4 h-4 text-white" />
+                                </div>
+                              )}
+                            </>
                           )}
                           <div>
                             <span className="font-semibold text-gray-800">{member.name}</span>
