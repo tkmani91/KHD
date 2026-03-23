@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Filter, Users, CheckCircle, Clock, XCircle, User } from 'lucide-react';
+import { DollarSign, Filter, Users, CheckCircle, Clock, XCircle, User, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react';
 
 // cn function - inline defined
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -44,6 +44,8 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
   const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
   const [membersData] = useDataLoader<any>(GITHUB_MEMBERS_DATA_URL, {});
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [expandedMember, setExpandedMember] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   
   const fundData = dynamicContent.fundCollection || {};
   const allMembersInfo = membersData.members || [];
@@ -76,142 +78,121 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'paid': return 'bg-green-100 text-green-600';
-      case 'partial': return 'bg-yellow-100 text-yellow-600';
-      case 'unpaid': return 'bg-red-100 text-red-600';
-      default: return 'bg-gray-100 text-gray-600';
+      case 'paid': return 'bg-green-100 text-green-600 border-green-200';
+      case 'partial': return 'bg-yellow-100 text-yellow-600 border-yellow-200';
+      case 'unpaid': return 'bg-red-100 text-red-600 border-red-200';
+      default: return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch(status) {
+      case 'paid': return <CheckCircle className="w-3 h-3" />;
+      case 'partial': return <Clock className="w-3 h-3" />;
+      case 'unpaid': return <XCircle className="w-3 h-3" />;
+      default: return null;
     }
   };
 
   const getStatusText = (status: string) => {
     switch(status) {
-      case 'paid': return '✓ পরিশোধিত';
-      case 'partial': return '◐ আংশিক';
-      case 'unpaid': return '✕ বকেয়া';
+      case 'paid': return 'পরিশোধিত';
+      case 'partial': return 'আংশিক';
+      case 'unpaid': return 'বকেয়া';
       default: return '';
     }
   };
 
   const filterButtons = [
-    { id: 'all', label: 'সকল', count: allMembers.length, icon: Users, color: 'bg-blue-500' },
-    { id: 'paid', label: 'পরিশোধিত', count: paidCount, icon: CheckCircle, color: 'bg-green-500' },
-    { id: 'partial', label: 'আংশিক', count: partialCount, icon: Clock, color: 'bg-yellow-500' },
-    { id: 'unpaid', label: 'বকেয়া', count: unpaidCount, icon: XCircle, color: 'bg-red-500' },
+    { id: 'all', label: 'সকল', count: allMembers.length, color: 'bg-blue-500', lightColor: 'bg-blue-100 text-blue-700' },
+    { id: 'paid', label: 'পরিশোধিত', count: paidCount, color: 'bg-green-500', lightColor: 'bg-green-100 text-green-700' },
+    { id: 'partial', label: 'আংশিক', count: partialCount, color: 'bg-yellow-500', lightColor: 'bg-yellow-100 text-yellow-700' },
+    { id: 'unpaid', label: 'বকেয়া', count: unpaidCount, color: 'bg-red-500', lightColor: 'bg-red-100 text-red-700' },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          <DollarSign className="w-7 h-7" />
-          {fundData.pujaName || 'তহবিল সংগ্রহ'} - চাঁদা তহবিল
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 md:p-6 text-white">
+        <h2 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
+          <DollarSign className="w-6 h-6" />
+          {fundData.pujaName || 'তহবিল সংগ্রহ'}
         </h2>
-        <p className="text-orange-100">সর্বশেষ আপডেট: {fundData.lastUpdated || 'N/A'}</p>
+        <p className="text-orange-100 text-sm">সর্বশেষ আপডেট: {fundData.lastUpdated || 'N/A'}</p>
       </div>
 
-      {/* Message & Instructions */}
+      {/* Message */}
       {fundData.message && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
-          <p className="text-yellow-800 font-medium mb-2">📢 {fundData.message}</p>
-          {fundData.instructions && (
-            <div className="mt-3 space-y-1 text-sm text-yellow-700">
-              {fundData.instructions.map((inst: string, i: number) => (
-                <p key={i}>{inst}</p>
-              ))}
-            </div>
-          )}
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded-lg">
+          <p className="text-yellow-800 font-medium text-sm">📢 {fundData.message}</p>
         </div>
       )}
 
-      {/* Admin/Super Admin View - Summary Cards */}
+      {/* Summary Cards - Admin Only */}
       {userRole !== 'Member' && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-blue-600">৳{fundData.totalDue?.toLocaleString() || 0}</div>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">মোট দায্যকৃত</p>
-            </div>
-            <div className="bg-green-50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-green-600">৳{fundData.totalPaid?.toLocaleString() || 0}</div>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">মোট জমা</p>
-            </div>
-            <div className="bg-red-50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-red-600">৳{fundData.totalRemaining?.toLocaleString() || 0}</div>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">মোট বাকি</p>
-            </div>
-            <div className="bg-orange-50 rounded-xl p-4 md:p-6 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-orange-600">{fundData.paymentStats?.paymentPercentage || 0}%</div>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">সংগ্রহ হয়েছে</p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-orange-500 h-2 rounded-full transition-all duration-500" 
-                  style={{ width: `${fundData.paymentStats?.paymentPercentage || 0}%` }}
-                ></div>
-              </div>
-            </div>
+        <div className="grid grid-cols-4 gap-2 md:gap-4">
+          <div className="bg-blue-50 rounded-xl p-3 text-center">
+            <div className="text-lg md:text-2xl font-bold text-blue-600">৳{(fundData.totalDue/1000)?.toFixed(0) || 0}K</div>
+            <p className="text-xs text-gray-500">দায্যকৃত</p>
           </div>
-
-          {/* Payment Stats Cards */}
-          {fundData.paymentStats && (
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-600" />
-                📊 পেমেন্ট পরিসংখ্যান
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{fundData.paymentStats.totalMembers}</div>
-                  <p className="text-xs text-gray-500">মোট সদস্য</p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{fundData.paymentStats.paidMembers}</div>
-                  <p className="text-xs text-gray-500">পরিশোধিত</p>
-                </div>
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{fundData.paymentStats.partialMembers}</div>
-                  <p className="text-xs text-gray-500">আংশিক</p>
-                </div>
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{fundData.paymentStats.unpaidMembers}</div>
-                  <p className="text-xs text-gray-500">বকেয়া</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+          <div className="bg-green-50 rounded-xl p-3 text-center">
+            <div className="text-lg md:text-2xl font-bold text-green-600">৳{(fundData.totalPaid/1000)?.toFixed(0) || 0}K</div>
+            <p className="text-xs text-gray-500">জমা</p>
+          </div>
+          <div className="bg-red-50 rounded-xl p-3 text-center">
+            <div className="text-lg md:text-2xl font-bold text-red-600">৳{(fundData.totalRemaining/1000)?.toFixed(0) || 0}K</div>
+            <p className="text-xs text-gray-500">বাকি</p>
+          </div>
+          <div className="bg-orange-50 rounded-xl p-3 text-center">
+            <div className="text-lg md:text-2xl font-bold text-orange-600">{fundData.paymentStats?.paymentPercentage || 0}%</div>
+            <p className="text-xs text-gray-500">সংগ্রহ</p>
+          </div>
+        </div>
       )}
 
-      {/* Filter Buttons - Only for Admin/Super Admin */}
+      {/* Filter Buttons - Admin Only */}
       {userRole !== 'Member' && (
-        <div className="bg-white rounded-xl p-4 shadow-lg">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <span className="font-semibold text-gray-700">ফিল্টার করুন:</span>
+        <div className="bg-white rounded-xl p-3 shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <span className="font-semibold text-gray-700 text-sm">ফিল্টার:</span>
+            </div>
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={cn(
+                  "p-1.5 rounded-md transition",
+                  viewMode === 'grid' ? "bg-white shadow text-orange-600" : "text-gray-500"
+                )}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={cn(
+                  "p-1.5 rounded-md transition",
+                  viewMode === 'table' ? "bg-white shadow text-orange-600" : "text-gray-500"
+                )}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="flex flex-wrap gap-2">
             {filterButtons.map((btn) => {
-              const Icon = btn.icon;
               const isActive = activeFilter === btn.id;
               return (
                 <button
                   key={btn.id}
                   onClick={() => setActiveFilter(btn.id)}
                   className={cn(
-                    "flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200",
-                    isActive 
-                      ? `${btn.color} text-white shadow-lg scale-105` 
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                    isActive ? `${btn.color} text-white shadow` : btn.lightColor
                   )}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{btn.label}</span>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full text-xs font-bold",
-                    isActive ? "bg-white/30" : "bg-gray-300"
-                  )}>
-                    {btn.count}
-                  </span>
+                  {btn.label} ({btn.count})
                 </button>
               );
             })}
@@ -219,133 +200,230 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
         </div>
       )}
 
-      {/* Members List */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            {userRole === 'Member' ? 'আপনার চাঁদা হিসাব' : 'সদস্যদের চাঁদা তালিকা'}
-          </h3>
-          {userRole !== 'Member' && (
-            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-              দেখাচ্ছে: {visibleMembers.length} জন
-            </span>
-          )}
-        </div>
-        
-        {visibleMembers.map((member: any) => {
-          const memberPhoto = getMemberPhoto(member.id, member.name);
-          
-          return (
-            <div key={member.id} className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex justify-between items-start mb-4">
-                {/* Left Side - Photo + Name */}
-                <div className="flex items-center gap-3">
-                  {/* Member Photo */}
-                  <div className="flex-shrink-0">
-                    {memberPhoto ? (
-                      <img 
-                        src={memberPhoto} 
-                        alt={member.name}
-                        className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-orange-200 shadow-md"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <div className={cn(
-                      "w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-md",
-                      memberPhoto ? "hidden" : ""
-                    )}>
-                      <User className="w-6 h-6 text-white" />
+      {/* Members Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm flex items-center gap-2">
+          <Users className="w-4 h-4" />
+          {userRole === 'Member' ? 'আপনার চাঁদা হিসাব' : `সদস্য তালিকা (${visibleMembers.length} জন)`}
+        </h3>
+      </div>
+
+      {/* Grid View */}
+      {viewMode === 'grid' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {visibleMembers.map((member: any) => {
+            const memberPhoto = getMemberPhoto(member.id, member.name);
+            const isExpanded = expandedMember === member.id;
+            const progressPercent = member.dueAmount > 0 ? Math.round((member.paidAmount / member.dueAmount) * 100) : 0;
+            
+            return (
+              <div 
+                key={member.id} 
+                className={cn(
+                  "bg-white rounded-xl shadow hover:shadow-md transition-all cursor-pointer border-l-4",
+                  member.status === 'paid' ? "border-green-500" : 
+                  member.status === 'partial' ? "border-yellow-500" : "border-red-500"
+                )}
+                onClick={() => setExpandedMember(isExpanded ? null : member.id)}
+              >
+                {/* Compact View */}
+                <div className="p-3">
+                  <div className="flex items-center gap-3">
+                    {/* Photo */}
+                    <div className="flex-shrink-0">
+                      {memberPhoto ? (
+                        <img 
+                          src={memberPhoto} 
+                          alt={member.name}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+                          <User className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-sm text-gray-800 truncate">{member.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1",
+                          getStatusColor(member.status)
+                        )}>
+                          {getStatusIcon(member.status)}
+                          {getStatusText(member.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Expand Icon */}
+                    <div className="text-gray-400">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </div>
                   </div>
-                  
-                  {/* Name & Payment Date */}
-                  <div>
-                    <h4 className="font-bold text-lg text-gray-800">{member.name}</h4>
+
+                  {/* Amount Summary */}
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="text-gray-500">বাকি:</span>
+                    <span className={cn(
+                      "font-bold",
+                      member.remainingAmount > 0 ? "text-red-600" : "text-green-600"
+                    )}>
+                      ৳{member.remainingAmount?.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div 
+                        className={cn(
+                          "h-1.5 rounded-full transition-all",
+                          member.status === 'paid' ? "bg-green-500" : 
+                          member.status === 'partial' ? "bg-yellow-500" : "bg-red-300"
+                        )}
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                {isExpanded && (
+                  <div className="px-3 pb-3 pt-2 border-t bg-gray-50 rounded-b-xl space-y-2">
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-blue-50 rounded-lg p-2">
+                        <div className="text-xs text-gray-500">দায্যকৃত</div>
+                        <div className="font-bold text-blue-600 text-sm">৳{member.dueAmount?.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-2">
+                        <div className="text-xs text-gray-500">জমা</div>
+                        <div className="font-bold text-green-600 text-sm">৳{member.paidAmount?.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-red-50 rounded-lg p-2">
+                        <div className="text-xs text-gray-500">বাকি</div>
+                        <div className="font-bold text-red-600 text-sm">৳{member.remainingAmount?.toLocaleString()}</div>
+                      </div>
+                    </div>
+                    
                     {member.lastPaymentDate && (
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         শেষ পেমেন্ট: {member.lastPaymentDate}
-                      </p>
+                      </div>
                     )}
-                    {!member.lastPaymentDate && member.status === 'unpaid' && (
-                      <p className="text-sm text-red-400">কোনো পেমেন্ট করেননি</p>
+                    
+                    {member.transactionId && (
+                      <div className="text-xs bg-white rounded p-2">
+                        <span className="text-gray-500">TxID: </span>
+                        <span className="font-mono">{member.transactionId}</span>
+                        {member.paymentMethod && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded text-xs">
+                            {member.paymentMethod}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
-                
-                {/* Status Badge */}
-                <span className={cn("px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1", getStatusColor(member.status))}>
-                  {member.status === 'paid' && <CheckCircle className="w-3 h-3" />}
-                  {member.status === 'partial' && <Clock className="w-3 h-3" />}
-                  {member.status === 'unpaid' && <XCircle className="w-3 h-3" />}
-                  {getStatusText(member.status)}
-                </span>
+                )}
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Amount Cards */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">দায্যকৃত</div>
-                  <div className="text-lg md:text-xl font-bold text-blue-600">৳{member.dueAmount?.toLocaleString()}</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-xs text-gray-500 mb-1">জমা</div>
-                  <div className="text-lg md:text-xl font-bold text-green-600">৳{member.paidAmount?.toLocaleString()}</div>
-                </div>
-                <div className={cn("text-center p-3 rounded-lg", member.remainingAmount > 0 ? "bg-red-50" : "bg-green-50")}>
-                  <div className="text-xs text-gray-500 mb-1">বাকি</div>
-                  <div className={cn("text-lg md:text-xl font-bold", member.remainingAmount > 0 ? "text-red-600" : "text-green-600")}>
-                    ৳{member.remainingAmount?.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              {member.dueAmount > 0 && (
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>পেমেন্ট অগ্রগতি</span>
-                    <span>{Math.round((member.paidAmount / member.dueAmount) * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={cn(
-                        "h-2 rounded-full transition-all duration-500",
-                        member.status === 'paid' ? "bg-green-500" : 
-                        member.status === 'partial' ? "bg-yellow-500" : "bg-red-300"
-                      )}
-                      style={{ width: `${Math.min((member.paidAmount / member.dueAmount) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Transaction Info */}
-              {member.transactionId && (
-                <div className="bg-gray-50 rounded-lg p-3 text-sm flex flex-wrap items-center gap-2">
-                  <span className="text-gray-600">Transaction ID:</span>
-                  <span className="font-mono font-semibold bg-white px-2 py-1 rounded">{member.transactionId}</span>
-                  {member.paymentMethod && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                      💳 {member.paymentMethod}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Table View */}
+      {viewMode === 'table' && (
+        <div className="bg-white rounded-xl shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="px-3 py-3 text-left font-semibold">সদস্য</th>
+                  <th className="px-3 py-3 text-center font-semibold">স্ট্যাটাস</th>
+                  <th className="px-3 py-3 text-right font-semibold">দায্যকৃত</th>
+                  <th className="px-3 py-3 text-right font-semibold">জমা</th>
+                  <th className="px-3 py-3 text-right font-semibold">বাকি</th>
+                  <th className="px-3 py-3 text-center font-semibold">অগ্রগতি</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {visibleMembers.map((member: any) => {
+                  const memberPhoto = getMemberPhoto(member.id, member.name);
+                  const progressPercent = member.dueAmount > 0 ? Math.round((member.paidAmount / member.dueAmount) * 100) : 0;
+                  
+                  return (
+                    <tr key={member.id} className="hover:bg-gray-50 transition">
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          {memberPhoto ? (
+                            <img 
+                              src={memberPhoto} 
+                              alt={member.name}
+                              className="w-8 h-8 rounded-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+                              <User className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                          <span className="font-medium text-gray-800 truncate max-w-[120px]">{member.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-center">
+                        <span className={cn(
+                          "px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1",
+                          getStatusColor(member.status)
+                        )}>
+                          {getStatusIcon(member.status)}
+                          {getStatusText(member.status)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-right font-medium text-blue-600">৳{member.dueAmount?.toLocaleString()}</td>
+                      <td className="px-3 py-3 text-right font-medium text-green-600">৳{member.paidAmount?.toLocaleString()}</td>
+                      <td className={cn(
+                        "px-3 py-3 text-right font-bold",
+                        member.remainingAmount > 0 ? "text-red-600" : "text-green-600"
+                      )}>
+                        ৳{member.remainingAmount?.toLocaleString()}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-2 w-16">
+                            <div 
+                              className={cn(
+                                "h-2 rounded-full",
+                                member.status === 'paid' ? "bg-green-500" : 
+                                member.status === 'partial' ? "bg-yellow-500" : "bg-red-300"
+                              )}
+                              style={{ width: `${progressPercent}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs text-gray-500 w-8">{progressPercent}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Empty State */}
       {visibleMembers.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-          <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500 text-lg mb-2">
+        <div className="text-center py-8 bg-white rounded-2xl shadow">
+          <DollarSign className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500">
             {activeFilter === 'all' 
               ? 'কোনো তথ্য পাওয়া যায়নি' 
               : `"${filterButtons.find(f => f.id === activeFilter)?.label}" ফিল্টারে কোনো সদস্য নেই`
@@ -354,7 +432,7 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
           {activeFilter !== 'all' && (
             <button 
               onClick={() => setActiveFilter('all')}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
             >
               সকল দেখুন
             </button>
