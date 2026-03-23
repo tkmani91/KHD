@@ -1442,7 +1442,7 @@ const JSONEditor: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-2">
         <Settings className="w-7 h-7 text-orange-500" />
-        <h2 className="text-2xl font-bold text-orange-600">JSON এডিটর (Super Admin)</h2>
+        <h2 className="text-2xl font-bold text-orange-600">🎛️ অ্যাডমিন ড্যাশবোর্ড</h2>
       </div>
 
       {/* Info */}
