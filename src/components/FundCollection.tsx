@@ -120,43 +120,43 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
 
   // CSV Download
   const handleDownloadCSV = () => {
-    const headers = ['ক্রমিক', 'নাম', 'স্ট্যাটাস', 'দায্যকৃত', 'জমা', 'বাকি', 'শেষ পেমেন্ট', 'পেমেন্ট মাধ্যম'];
-    
-    const rows = visibleMembers.map((member: any, index: number) => [
-      index + 1,
-      member.name,
-      member.status === 'paid' ? 'পরিশোধিত' : member.status === 'partial' ? 'আংশিক' : 'বকেয়া',
-      member.dueAmount,
-      member.paidAmount,
-      member.remainingAmount,
-      member.lastPaymentDate || '-',
-      member.paymentMethod || '-'
-    ]);
+  const headers: string[] = ['ক্রমিক', 'নাম', 'স্ট্যাটাস', 'দায্যকৃত', 'জমা', 'বাকি', 'শেষ পেমেন্ট', 'পেমেন্ট মাধ্যম'];
+  
+  const rows: (string | number)[][] = visibleMembers.map((member: any, index: number) => [
+    index + 1,
+    member.name,
+    member.status === 'paid' ? 'পরিশোধিত' : member.status === 'partial' ? 'আংশিক' : 'বকেয়া',
+    member.dueAmount,
+    member.paidAmount,
+    member.remainingAmount,
+    member.lastPaymentDate || '-',
+    member.paymentMethod || '-'
+  ]);
 
-    // Add summary row
-    rows.push([]);
-    rows.push(['', 'মোট:', '', 
-      visibleMembers.reduce((sum: number, m: any) => sum + (m.dueAmount || 0), 0),
-      visibleMembers.reduce((sum: number, m: any) => sum + (m.paidAmount || 0), 0),
-      visibleMembers.reduce((sum: number, m: any) => sum + (m.remainingAmount || 0), 0),
-      '', ''
-    ]);
+  // Add summary row
+  rows.push([]);
+  rows.push(['', 'মোট:', '', 
+    visibleMembers.reduce((sum: number, m: any) => sum + (m.dueAmount || 0), 0),
+    visibleMembers.reduce((sum: number, m: any) => sum + (m.paidAmount || 0), 0),
+    visibleMembers.reduce((sum: number, m: any) => sum + (m.remainingAmount || 0), 0),
+    '', ''
+  ]);
 
-    const csvContent = [
-      `${fundData.pujaName || 'চাঁদা তহবিল'} - ${activeFilter === 'all' ? 'সকল সদস্য' : filterButtons.find(f => f.id === activeFilter)?.label}`,
-      `তারিখ: ${new Date().toLocaleDateString('bn-BD')}`,
-      '',
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
+  const csvContent: string = [
+    `${fundData.pujaName || 'চাঁদা তহবিল'} - ${activeFilter === 'all' ? 'সকল সদস্য' : filterButtons.find(f => f.id === activeFilter)?.label}`,
+    `তারিখ: ${new Date().toLocaleDateString('bn-BD')}`,
+    '',
+    headers.join(','),
+    ...rows.map((row: (string | number)[]) => row.join(','))
+  ].join('\n');
 
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `চাঁদা_তালিকা_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    setShowDownloadMenu(false);
-  };
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `চাঁদা_তালিকা_${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  setShowDownloadMenu(false);
+};
 
   // Copy to Clipboard
   const handleCopyText = () => {
