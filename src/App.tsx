@@ -257,13 +257,13 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   const [activeChannel, setActiveChannelState] = useState<LiveChannel | null>(null);
 
   // Refs sync
-   {
+  useEffect(() => {
     currentIndexRef.current = currentIndex;
     playlistRef.current = playlist;
   }, [currentIndex, playlist]);
 
   // ===== AUDIO INITIALIZATION =====
-   {
+  useEffect(() => {
     const audio = new Audio();
     audio.volume = volume;
     audio.preload = 'metadata';
@@ -332,7 +332,7 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Volume sync
-   {
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
@@ -504,7 +504,7 @@ function useCountdown(targetDate: string): CountdownTime {
     seconds: 0 
   });
 
-   {
+  useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = new Date(targetDate).getTime() - new Date().getTime();
       if (difference > 0) {
@@ -531,7 +531,7 @@ function useDataLoader<T>(url: string, fallback: T): [T, boolean, string] {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-   {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(url, { cache: 'no-cache' });
@@ -849,7 +849,7 @@ function HomePage() {
         {latestNotices.length > 0 && (
           <div className="mt-6 text-center">
             <Link 
-              to="/n" 
+              to="/login" 
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition"
             >
               <Bell className="w-4 h-4" />
@@ -970,7 +970,7 @@ function GalleryPage() {
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
-   {
+  useEffect(() => {
     const fetchImages = async () => {
       setIsLoading(true);
       setError('');
@@ -993,7 +993,7 @@ function GalleryPage() {
     fetchImages();
   }, []);
 
-   {
+  useEffect(() => {
     if (selectedImage) {
       document.body.style.overflow = 'hidden';
       return () => { document.body.style.overflow = 'unset'; };
@@ -1126,7 +1126,7 @@ function QuizArchivePage() {
 
   const years = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015];
 
-   {
+  useEffect(() => {
     const fetchQuizData = async () => {
       setIsLoading(true);
       try {
@@ -1139,7 +1139,7 @@ function QuizArchivePage() {
     fetchQuizData();
   }, []);
 
-   { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
+  useEffect(() => { setVisibleAnswers({}); setShowAllAnswers(false); }, [selectedYear]);
 
   const currentYearQuiz = useMemo(() => quizData.find(q => q.year === selectedYear), [quizData, selectedYear]);
 
@@ -1378,13 +1378,13 @@ function LiveTVPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<any>(null);
 
-   {
+  useEffect(() => {
     if (liveChannels.length > 0 && !activeChannel) {
       setActiveChannel(liveChannels[0]);
     }
   }, [liveChannels, activeChannel, setActiveChannel]);
 
-   {
+  useEffect(() => {
     if (!activeChannel) return;
 
     const loadStream = async () => {
@@ -1708,7 +1708,7 @@ function AIChatbox() {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-   {
+  useEffect(() => {
     if (chatbot.welcomeMessage && messages.length === 0) {
       setMessages([{ role: 'bot', text: chatbot.welcomeMessage }]);
     }
@@ -1822,7 +1822,6 @@ function AIChatbox() {
 }
 
 function LoginPage() {
-  // ===== STATE DECLARATIONS =====
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
@@ -1866,7 +1865,7 @@ function LoginPage() {
     checkSavedSession();
   }, []);
 
-  // ===== Load login data from GitHub =====
+  // Load login data
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -1877,18 +1876,14 @@ function LoginPage() {
           setLoginData(data); 
           setDataSource('github'); 
         }
-      } catch (err) { 
-        console.log('Login data fetch failed:', err);
+      } catch { 
         setDataSource('local');
       }
     };
     fetchLoginData();
   }, []);
 
-  // ============ PART 1 END - Continue in Part 2 ============
-  // ============ PART 2 START ============
-
-  // ===== Load member data after login + Find user photo =====
+  // Load member data after login + Find user photo
   useEffect(() => {
     if (!isLoggedIn || !loggedInUser) return;
     
@@ -1902,76 +1897,25 @@ function LoginPage() {
         if (data.members) {
           setMembersData(data.members);
           
-          // ✅ FIXED: Match by ID first (most reliable)
-          const currentUserMember = data.members.find((m: Member) => {
-            // Primary: Match by ID
-            const memberId = String(m.id || '').trim();
-            const userId = String(loggedInUser.id || '').trim();
-            
-            if (memberId && userId && memberId === userId) {
-              console.log('✅ Photo matched by ID:', userId, '→', m.name);
-              return true;
-            }
-            
-            // Secondary: Match by mobile (if both exist)
-            if (m.mobile && loggedInUser.mobile) {
-              const memberMobile = m.mobile.replace(/\s/g, '').trim();
-              const userMobile = loggedInUser.mobile.replace(/\s/g, '').trim();
-              
-              if (memberMobile && userMobile && memberMobile === userMobile) {
-                console.log('✅ Photo matched by Mobile:', userMobile, '→', m.name);
-                return true;
-              }
-            }
-            
-            // Tertiary: Match by email (if both exist)
-            if (m.email && loggedInUser.email) {
-              const memberEmail = m.email.toLowerCase().trim();
-              const userEmail = loggedInUser.email.toLowerCase().trim();
-              
-              if (memberEmail && userEmail && memberEmail === userEmail) {
-                console.log('✅ Photo matched by Email:', userEmail, '→', m.name);
-                return true;
-              }
-            }
-            
-            return false;
-          });
+          const currentUserMember = data.members.find(
+            (m: Member) => m.mobile === loggedInUser.mobile || m.email === loggedInUser.email
+          );
           
-          // Debug logs
-          console.log('🔍 Looking for user:', {
-            id: loggedInUser.id,
-            name: loggedInUser.name,
-            mobile: loggedInUser.mobile,
-            email: loggedInUser.email
-          });
-          console.log('🎯 Found member data:', currentUserMember);
-          
-          // Set photo
           if (currentUserMember?.photo) {
-            console.log('📸 Setting photo URL:', currentUserMember.photo);
             setUserPhoto(currentUserMember.photo);
             localStorage.setItem('khd_user_photo', currentUserMember.photo);
-          } else {
-            console.log('⚠️ No photo found - using default avatar');
-            setUserPhoto('');
-            localStorage.removeItem('khd_user_photo');
           }
         }
-        
         if (data.contacts) setContactsData(data.contacts);
         if (data.invitations) setInvitationData(data.invitations);
         if (data.pdfLinks) setPdfLinks(data.pdfLinks);
       } catch (error) { 
-        console.error('❌ Data fetch error:', error); 
-      } finally { 
-        setIsDataLoading(false); 
+        console.log('Using local data:', error); 
       }
+      finally { setIsDataLoading(false); }
     };
-    
     fetchAllData();
 
-    // Load accounts PDFs
     const loadAccountsPDFs = async () => {
       try {
         const response = await fetch('/data/accountsPDFs.json');
@@ -1983,7 +1927,6 @@ function LoginPage() {
         console.log('Failed to load accounts PDFs:', error);
       }
     };
-    
     loadAccountsPDFs();
   }, [isLoggedIn, loggedInUser]);
 
@@ -2046,7 +1989,6 @@ function LoginPage() {
     setActiveTab('members');
   };
 
-  // ===== GET AVAILABLE TABS =====
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'members', label: 'সদস্য তালিকা', icon: Users },
@@ -2069,7 +2011,7 @@ function LoginPage() {
     return baseTabs;
   };
 
-   // ===== SESSION CHECKING LOADING =====
+  // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -2247,17 +2189,26 @@ function LoginPage() {
 
       {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
-        <MembersList membersData={membersData} pdfLink={pdfLinks.membersList} />
+        <MembersList 
+          membersData={membersData} 
+          pdfLink={pdfLinks.membersList} 
+        />
       )}
 
       {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
-        <ContactsList contactsData={contactsData} pdfLink={pdfLinks.contactsList} />
+        <ContactsList 
+          contactsData={contactsData} 
+          pdfLink={pdfLinks.contactsList} 
+        />
       )}
 
       {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
-        <InvitationListComponent invitationData={invitationData} pdfLink={pdfLinks.invitationList} />
+        <InvitationListComponent 
+          invitationData={invitationData} 
+          pdfLink={pdfLinks.invitationList} 
+        />
       )}
 
       {/* Notice Tab */}
@@ -2268,7 +2219,10 @@ function LoginPage() {
 
       {/* Fund Collection Tab */}
       {activeTab === 'fund' && !isDataLoading && (
-        <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
+        <FundCollection 
+          userRole={loggedInUser?.role || 'Member'} 
+          loggedInUserId={loggedInUser?.id || ''} 
+        />
       )}
 
       {/* AI Chatbox Tab */}
@@ -2298,9 +2252,10 @@ function LoginPage() {
         </div>
       )}
 
+
       {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
-    </div>
+   </div>
   );
 }
 
