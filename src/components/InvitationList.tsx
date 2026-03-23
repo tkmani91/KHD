@@ -115,4 +115,4 @@ const InvitationList: React.FC<InvitationListProps> = ({ invitationData, pdfLink
   );
 };
 
-export default InvitationList;
+export default InvitationListComponent;
