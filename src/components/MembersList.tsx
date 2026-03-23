@@ -177,6 +177,11 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            text-align: center !important;
+          }
+          
+          .print-table .phone-cell {
+            text-align: center !important;
           }
           
           .print-table .badge {
@@ -296,8 +301,8 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
                 <th className="text-center" style={{width: '6%'}}>ছবি</th>
                 <th className="text-left" style={{width: '16%'}}>নাম</th>
                 <th className="text-center" style={{width: '11%'}}>পদবী</th>
-                <th className="text-left" style={{width: '14%'}}>ফোন</th>
-                <th className="text-left" style={{width: '22%'}}>ইমেইল</th>
+                <th className="text-center" style={{width: '14%'}}>ফোন</th>
+                <th className="text-center" style={{width: '22%'}}>ইমেইল</th>
                 <th className="text-center" style={{width: '9%'}}>রক্ত</th>
                 <th className="text-center" style={{width: '11%'}}>গোত্র</th>
               </tr>
@@ -320,8 +325,8 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
                   <td className="text-center">
                     <span className="badge badge-orange">{member.designation}</span>
                   </td>
-                  <td className="text-left">{member.mobile}</td>
-                  <td className="text-left email-cell">{member.email || '—'}</td>
+                  <td className="text-center phone-cell">{member.mobile}</td>
+                  <td className="text-center email-cell">{member.email || '—'}</td>
                   <td className="text-center">
                     <span className="badge badge-red">{member.bloodGroup}</span>
                   </td>
