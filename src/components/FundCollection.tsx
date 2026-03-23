@@ -107,244 +107,245 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
       {/* PRINT STYLES - Beautiful & Compact */}
       {/* ============================================ */}
       <style>{`
-        @media print {
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          body {
-            margin: 0;
-            padding: 0;
-          }
-          
-          body * {
-            visibility: hidden;
-          }
-          
-          .print-area, .print-area * {
-            visibility: visible;
-          }
-          
-          .print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0;
-          }
-          
-          .no-print {
-            display: none !important;
-          }
-          
-          .print-only {
-            display: block !important;
-          }
-          
-          /* Print Container */
-          .print-container {
-            padding: 12px;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-          }
-          
-          /* Header Styles */
-          .print-header-box {
-            background: linear-gradient(135deg, #f97316, #dc2626) !important;
-            color: white !important;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            text-align: center;
-          }
-          
-          .print-header-box h1 {
-            font-size: 16px;
-            font-weight: bold;
-            margin: 0 0 4px 0;
-          }
-          
-          .print-header-box h2 {
-            font-size: 13px;
-            font-weight: 600;
-            margin: 0 0 4px 0;
-            opacity: 0.95;
-          }
-          
-          .print-header-box p {
-            font-size: 10px;
-            margin: 0;
-            opacity: 0.85;
-          }
-          
-          /* Summary Cards */
-          .print-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-          }
-          
-          .print-summary-card {
-            text-align: center;
-            padding: 8px 4px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-          }
-          
-          .print-summary-card.blue {
-            background: #eff6ff !important;
-            border-color: #bfdbfe !important;
-          }
-          
-          .print-summary-card.green {
-            background: #f0fdf4 !important;
-            border-color: #bbf7d0 !important;
-          }
-          
-          .print-summary-card.red {
-            background: #fef2f2 !important;
-            border-color: #fecaca !important;
-          }
-          
-          .print-summary-card.orange {
-            background: #fff7ed !important;
-            border-color: #fed7aa !important;
-          }
-          
-          .print-summary-card .value {
-            font-size: 14px;
-            font-weight: bold;
-          }
-          
-          .print-summary-card .label {
-            font-size: 9px;
-            color: #6b7280;
-            margin-top: 2px;
-          }
-          
-          /* Stats Row */
-          .print-stats-row {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 10px;
-            font-size: 10px;
-          }
-          
-          .print-stats-row span {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-weight: 500;
-          }
-          
-          /* Table Styles */
-          .print-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            overflow: hidden;
-          }
-          
-          .print-table th {
-            background: #1f2937 !important;
-            color: white !important;
-            padding: 8px 6px;
-            font-weight: 600;
-            text-align: left;
-            font-size: 10px;
-          }
-          
-          .print-table th:nth-child(1) { width: 5%; text-align: center; }
-          .print-table th:nth-child(2) { width: 35%; }
-          .print-table th:nth-child(3) { width: 12%; text-align: center; }
-          .print-table th:nth-child(4) { width: 16%; text-align: right; }
-          .print-table th:nth-child(5) { width: 16%; text-align: right; }
-          .print-table th:nth-child(6) { width: 16%; text-align: right; }
-          
-          .print-table td {
-            padding: 6px;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          
-          .print-table tbody tr:nth-child(even) {
-            background: #f9fafb !important;
-          }
-          
-          .print-table tbody tr:hover {
-            background: #fef3c7 !important;
-          }
-          
-          .print-table .status-paid {
-            background: #dcfce7 !important;
-            color: #166534 !important;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 9px;
-            font-weight: 600;
-          }
-          
-          .print-table .status-partial {
-            background: #fef9c3 !important;
-            color: #854d0e !important;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 9px;
-            font-weight: 600;
-          }
-          
-          .print-table .status-unpaid {
-            background: #fee2e2 !important;
-            color: #991b1b !important;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 9px;
-            font-weight: 600;
-          }
-          
-          .print-table tfoot {
-            background: #f3f4f6 !important;
-            font-weight: bold;
-          }
-          
-          .print-table tfoot td {
-            padding: 8px 6px;
-            border-top: 2px solid #9ca3af;
-          }
-          
-          .text-right { text-align: right; }
-          .text-center { text-align: center; }
-          .text-blue { color: #2563eb; }
-          .text-green { color: #16a34a; }
-          .text-red { color: #dc2626; }
-          .font-bold { font-weight: bold; }
-          
-          /* Footer */
-          .print-footer {
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 1px dashed #9ca3af;
-            text-align: center;
-            font-size: 9px;
-            color: #6b7280;
-          }
-          
-          /* Page Settings */
-          @page {
-            size: A4;
-            margin: 10mm;
-          }
-          
-          tr {
-            page-break-inside: avoid;
-          }
-        }
-        
-        .print-only {
-          display: none;
-        }
+      @media print {
+  /* Force color printing */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Reset body */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* FIXED: Hide non-print using display (not visibility) */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* FIXED: Show print area with position static */
+  .print-area {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Print Container */
+  .print-container {
+    display: block !important;
+    padding: 12px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
+  
+  /* Header Styles */
+  .print-header-box {
+    background: linear-gradient(135deg, #f97316, #dc2626) !important;
+    color: white !important;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  
+  .print-header-box h1 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+  }
+  
+  .print-header-box h2 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    opacity: 0.95;
+  }
+  
+  .print-header-box p {
+    font-size: 10px;
+    margin: 0;
+    opacity: 0.85;
+  }
+  
+  /* Summary Cards */
+  .print-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .print-summary-card {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .print-summary-card.blue {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+  }
+  
+  .print-summary-card.green {
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+  }
+  
+  .print-summary-card.red {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+  }
+  
+  .print-summary-card.orange {
+    background: #fff7ed !important;
+    border-color: #fed7aa !important;
+  }
+  
+  .print-summary-card .value {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .print-summary-card .label {
+    font-size: 9px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  
+  /* Stats Row */
+  .print-stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    font-size: 10px;
+  }
+  
+  .print-stats-row span {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  
+  /* Table Styles */
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .print-table th {
+    background: #1f2937 !important;
+    color: white !important;
+    padding: 8px 6px;
+    font-weight: 600;
+    text-align: left;
+    font-size: 10px;
+  }
+  
+  .print-table th:nth-child(1) { width: 5%; text-align: center; }
+  .print-table th:nth-child(2) { width: 35%; }
+  .print-table th:nth-child(3) { width: 12%; text-align: center; }
+  .print-table th:nth-child(4) { width: 16%; text-align: right; }
+  .print-table th:nth-child(5) { width: 16%; text-align: right; }
+  .print-table th:nth-child(6) { width: 16%; text-align: right; }
+  
+  .print-table td {
+    padding: 6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .print-table tbody tr:nth-child(even) {
+    background: #f9fafb !important;
+  }
+  
+  .print-table tbody tr:hover {
+    background: #fef3c7 !important;
+  }
+  
+  .print-table .status-paid {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  
+  .print-table .status-partial {
+    background: #fef9c3 !important;
+    color: #854d0e !important;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  
+  .print-table .status-unpaid {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  
+  .print-table tfoot {
+    background: #f3f4f6 !important;
+    font-weight: bold;
+  }
+  
+  .print-table tfoot td {
+    padding: 8px 6px;
+    border-top: 2px solid #9ca3af;
+  }
+  
+  .text-right { text-align: right; }
+  .text-center { text-align: center; }
+  .text-blue { color: #2563eb; }
+  .text-green { color: #16a34a; }
+  .text-red { color: #dc2626; }
+  .font-bold { font-weight: bold; }
+  
+  /* Footer */
+  .print-footer {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px dashed #9ca3af;
+    text-align: center;
+    font-size: 9px;
+    color: #6b7280;
+  }
+  
+  /* Page Settings */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+  }
+}
+
+.print-only {
+  display: none;
+}
       `}</style>
 
       {/* ============================================ */}
