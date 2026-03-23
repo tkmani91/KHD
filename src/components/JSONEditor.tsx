@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Copy, Check, Plus, Trash2, Save } from 'lucide-react';
 
-const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/dynamicContent.json';
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-data.json';
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-login.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 
 interface JSONFile {
   id: string;
@@ -24,15 +24,15 @@ const JSONEditor: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   const JSON_FILES: JSONFile[] = [
-    { id: 'dynamicContent', label: '📰 ঘোষণা ও খবর', url: GITHUB_DYNAMIC_CONTENT_URL, path: 'public/data/dynamicContent.json', type: 'array',
+    { id: 'dynamicContent', label: '📰 ঘোষণা ও খবর', url: GITHUB_DYNAMIC_CONTENT_URL, path: 'dynamicContent.json', type: 'array',
       itemTemplate: { id: '', title: '', date: '', dateEn: '', details: '', priority: 'medium', category: 'সাধারণ' }},
-    { id: 'membersData', label: '👥 সদস্য তথ্য', url: GITHUB_MEMBERS_DATA_URL, path: 'public/data/members-data.json', type: 'array',
+    { id: 'membersData', label: '👥 সদস্য তথ্য', url: GITHUB_MEMBERS_DATA_URL, path: 'members-data.json', type: 'array',
       itemTemplate: { id: '', name: '', role: 'Member', phone: '', email: '', address: '', imageUrl: '' }},
-    { id: 'loginData', label: '🔐 সদস্য লগইন', url: GITHUB_LOGIN_URL, path: 'public/data/members-login.json', type: 'array',
+    { id: 'loginData', label: '🔐 সদস্য লগইন', url: GITHUB_LOGIN_URL, path: 'members-login.json', type: 'array',
       itemTemplate: { username: '', password: '', role: 'Member' }},
-    { id: 'chatbotData', label: '💬 চ্যাটবট ডেটা', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/chatbot-data.json', path: 'public/data/chatbot-data.json', type: 'array',
+    { id: 'chatbotData', label: '💬 চ্যাটবট ডেটা', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json', path: 'chatbot-data.json', type: 'array',
       itemTemplate: { id: '', question: '', answer: '', keywords: [] }},
-    { id: 'galleryImages', label: '🖼️ গ্যালারি ছবি', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/gallery-images.json', path: 'public/data/gallery-images.json', type: 'object',
+    { id: 'galleryImages', label: '🖼️ গ্যালারি ছবি', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json', path: 'gallery-images.json', type: 'object',
       itemTemplate: { id: '', imageUrl: '', caption: '', category: 'festivals' }},
     { id: 'accountsPDFs', label: '📊 হিসাব PDF', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json', path: 'public/data/accountsPDFs.json', type: 'array',
       itemTemplate: { id: '', year: '', month: '', pdfUrl: '', fileName: '' }},
