@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Copy, Check, Plus, Trash2, Save } from 'lucide-react';
-import { cn } from '../lib/utils';
 
-// GitHub URLs - আপনার App.tsx থেকে import করতে হবে বা এখানে define করুন
+// GitHub URLs
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/dynamicContent.json';
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-data.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/members-login.json';
+
+// Simple cn function (classnames merger)
+const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(' ');
 
 interface JSONFile {
   id: string;
@@ -238,9 +240,9 @@ const JSONEditor: React.FC = () => {
         setSelectedItemIndex(0);
         setFormData({ ...dataArray[0] });
         
-      } catch (error: any) {
-        console.error('Error loading JSON:', error);
-        setError(`ডেটা লোড করতে সমস্যা: ${error.message}`);
+      } catch (err: any) {
+        console.error('Error loading JSON:', err);
+        setError(`ডেটা লোড করতে সমস্যা: ${err.message}`);
         const file = JSON_FILES.find(f => f.id === selectedFile);
         setJsonData([file?.itemTemplate || {}]);
         setFormData(file?.itemTemplate || {});
@@ -270,7 +272,6 @@ const JSONEditor: React.FC = () => {
 
   const handleAddItem = () => {
     const newItem = { ...currentFile?.itemTemplate };
-    // Generate new ID
     const maxId = jsonData.reduce((max, item) => {
       const id = parseInt(item.id) || 0;
       return id > max ? id : max;
@@ -292,7 +293,7 @@ const JSONEditor: React.FC = () => {
       return;
     }
     
-    if (!confirm('⚠️ আপনি কি নিশ্চিত এই আইটেমটি মুছতে চান?')) {
+    if (!window.confirm('⚠️ আপনি কি নিশ্চিত এই আইটেমটি মুছতে চান?')) {
       return;
     }
     
@@ -314,8 +315,8 @@ const JSONEditor: React.FC = () => {
         if (!finalData[category]) {
           finalData[category] = [];
         }
-        const { category: _, ...itemWithoutCategory } = item;
-        finalData[category].push(itemWithoutCategory);
+        const { category: _, ...rest } = item;
+        finalData[category].push(rest);
       });
     } else if (currentFile?.type === 'object' && jsonData.length === 1) {
       finalData = jsonData[0];
@@ -527,8 +528,10 @@ const JSONEditor: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-3">
           {JSON_FILES.map(file => (
             <button key={file.id} onClick={() => setSelectedFile(file.id)}
-              className={cn("px-3 py-2 rounded-lg text-sm font-medium transition",
-                selectedFile === file.id ? "bg-orange-500 text-white shadow-lg" : "bg-gray-100 text-gray-700 hover:bg-orange-50")}>
+              className={cn(
+                "px-3 py-2 rounded-lg text-sm font-medium transition",
+                selectedFile === file.id ? "bg-orange-500 text-white shadow-lg" : "bg-gray-100 text-gray-700 hover:bg-orange-50"
+              )}>
               {file.label}
             </button>
           ))}
@@ -544,7 +547,7 @@ const JSONEditor: React.FC = () => {
 
       {/* Item Selector + Actions */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
           <label className="text-sm font-bold text-gray-700">
             📋 আইটেম ({jsonData.length} টি):
           </label>
@@ -554,7 +557,7 @@ const JSONEditor: React.FC = () => {
               <Plus className="w-4 h-4" /> নতুন যোগ করুন
             </button>
             <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-              className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition disabled:bg-gray-400">
+              className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
               <Trash2 className="w-4 h-4" /> মুছুন
             </button>
           </div>
@@ -580,7 +583,7 @@ const JSONEditor: React.FC = () => {
               <Save className="w-4 h-4" /> সংরক্ষণ
             </button>
           </div>
-          <div className="max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="max-h-96 lg:max-h-[600px] overflow-y-auto pr-2">
             {loading ? (
               <div className="text-center py-10">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
@@ -602,7 +605,7 @@ const JSONEditor: React.FC = () => {
               {copied ? '✅ কপি হয়েছে!' : '📋 কপি করুন'}
             </button>
           </div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[700px] custom-scrollbar">
+          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-96 lg:max-h-[600px]">
             <code>{generatedJSON}</code>
           </pre>
           <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
@@ -622,12 +625,6 @@ const JSONEditor: React.FC = () => {
           <li>✏️ Edit → পেস্ট → Commit</li>
         </ol>
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ff6b35; border-radius: 10px; }
-      `}</style>
     </div>
   );
 };
