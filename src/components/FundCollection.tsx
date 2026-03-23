@@ -1,9 +1,53 @@
 import React from 'react';
 import { DollarSign } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { useDataLoader } from '../hooks/useDataLoader';
+// Import paths ঠিক করুন - আপনার project structure অনুযায়ী
 
-// GitHub URL - আপনার App.tsx থেকে নিন অথবা এখানে define করুন
+// Option 1: যদি utils সরাসরি src এ থাকে
+// import { cn } from '../utils';
+
+// Option 2: যদি lib folder এ থাকে
+// import { cn } from '../lib/utils';
+
+// Option 3: যদি cn function না থাকে, তাহলে inline define করুন
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
+}
+
+// useDataLoader এর জন্য
+// Option 1: যদি hooks folder এ থাকে
+// import { useDataLoader } from '../hooks/useDataLoader';
+
+// Option 2: যদি App.tsx এ থাকে, তাহলে সেখান থেকে export করুন
+// import { useDataLoader } from '../App';
+
+// Option 3: সরাসরি এখানে define করুন (temporary)
+import { useState, useEffect } from 'react';
+
+function useDataLoader<T>(url: string, initialData: T): [T, boolean, string] {
+  const [data, setData] = useState<T>(initialData);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to fetch');
+        const result = await response.json();
+        setData(result);
+      } catch (err: any) {
+        setError(err.message);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [url]);
+
+  return [data, loading, error];
+}
+
+// GitHub URL
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
 interface FundCollectionProps {
