@@ -623,7 +623,7 @@ function Header() {
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
     { path: '/contact', label: 'যোগাযোগ', icon: Phone },
-    { path: '/loginn', label: 'মেম্বার লগইন', icon: login },
+    { path: '/login', label: 'মেম্বার লগইন', icon: login },
   ];
 
   return (
