@@ -2157,7 +2157,7 @@ function LoginPage() {
     }
 
     if (loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'json-editor', label: 'JSON এডিটর', icon: Settings });
+      baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
     }
 
     return baseTabs;
