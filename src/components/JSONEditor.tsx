@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Copy, Check, Plus, Trash2, Save } from 'lucide-react';
 
-const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
-
 interface JSONFile {
   id: string;
   label: string;
@@ -23,29 +19,96 @@ const JSONEditor: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  // আপনার সঠিক paths অনুযায়ী
   const JSON_FILES: JSONFile[] = [
-    { id: 'dynamicContent', label: '📰 ঘোষণা ও খবর', url: GITHUB_DYNAMIC_CONTENT_URL, path: 'dynamicContent.json', type: 'array',
-      itemTemplate: { id: '', title: '', date: '', dateEn: '', details: '', priority: 'medium', category: 'সাধারণ' }},
-    { id: 'membersData', label: '👥 সদস্য তথ্য', url: GITHUB_MEMBERS_DATA_URL, path: 'members-data.json', type: 'array',
-      itemTemplate: { id: '', name: '', role: 'Member', phone: '', email: '', address: '', imageUrl: '' }},
-    { id: 'loginData', label: '🔐 সদস্য লগইন', url: GITHUB_LOGIN_URL, path: 'members-login.json', type: 'array',
-      itemTemplate: { username: '', password: '', role: 'Member' }},
-    { id: 'chatbotData', label: '💬 চ্যাটবট ডেটা', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json', path: 'chatbot-data.json', type: 'array',
-      itemTemplate: { id: '', question: '', answer: '', keywords: [] }},
-    { id: 'galleryImages', label: '🖼️ গ্যালারি ছবি', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json', path: 'gallery-images.json', type: 'object',
-      itemTemplate: { id: '', imageUrl: '', caption: '', category: 'festivals' }},
-    { id: 'accountsPDFs', label: '📊 হিসাব PDF', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json', path: 'public/data/accountsPDFs.json', type: 'array',
-      itemTemplate: { id: '', year: '', month: '', pdfUrl: '', fileName: '' }},
-    { id: 'liveChannels', label: '📺 লাইভ চ্যানেল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json', path: 'public/data/liveChannels.json', type: 'array',
-      itemTemplate: { id: '', channelName: '', streamUrl: '', thumbnail: '', description: '' }},
-    { id: 'pdfFiles', label: '📄 PDF ফাইল', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json', path: 'public/data/pdfFiles.json', type: 'array',
-      itemTemplate: { id: '', title: '', pdfUrl: '', category: '', description: '' }},
-    { id: 'pujaData', label: '🙏 পূজা তথ্য', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json', path: 'public/data/pujaData.json', type: 'object',
-      itemTemplate: { pujaName: '', date: '', time: '', location: '', description: '' }},
-    { id: 'schedules', label: '📅 সময়সূচী', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json', path: 'public/data/schedules.json', type: 'array',
-      itemTemplate: { id: '', title: '', date: '', time: '', location: '', description: '' }},
-    { id: 'songs', label: '🎵 গান', url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json', path: 'public/data/songs.json', type: 'array',
-      itemTemplate: { id: '', title: '', artist: '', audioUrl: '', duration: '', category: '' }},
+    { 
+      id: 'dynamicContent', 
+      label: '📰 ঘোষণা ও খবর', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json', 
+      path: 'dynamicContent.json', 
+      type: 'object',
+      itemTemplate: { id: '', title: '', date: '', dateEn: '', details: '', priority: 'medium', category: 'সাধারণ' }
+    },
+    { 
+      id: 'membersData', 
+      label: '👥 সদস্য তথ্য', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json', 
+      path: 'members-data.json', 
+      type: 'array',
+      itemTemplate: { id: '', name: '', role: 'Member', phone: '', email: '', address: '', imageUrl: '' }
+    },
+    { 
+      id: 'loginData', 
+      label: '🔐 সদস্য লগইন', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json', 
+      path: 'members-login.json', 
+      type: 'array',
+      itemTemplate: { username: '', password: '', role: 'Member' }
+    },
+    { 
+      id: 'chatbotData', 
+      label: '💬 চ্যাটবট ডেটা', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json', 
+      path: 'chatbot-data.json', 
+      type: 'array',
+      itemTemplate: { id: '', question: '', answer: '', keywords: [] }
+    },
+    { 
+      id: 'galleryImages', 
+      label: '🖼️ গ্যালারি ছবি', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json', 
+      path: 'gallery-images.json', 
+      type: 'object',
+      itemTemplate: { id: '', imageUrl: '', caption: '', category: 'festivals' }
+    },
+    { 
+      id: 'accountsPDFs', 
+      label: '📊 হিসাব PDF', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json', 
+      path: 'public/data/accountsPDFs.json', 
+      type: 'array',
+      itemTemplate: { id: '', year: '', month: '', pdfUrl: '', fileName: '' }
+    },
+    { 
+      id: 'liveChannels', 
+      label: '📺 লাইভ চ্যানেল', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json', 
+      path: 'public/data/liveChannels.json', 
+      type: 'array',
+      itemTemplate: { id: '', channelName: '', streamUrl: '', thumbnail: '', description: '' }
+    },
+    { 
+      id: 'pdfFiles', 
+      label: '📄 PDF ফাইল', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json', 
+      path: 'public/data/pdfFiles.json', 
+      type: 'array',
+      itemTemplate: { id: '', title: '', pdfUrl: '', category: '', description: '' }
+    },
+    { 
+      id: 'pujaData', 
+      label: '🙏 পূজা তথ্য', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json', 
+      path: 'public/data/pujaData.json', 
+      type: 'object',
+      itemTemplate: { pujaName: '', date: '', time: '', location: '', description: '' }
+    },
+    { 
+      id: 'schedules', 
+      label: '📅 সময়সূচী', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json', 
+      path: 'public/data/schedules.json', 
+      type: 'array',
+      itemTemplate: { id: '', title: '', date: '', time: '', location: '', description: '' }
+    },
+    { 
+      id: 'songs', 
+      label: '🎵 গান', 
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json', 
+      path: 'public/data/songs.json', 
+      type: 'array',
+      itemTemplate: { id: '', title: '', artist: '', audioUrl: '', duration: '', category: '' }
+    },
   ];
 
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
@@ -57,21 +120,38 @@ const JSONEditor: React.FC = () => {
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
         if (!file) { setError('ফাইল খুঁজে পাওয়া যায়নি'); setLoading(false); return; }
+        
         const response = await fetch(file.url, { cache: 'no-cache', headers: { 'Accept': 'application/json' }});
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         const data = await response.json();
         let dataArray: any[] = [];
-        if (Array.isArray(data)) { dataArray = data; }
-        else if (data && typeof data === 'object') {
+        
+        if (Array.isArray(data)) { 
+          dataArray = data; 
+        } else if (data && typeof data === 'object') {
+          // Handle gallery-images.json (nested categories)
           if (selectedFile === 'galleryImages') {
             Object.keys(data).forEach(category => {
               if (Array.isArray(data[category])) {
-                data[category].forEach((img: any) => { dataArray.push({ ...img, category }); });
+                data[category].forEach((img: any) => { 
+                  dataArray.push({ ...img, category }); 
+                });
               }
             });
-          } else { dataArray = [data]; }
+          } 
+          // Handle dynamicContent.json (has notices, liveStream, fundCollection, aiChatbot)
+          else if (selectedFile === 'dynamicContent' && data.notices) {
+            dataArray = data.notices;
+          }
+          // Other object types
+          else { 
+            dataArray = [data]; 
+          }
         }
+        
         if (dataArray.length === 0) dataArray = [file.itemTemplate || {}];
+        
         setJsonData(dataArray);
         setSelectedItemIndex(0);
         setFormData({ ...dataArray[0] });
@@ -88,10 +168,14 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   useEffect(() => {
-    if (jsonData.length > 0 && jsonData[selectedItemIndex]) setFormData({ ...jsonData[selectedItemIndex] });
+    if (jsonData.length > 0 && jsonData[selectedItemIndex]) {
+      setFormData({ ...jsonData[selectedItemIndex] });
+    }
   }, [selectedItemIndex, jsonData]);
 
-  const handleFieldChange = (key: string, value: any) => setFormData(prev => ({ ...prev, [key]: value }));
+  const handleFieldChange = (key: string, value: any) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleSaveItem = () => {
     const updatedData = [...jsonData];
@@ -124,7 +208,9 @@ const JSONEditor: React.FC = () => {
 
   const handleCopyJSON = () => {
     let finalData: any;
+    
     if (selectedFile === 'galleryImages') {
+      // Reconstruct gallery-images format
       finalData = {};
       jsonData.forEach((item: any) => {
         const cat = item.category || 'uncategorized';
@@ -132,8 +218,16 @@ const JSONEditor: React.FC = () => {
         const { category: _, ...rest } = item;
         finalData[cat].push(rest);
       });
-    } else if (currentFile?.type === 'object' && jsonData.length === 1) { finalData = jsonData[0]; }
-    else { finalData = jsonData; }
+    } else if (selectedFile === 'dynamicContent') {
+      // For dynamicContent, only copy notices array
+      finalData = { notices: jsonData };
+      // Note: You need to manually merge liveStream, fundCollection if needed
+    } else if (currentFile?.type === 'object' && jsonData.length === 1) { 
+      finalData = jsonData[0]; 
+    } else { 
+      finalData = jsonData; 
+    }
+    
     navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -173,7 +267,9 @@ const JSONEditor: React.FC = () => {
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
         <select value={String(formData[key] || 'medium')} onChange={(e) => handleFieldChange(key, e.target.value)}
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          <option value="high">🔴 উচ্চ</option><option value="medium">🟡 মাঝারি</option><option value="low">🟢 নিম্ন</option>
+          <option value="high">🔴 উচ্চ</option>
+          <option value="medium">🟡 মাঝারি</option>
+          <option value="low">🟢 নিম্ন</option>
         </select>
       </div>
     );
@@ -183,7 +279,9 @@ const JSONEditor: React.FC = () => {
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
         <select value={String(formData[key] || 'Member')} onChange={(e) => handleFieldChange(key, e.target.value)}
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          <option value="Super Admin">Super Admin</option><option value="Admin">Admin</option><option value="Member">Member</option>
+          <option value="Super Admin">Super Admin</option>
+          <option value="Admin">Admin</option>
+          <option value="Member">Member</option>
         </select>
       </div>
     );
@@ -193,7 +291,9 @@ const JSONEditor: React.FC = () => {
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
         <select value={String(formData[key] || 'festivals')} onChange={(e) => handleFieldChange(key, e.target.value)}
           className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          <option value="festivals">উৎসব</option><option value="events">অনুষ্ঠান</option><option value="cultural">সাংস্কৃতিক</option>
+          <option value="festivals">উৎসব</option>
+          <option value="events">অনুষ্ঠান</option>
+          <option value="cultural">সাংস্কৃতিক</option>
         </select>
       </div>
     );
@@ -242,8 +342,13 @@ const JSONEditor: React.FC = () => {
         const { category: _, ...rest } = item;
         finalData[cat].push(rest);
       });
-    } else if (currentFile?.type === 'object' && jsonData.length === 1) { finalData = jsonData[0]; }
-    else { finalData = jsonData; }
+    } else if (selectedFile === 'dynamicContent') {
+      finalData = { notices: jsonData };
+    } else if (currentFile?.type === 'object' && jsonData.length === 1) { 
+      finalData = jsonData[0]; 
+    } else { 
+      finalData = jsonData; 
+    }
     return JSON.stringify(finalData, null, 2);
   })();
 
