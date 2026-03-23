@@ -38,7 +38,6 @@ import {
   DollarSign,
   MessageCircle
 } from 'lucide-react';
-import { cn } from './utils/cn';
 import { OptimizedImage } from './components/OptimizedImage';
 
 // Types
