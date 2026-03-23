@@ -1822,6 +1822,7 @@ function AIChatbox() {
 }
 
 function LoginPage() {
+  // ===== STATE DECLARATIONS =====
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
@@ -1865,7 +1866,7 @@ function LoginPage() {
     checkSavedSession();
   }, []);
 
-  // Load login data
+  // ===== Load login data from GitHub =====
   useEffect(() => {
     const fetchLoginData = async () => {
       try {
@@ -1876,109 +1877,116 @@ function LoginPage() {
           setLoginData(data); 
           setDataSource('github'); 
         }
-      } catch { 
+      } catch (err) { 
+        console.log('Login data fetch failed:', err);
         setDataSource('local');
       }
     };
     fetchLoginData();
   }, []);
 
-  // Load member data after login + Find user photo
-useEffect(() => {
-  if (!isLoggedIn || !loggedInUser) return;
-  
-  const fetchAllData = async () => {
-    setIsDataLoading(true);
-    try {
-      const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-      
-      if (data.members) {
-        setMembersData(data.members);
-        
-        // ✅ ULTIMATE FIX: Match by ID first (most reliable)
-        const currentUserMember = data.members.find((m: Member) => {
-          // Primary: Match by ID (string comparison)
-          const memberId = String(m.id || '').trim();
-          const userId = String(loggedInUser.id || '').trim();
-          
-          if (memberId && userId && memberId === userId) {
-            console.log('✅ Photo matched by ID:', userId, '→', m.name);
-            return true;
-          }
-          
-          // Secondary: Match by mobile (if both exist and non-empty)
-          if (m.mobile && loggedInUser.mobile) {
-            const memberMobile = m.mobile.replace(/\s/g, '').trim();
-            const userMobile = loggedInUser.mobile.replace(/\s/g, '').trim();
-            
-            if (memberMobile && userMobile && memberMobile === userMobile) {
-              console.log('✅ Photo matched by Mobile:', userMobile, '→', m.name);
-              return true;
-            }
-          }
-          
-          // Tertiary: Match by email (if both exist and non-empty)
-          if (m.email && loggedInUser.email) {
-            const memberEmail = m.email.toLowerCase().trim();
-            const userEmail = loggedInUser.email.toLowerCase().trim();
-            
-            if (memberEmail && userEmail && memberEmail === userEmail) {
-              console.log('✅ Photo matched by Email:', userEmail, '→', m.name);
-              return true;
-            }
-          }
-          
-          return false;
-        });
-        
-        // Debug logs
-        console.log('🔍 Looking for user:', {
-          id: loggedInUser.id,
-          name: loggedInUser.name,
-          mobile: loggedInUser.mobile,
-          email: loggedInUser.email
-        });
-        console.log('🎯 Found member data:', currentUserMember);
-        
-        // Set photo
-        if (currentUserMember?.photo) {
-          console.log('📸 Setting photo URL:', currentUserMember.photo);
-          setUserPhoto(currentUserMember.photo);
-          localStorage.setItem('khd_user_photo', currentUserMember.photo);
-        } else {
-          console.log('⚠️ No photo found - using default avatar');
-          setUserPhoto('');
-          localStorage.removeItem('khd_user_photo');
-        }
-      }
-      
-      if (data.contacts) setContactsData(data.contacts);
-      if (data.invitations) setInvitationData(data.invitations);
-      if (data.pdfLinks) setPdfLinks(data.pdfLinks);
-    } catch (error) { 
-      console.error('❌ Data fetch error:', error); 
-    } finally { 
-      setIsDataLoading(false); 
-    }
-  };
-  
-  fetchAllData();
+  // ============ PART 1 END - Continue in Part 2 ============
+  // ============ PART 2 START ============
 
-  const loadAccountsPDFs = async () => {
-    try {
-      const response = await fetch('/data/accountsPDFs.json');
-      if (response.ok) {
+  // ===== Load member data after login + Find user photo =====
+  useEffect(() => {
+    if (!isLoggedIn || !loggedInUser) return;
+    
+    const fetchAllData = async () => {
+      setIsDataLoading(true);
+      try {
+        const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        setAccountsPDFs(data);
+        
+        if (data.members) {
+          setMembersData(data.members);
+          
+          // ✅ FIXED: Match by ID first (most reliable)
+          const currentUserMember = data.members.find((m: Member) => {
+            // Primary: Match by ID
+            const memberId = String(m.id || '').trim();
+            const userId = String(loggedInUser.id || '').trim();
+            
+            if (memberId && userId && memberId === userId) {
+              console.log('✅ Photo matched by ID:', userId, '→', m.name);
+              return true;
+            }
+            
+            // Secondary: Match by mobile (if both exist)
+            if (m.mobile && loggedInUser.mobile) {
+              const memberMobile = m.mobile.replace(/\s/g, '').trim();
+              const userMobile = loggedInUser.mobile.replace(/\s/g, '').trim();
+              
+              if (memberMobile && userMobile && memberMobile === userMobile) {
+                console.log('✅ Photo matched by Mobile:', userMobile, '→', m.name);
+                return true;
+              }
+            }
+            
+            // Tertiary: Match by email (if both exist)
+            if (m.email && loggedInUser.email) {
+              const memberEmail = m.email.toLowerCase().trim();
+              const userEmail = loggedInUser.email.toLowerCase().trim();
+              
+              if (memberEmail && userEmail && memberEmail === userEmail) {
+                console.log('✅ Photo matched by Email:', userEmail, '→', m.name);
+                return true;
+              }
+            }
+            
+            return false;
+          });
+          
+          // Debug logs
+          console.log('🔍 Looking for user:', {
+            id: loggedInUser.id,
+            name: loggedInUser.name,
+            mobile: loggedInUser.mobile,
+            email: loggedInUser.email
+          });
+          console.log('🎯 Found member data:', currentUserMember);
+          
+          // Set photo
+          if (currentUserMember?.photo) {
+            console.log('📸 Setting photo URL:', currentUserMember.photo);
+            setUserPhoto(currentUserMember.photo);
+            localStorage.setItem('khd_user_photo', currentUserMember.photo);
+          } else {
+            console.log('⚠️ No photo found - using default avatar');
+            setUserPhoto('');
+            localStorage.removeItem('khd_user_photo');
+          }
+        }
+        
+        if (data.contacts) setContactsData(data.contacts);
+        if (data.invitations) setInvitationData(data.invitations);
+        if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+      } catch (error) { 
+        console.error('❌ Data fetch error:', error); 
+      } finally { 
+        setIsDataLoading(false); 
       }
-    } catch (error) {
-      console.log('Failed to load accounts PDFs:', error);
-    }
-  };
-  loadAccountsPDFs();
-}, [isLoggedIn, loggedInUser]);
+    };
+    
+    fetchAllData();
+
+    // Load accounts PDFs
+    const loadAccountsPDFs = async () => {
+      try {
+        const response = await fetch('/data/accountsPDFs.json');
+        if (response.ok) {
+          const data = await response.json();
+          setAccountsPDFs(data);
+        }
+      } catch (error) {
+        console.log('Failed to load accounts PDFs:', error);
+      }
+    };
+    
+    loadAccountsPDFs();
+  }, [isLoggedIn, loggedInUser]);
+
   // ===== LOGIN HANDLER =====
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -2038,6 +2046,7 @@ useEffect(() => {
     setActiveTab('members');
   };
 
+  // ===== GET AVAILABLE TABS =====
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'members', label: 'সদস্য তালিকা', icon: Users },
@@ -2060,7 +2069,7 @@ useEffect(() => {
     return baseTabs;
   };
 
-  // ===== SESSION CHECKING LOADING =====
+   // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -2238,26 +2247,17 @@ useEffect(() => {
 
       {/* Members Tab */}
       {activeTab === 'members' && !isDataLoading && (
-        <MembersList 
-          membersData={membersData} 
-          pdfLink={pdfLinks.membersList} 
-        />
+        <MembersList membersData={membersData} pdfLink={pdfLinks.membersList} />
       )}
 
       {/* Contacts Tab */}
       {activeTab === 'contacts' && !isDataLoading && (
-        <ContactsList 
-          contactsData={contactsData} 
-          pdfLink={pdfLinks.contactsList} 
-        />
+        <ContactsList contactsData={contactsData} pdfLink={pdfLinks.contactsList} />
       )}
 
       {/* Invitation Tab */}
       {activeTab === 'invitation' && !isDataLoading && (
-        <InvitationListComponent 
-          invitationData={invitationData} 
-          pdfLink={pdfLinks.invitationList} 
-        />
+        <InvitationListComponent invitationData={invitationData} pdfLink={pdfLinks.invitationList} />
       )}
 
       {/* Notice Tab */}
@@ -2268,10 +2268,7 @@ useEffect(() => {
 
       {/* Fund Collection Tab */}
       {activeTab === 'fund' && !isDataLoading && (
-        <FundCollection 
-          userRole={loggedInUser?.role || 'Member'} 
-          loggedInUserId={loggedInUser?.id || ''} 
-        />
+        <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
       )}
 
       {/* AI Chatbox Tab */}
@@ -2301,10 +2298,9 @@ useEffect(() => {
         </div>
       )}
 
-
       {/* JSON Editor Tab (Super Admin only) */}
       {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
-   </div>
+    </div>
   );
 }
 
