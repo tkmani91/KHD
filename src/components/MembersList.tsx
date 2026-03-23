@@ -52,7 +52,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
   return (
     <div className="space-y-4">
       {/* ============================================ */}
-      {/* PRINT STYLES */}
+      {/* PRINT STYLES - Portrait, Compact */}
       {/* ============================================ */}
       <style>{`
         @media print {
@@ -64,126 +64,127 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
-            width: 100% !important;
             background: white !important;
+          }
+          
+          /* Hide everything except print area */
+          body * {
+            visibility: hidden;
+          }
+          
+          .print-section, .print-section * {
+            visibility: visible;
+          }
+          
+          .print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
           }
           
           .no-print {
             display: none !important;
           }
           
-          .print-area {
-            display: block !important;
-            position: static !important;
-            width: 100% !important;
-          }
-          
           .print-only {
             display: block !important;
           }
           
+          /* Print Container */
           .print-container {
-            padding: 12px;
+            padding: 8px;
             font-family: 'Segoe UI', Tahoma, sans-serif;
           }
           
-          /* Header */
-          .print-header-box {
+          /* Header - Compact */
+          .print-header {
             background: linear-gradient(135deg, #f97316, #dc2626) !important;
             color: white !important;
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
             text-align: center;
-            border: 2px solid #c2410c;
           }
           
-          .print-header-box h1 {
-            font-size: 18px;
+          .print-header h1 {
+            font-size: 14px;
             font-weight: bold;
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
           }
           
-          .print-header-box p {
-            font-size: 11px;
+          .print-header p {
+            font-size: 9px;
             margin: 0;
+            opacity: 0.9;
           }
           
-          /* Table */
+          /* Table - Compact */
           .print-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
-            border: 2px solid #374151;
-            border-radius: 8px;
-            overflow: hidden;
+            font-size: 8px;
+            border: 1.5px solid #374151;
           }
           
           .print-table th {
             background: #1f2937 !important;
             color: white !important;
-            padding: 10px 6px;
-            font-weight: 700;
-            text-align: left;
-            font-size: 10px;
+            padding: 6px 4px;
+            font-weight: 600;
+            font-size: 8px;
             border-bottom: 2px solid #f97316;
           }
           
           .print-table td {
-            padding: 8px 6px;
+            padding: 4px;
             border-bottom: 1px solid #e5e7eb;
             vertical-align: middle;
+            line-height: 1.2;
           }
           
           .print-table tbody tr:nth-child(even) {
             background: #f9fafb !important;
           }
           
-          .print-table .blood-group {
-            background: #fee2e2 !important;
-            color: #dc2626 !important;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: 700;
-            border: 1px solid #fca5a5;
+          .print-table .badge {
+            padding: 1px 4px;
+            border-radius: 6px;
+            font-size: 7px;
+            font-weight: 600;
             display: inline-block;
           }
           
-          .print-table .designation {
+          .print-table .badge-orange {
             background: #ffedd5 !important;
             color: #c2410c !important;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: 600;
-            display: inline-block;
           }
           
-          .print-table .gotra {
+          .print-table .badge-red {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+          }
+          
+          .print-table .badge-indigo {
             background: #e0e7ff !important;
             color: #4338ca !important;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: 600;
-            display: inline-block;
           }
           
           .text-center { text-align: center; }
+          .text-left { text-align: left; }
           
+          /* Footer */
           .print-footer {
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 2px dashed #9ca3af;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed #9ca3af;
             text-align: center;
-            font-size: 9px;
-            color: #6b7280;
-            font-style: italic;
+            font-size: 7px;
+            color: #9ca3af;
           }
           
           @page {
-            size: A4 landscape;
+            size: A4 portrait;
             margin: 8mm;
           }
           
@@ -197,7 +198,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
         }
       `}</style>
 
-      {/* Header */}
+      {/* Header - Screen Only */}
       <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 no-print">
         <div className="text-white text-center sm:text-left">
           <h3 className="font-bold flex items-center gap-2 justify-center sm:justify-start">
@@ -252,56 +253,46 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
       </div>
 
       {/* ============================================ */}
-      {/* PRINT AREA */}
+      {/* PRINT SECTION - Only this will print */}
       {/* ============================================ */}
-      <div className="print-area">
+      <div className="print-section">
         {/* Print Only Content */}
         <div className="print-container print-only">
-          <div className="print-header-box">
+          <div className="print-header">
             <h1>🙏 কলম হিন্দু ধর্মসভা - সদস্য তালিকা</h1>
-            <p>📅 {new Date().toLocaleDateString('bn-BD')} | মোট সদস্য: {membersData.length} জন</p>
+            <p>📅 তারিখ: {new Date().toLocaleDateString('bn-BD')} | মোট সদস্য: {membersData.length} জন</p>
           </div>
 
           <table className="print-table">
             <thead>
               <tr>
-                <th className="text-center" style={{width: '5%'}}>#</th>
-                <th style={{width: '20%'}}>নাম</th>
+                <th className="text-center" style={{width: '4%'}}>#</th>
+                <th className="text-left" style={{width: '18%'}}>নাম</th>
                 <th className="text-center" style={{width: '12%'}}>পদবী</th>
-                <th style={{width: '13%'}}>ফোন নম্বর</th>
-                <th style={{width: '22%'}}>ইমেইল</th>
-                <th className="text-center" style={{width: '10%'}}>রক্তের গ্রুপ</th>
-                <th className="text-center" style={{width: '13%'}}>গোত্র</th>
+                <th className="text-left" style={{width: '14%'}}>ফোন</th>
+                <th className="text-left" style={{width: '24%'}}>ইমেইল</th>
+                <th className="text-center" style={{width: '10%'}}>রক্ত</th>
+                <th className="text-center" style={{width: '12%'}}>গোত্র</th>
               </tr>
             </thead>
             <tbody>
               {membersData.map((member, index) => (
                 <tr key={member.id}>
-                  <td className="text-center" style={{fontWeight: 600, color: '#6b7280'}}>
-                    {index + 1}
-                  </td>
-                  <td style={{fontWeight: 700, color: '#111827'}}>{member.name}</td>
+                  <td className="text-center">{index + 1}</td>
+                  <td className="text-left" style={{fontWeight: 600}}>{member.name}</td>
                   <td className="text-center">
-                    <span className="designation">{member.designation}</span>
+                    <span className="badge badge-orange">{member.designation}</span>
                   </td>
-                  <td style={{fontWeight: 500}}>
-                    <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                      📱 {member.mobile}
-                    </span>
-                  </td>
-                  <td style={{fontSize: '9px', color: '#4b5563'}}>
-                    {member.email ? (
-                      <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                        ✉️ {member.email}
-                      </span>
-                    ) : '—'}
+                  <td className="text-left">{member.mobile}</td>
+                  <td className="text-left" style={{fontSize: '7px', wordBreak: 'break-all'}}>
+                    {member.email || '—'}
                   </td>
                   <td className="text-center">
-                    <span className="blood-group">🩸 {member.bloodGroup}</span>
+                    <span className="badge badge-red">{member.bloodGroup}</span>
                   </td>
                   <td className="text-center">
                     {member.gotra ? (
-                      <span className="gotra">🔱 {member.gotra}</span>
+                      <span className="badge badge-indigo">{member.gotra}</span>
                     ) : '—'}
                   </td>
                 </tr>
@@ -310,7 +301,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           </table>
 
           <div className="print-footer">
-            © কলম হিন্দু ধর্মসভা | স্বয়ংক্রিয়ভাবে তৈরি | {new Date().toLocaleTimeString('bn-BD')}
+            © কলম হিন্দু ধর্মসভা | {new Date().toLocaleTimeString('bn-BD')}
           </div>
         </div>
 
