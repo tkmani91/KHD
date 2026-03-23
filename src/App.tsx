@@ -33,7 +33,6 @@ import {
   Bell,
   Send,
   Settings,
-  Copy,
   Check,
   LogOut,
   DollarSign,
