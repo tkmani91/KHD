@@ -265,7 +265,7 @@
     "birthDate": "",
     "address": "",
     "permanentAddress": "",
-    "mobile": "01733118313",
+    "mobile": "",
     "gotra": "",
     "email": "tanmoy4bd@gmail.com",
     "fatherName": "",
@@ -323,7 +323,7 @@
   {
     "id": "23",
     "name": "নন্দ দুলাল পোদ্দার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/ycTn5mKn/NONDO.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -339,7 +339,7 @@
   {
     "id": "24",
     "name": "অসিম কুমার সরকার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/jPPCpjCK/ASIM.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -355,7 +355,7 @@
   {
     "id": "25",
     "name": "টনি কুমার ঘোষ",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/TBGN5qZr/TONI.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -371,7 +371,7 @@
   {
     "id": "26",
     "name": "কিরণ কুমার সাহা",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/B2Vg8cHY/SUDIPTA.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -387,7 +387,7 @@
   {
     "id": "27",
     "name": "পিযুষ পাল",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/hPNhZw1/PIJUS.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -403,7 +403,7 @@
   {
     "id": "28",
     "name": "অভিজিৎ পাল",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/fGTfmFrG/AVIJIT.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -419,7 +419,7 @@
   {
     "id": "29",
     "name": "সৌরভ সরকার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -435,7 +435,7 @@
   {
     "id": "30",
     "name": "সঞ্জয় হালদার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
@@ -451,7 +451,7 @@
   {
     "id": "31",
     "name": "গোপাল হালদার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
@@ -467,7 +467,7 @@
   {
     "id": "32",
     "name": "মনমত হালদার",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
@@ -483,7 +483,7 @@
   {
     "id": "33",
     "name": "উত্তম কুমার দাস",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/q6NBffp/UTTOM.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -499,7 +499,7 @@
   {
     "id": "34",
     "name": "শ্যাম কুমার দাস",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "https://i.ibb.co.com/Q3ysYBnz/SHAM.png",
     "bloodGroup": "",
     "birthDate": "",
@@ -515,7 +515,7 @@
   {
     "id": "35",
     "name": "সুবল দাস",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
@@ -531,7 +531,7 @@
   {
     "id": "36",
     "name": "সজীব কুমার সুত্রধর",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
@@ -547,7 +547,7 @@
   {
     "id": "37",
     "name": "গোপাল কুমার কুন্ডু",
-    "designation": "",
+    "designation": "সদস্য",
     "photo": "",
     "bloodGroup": "",
     "birthDate": "",
