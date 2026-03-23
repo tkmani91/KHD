@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, ChevronDown, ChevronRight } from 'lucide-react';
+mport React, { useState, useEffect } from 'react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
