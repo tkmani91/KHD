@@ -11,9 +11,9 @@
     {
       "id": "3",
       "name": "ড. শ্যামল কুমার পাল",
-      "mobile": "01612118313",
+      "mobile": "",
       "email": "",
-      "password": "admin123",
+      "password": "",
       "role": "Admin"
     },
     {
@@ -141,9 +141,9 @@
     {
       "id": "11",
       "name": "চঞ্চল কুমার সাহা",
-      "mobile": "01971118313",
+      "mobile": "01718542303",
       "email": "",
-      "password": "admin123",
+      "password": "542303",
       "role": "Member"
     },
     {
