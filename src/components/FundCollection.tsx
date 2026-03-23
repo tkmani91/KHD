@@ -89,14 +89,6 @@ const FundCollection: React.FC<FundCollectionProps> = ({ userRole, loggedInUserI
     }
   };
 
-  const getStatusTextShort = (status: string) => {
-    switch(status) {
-      case 'paid': return '✓';
-      case 'partial': return '◐';
-      case 'unpaid': return '✕';
-      default: return '';
-    }
-  };
 
   const filterButtons = [
     { id: 'all', label: 'সকল', count: allMembers.length, color: 'bg-blue-500', lightColor: 'bg-blue-100 text-blue-700' },
