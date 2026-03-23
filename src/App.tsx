@@ -39,7 +39,10 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { OptimizedImage } from './components/OptimizedImage';
-
+// cn function - classnames utility
+const cn = (...classes: (string | boolean | undefined | null)[]) => {
+  return classes.filter(Boolean).join(' ');
+};
 // Types
 interface CountdownTime {
   days: number;
