@@ -52,7 +52,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
   return (
     <div className="space-y-4">
       {/* ============================================ */}
-      {/* PRINT STYLES - Compact for 2 Pages */}
+      {/* PRINT STYLES - Portrait, 2 Pages */}
       {/* ============================================ */}
       <style>{`
         @media print {
@@ -95,79 +95,67 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
             font-family: 'Segoe UI', Tahoma, sans-serif;
           }
           
-          /* Header - Compact */
+          /* Header - Compact Single Line */
           .print-header {
             background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important;
             color: white !important;
-            padding: 8px 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            text-align: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
           }
           
-          .print-header-left {
-            text-align: left;
-          }
-          
           .print-header h1 {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 700;
             margin: 0;
-          }
-          
-          .print-header h2 {
-            font-size: 12px;
-            font-weight: 500;
-            margin: 0;
-            opacity: 0.9;
           }
           
           .print-header .member-count {
             background: white !important;
             color: #dc2626 !important;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
             font-weight: 700;
           }
           
-          /* Table - Very Compact */
+          /* Table - Ultra Compact for Portrait */
           .print-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
-            border: 1.5px solid #1f2937;
+            font-size: 7.5px;
+            border: 1px solid #374151;
           }
           
           .print-table th {
             background: #1f2937 !important;
             color: white !important;
-            padding: 5px 4px;
+            padding: 4px 2px;
             font-weight: 700;
-            font-size: 8px;
+            font-size: 7px;
             text-transform: uppercase;
-            border: 1px solid #374151;
+            border: 1px solid #4b5563;
           }
           
           .print-table td {
-            padding: 3px 4px;
+            padding: 2px;
             border: 1px solid #d1d5db;
             vertical-align: middle;
-            font-size: 9px;
-            line-height: 1.2;
+            font-size: 7.5px;
+            line-height: 1.1;
           }
           
           .print-table tbody tr:nth-child(even) {
-            background: #f9fafb !important;
+            background: #f3f4f6 !important;
           }
           
-          /* Photo - Small */
+          /* Photo - Very Small */
           .print-photo {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid #f97316;
@@ -175,14 +163,26 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           
           .print-table .name-cell {
             font-weight: 600;
-            font-size: 9px;
+            font-size: 7.5px;
             color: #111827;
+            max-width: 65px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .print-table .email-cell {
+            font-size: 6px !important;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
           
           .print-table .badge {
-            padding: 1px 4px;
-            border-radius: 8px;
-            font-size: 7px;
+            padding: 1px 3px;
+            border-radius: 6px;
+            font-size: 6px;
             font-weight: 600;
             display: inline-block;
             white-space: nowrap;
@@ -206,15 +206,9 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           .text-center { text-align: center !important; }
           .text-left { text-align: left !important; }
           
-          .email-cell {
-            font-size: 7px !important;
-            word-break: break-all;
-            max-width: 120px;
-          }
-          
           @page {
-            size: A4 landscape;
-            margin: 4mm;
+            size: A4 portrait;
+            margin: 3mm;
           }
           
           tr {
@@ -288,27 +282,24 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
       <div className="print-section">
         {/* Print Only Content */}
         <div className="print-container print-only">
-          {/* Header - Compact Single Line */}
+          {/* Header - Single Line */}
           <div className="print-header">
-            <div className="print-header-left">
-              <h1>🙏 কলম হিন্দু ধর্মসভা</h1>
-              <h2>সম্পূর্ণ সদস্য তালিকা</h2>
-            </div>
+            <h1>🙏 কলম হিন্দু ধর্মসভা - সদস্য তালিকা</h1>
             <span className="member-count">👥 মোট {membersData.length} জন</span>
           </div>
 
-          {/* Table - Compact */}
+          {/* Table */}
           <table className="print-table">
             <thead>
               <tr>
-                <th className="text-center" style={{width: '3%'}}>#</th>
-                <th className="text-center" style={{width: '5%'}}>ছবি</th>
-                <th className="text-left" style={{width: '18%'}}>নাম</th>
-                <th className="text-center" style={{width: '10%'}}>পদবী</th>
-                <th className="text-left" style={{width: '12%'}}>ফোন</th>
-                <th className="text-left" style={{width: '24%'}}>ইমেইল</th>
-                <th className="text-center" style={{width: '8%'}}>রক্ত</th>
-                <th className="text-center" style={{width: '10%'}}>গোত্র</th>
+                <th className="text-center" style={{width: '4%'}}>#</th>
+                <th className="text-center" style={{width: '6%'}}>ছবি</th>
+                <th className="text-left" style={{width: '16%'}}>নাম</th>
+                <th className="text-center" style={{width: '11%'}}>পদবী</th>
+                <th className="text-left" style={{width: '14%'}}>ফোন</th>
+                <th className="text-left" style={{width: '22%'}}>ইমেইল</th>
+                <th className="text-center" style={{width: '9%'}}>রক্ত</th>
+                <th className="text-center" style={{width: '11%'}}>গোত্র</th>
               </tr>
             </thead>
             <tbody>
@@ -330,9 +321,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
                     <span className="badge badge-orange">{member.designation}</span>
                   </td>
                   <td className="text-left">{member.mobile}</td>
-                  <td className="text-left email-cell">
-                    {member.email || '—'}
-                  </td>
+                  <td className="text-left email-cell">{member.email || '—'}</td>
                   <td className="text-center">
                     <span className="badge badge-red">{member.bloodGroup}</span>
                   </td>
@@ -347,9 +336,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           </table>
         </div>
 
-        {/* ============================================ */}
         {/* SCREEN - Card View */}
-        {/* ============================================ */}
         {viewMode === 'card' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 no-print">
             {membersData.map((member) => (
@@ -393,9 +380,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           </div>
         )}
 
-        {/* ============================================ */}
         {/* SCREEN - List View */}
-        {/* ============================================ */}
         {viewMode === 'list' && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
             <div className="overflow-x-auto">
@@ -415,9 +400,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
                 <tbody className="divide-y divide-gray-100">
                   {membersData.map((member, index) => (
                     <tr key={member.id} className="hover:bg-orange-50 transition">
-                      <td className="px-3 py-3 text-center text-gray-500 font-medium">
-                        {index + 1}
-                      </td>
+                      <td className="px-3 py-3 text-center text-gray-500 font-medium">{index + 1}</td>
                       <td className="px-3 py-3 text-center">
                         <img 
                           src={member.photo} 
