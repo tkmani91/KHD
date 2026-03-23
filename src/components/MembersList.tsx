@@ -173,7 +173,7 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
           
           .print-table .email-cell {
             font-size: 11px !important;
-            max-width: 70px;
+            max-width: 65px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
