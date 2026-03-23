@@ -114,5 +114,4 @@ const InvitationListComponent: React.FC<InvitationListProps> = ({ invitationData
     </div>
   );
 };
-
 export default InvitationListComponent;
