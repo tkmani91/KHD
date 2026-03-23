@@ -32,7 +32,6 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  MapPin,
   ChevronDown,
   Bell,
   Send,
@@ -149,7 +148,7 @@ interface AccountsPDFs {
   };
 }
 
-interface nUser {
+interface LoginUser {
   id: string;
   name: string;
   mobile: string;
@@ -160,7 +159,7 @@ interface nUser {
 
 // Data URLs
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-const GITHUB_N_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-n.json';
+const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
 const deities: Deity[] = [
@@ -624,7 +623,7 @@ function Header() {
     { path: '/pdf', label: 'PDF', icon: FileText },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
     { path: '/contact', label: 'যোগাযোগ', icon: Phone },
-    { path: '/n', label: 'মেম্বার লগইন', icon: n },
+    { path: '/loginn', label: 'মেম্বার লগইন', icon: login },
   ];
 
   return (
