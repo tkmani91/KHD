@@ -38,7 +38,7 @@ const JSONEditor: React.FC = () => {
   const JSON_FILES: JSONFile[] = [
     {
       id: 'dynamicContent',
-      label: '📰 ডাইনামিক কন্টেন্ট',
+      label: '📰 সদস্য আয় হিসাব ',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json',
       path: 'dynamicContent.json',
       type: 'nested-sections',
@@ -79,7 +79,7 @@ const JSONEditor: React.FC = () => {
     },
     {
       id: 'accountsPDFs',
-      label: '📊 হিসাব PDF',
+      label: '📊 বাৎসরিক হিসাব',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json',
       path: 'public/data/accountsPDFs.json',
       type: 'nested-sections',
@@ -94,7 +94,7 @@ const JSONEditor: React.FC = () => {
     },
     {
       id: 'pdfFiles',
-      label: '📄 PDF ফাইল',
+      label: '📄 পূজাদ্রব্যের তালিকা',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json',
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
