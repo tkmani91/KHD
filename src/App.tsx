@@ -1884,53 +1884,77 @@ function LoginPage() {
     fetchLoginData();
   }, []);
 
-  // Load member data after login + Find user photo
-  useEffect(() => {
-    if (!isLoggedIn || !loggedInUser) return;
-    
-    const fetchAllData = async () => {
-      setIsDataLoading(true);
-      try {
-        const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+ // Load member data after login (WITHOUT photo matching)
+useEffect(() => {
+  if (!isLoggedIn || !loggedInUser) return;
+  
+  const fetchAllData = async () => {
+    setIsDataLoading(true);
+    try {
+      const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      
+      if (data.members) {
+        setMembersData(data.members);
         
-        if (data.members) {
-          setMembersData(data.members);
+        // ✅ FIXED: শুধুমাত্র যদি login data তে photo না থাকে তাহলে খুঁজবে
+        if (!loggedInUser.photo || loggedInUser.photo === '') {
+          console.log('⚠️ Login data তে photo নেই, members-data থেকে খুঁজছি...');
           
-          const currentUserMember = data.members.find(
-            (m: Member) => m.mobile === loggedInUser.mobile || m.email === loggedInUser.email
-          );
+          const currentUserMember = data.members.find((m: Member) => {
+            const memberId = String(m.id || '').trim();
+            const userId = String(loggedInUser.id || '').trim();
+            
+            // ID দিয়ে match করুন (সবচেয়ে reliable)
+            if (memberId && userId && memberId === userId) {
+              console.log('✅ ID match:', userId);
+              return true;
+            }
+            return false;
+          });
           
           if (currentUserMember?.photo) {
+            console.log('📸 members-data থেকে photo পাওয়া গেছে:', currentUserMember.photo);
             setUserPhoto(currentUserMember.photo);
             localStorage.setItem('khd_user_photo', currentUserMember.photo);
+          } else {
+            console.log('⚠️ members-data তেও photo নেই');
           }
+        } else {
+          // ✅ Login data তে photo আছে, সেটাই ব্যবহার করুন
+          console.log('✅ Login data থেকে photo ব্যবহার করছি:', loggedInUser.photo);
+          setUserPhoto(loggedInUser.photo);
         }
-        if (data.contacts) setContactsData(data.contacts);
-        if (data.invitations) setInvitationData(data.invitations);
-        if (data.pdfLinks) setPdfLinks(data.pdfLinks);
-      } catch (error) { 
-        console.log('Using local data:', error); 
       }
-      finally { setIsDataLoading(false); }
-    };
-    fetchAllData();
+      
+      if (data.contacts) setContactsData(data.contacts);
+      if (data.invitations) setInvitationData(data.invitations);
+      if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+    } catch (error) { 
+      console.error('❌ Data fetch error:', error); 
+    } finally { 
+      setIsDataLoading(false); 
+    }
+  };
+  
+  fetchAllData();
 
-    const loadAccountsPDFs = async () => {
-      try {
-        const response = await fetch('/data/accountsPDFs.json');
-        if (response.ok) {
-          const data = await response.json();
-          setAccountsPDFs(data);
-        }
-      } catch (error) {
-        console.log('Failed to load accounts PDFs:', error);
+  const loadAccountsPDFs = async () => {
+    try {
+      const response = await fetch('/data/accountsPDFs.json');
+      if (response.ok) {
+        const data = await response.json();
+        setAccountsPDFs(data);
       }
-    };
-    loadAccountsPDFs();
-  }, [isLoggedIn, loggedInUser]);
-
+    } catch (error) {
+      console.log('Failed to load accounts PDFs:', error);
+    }
+  };
+  
+  loadAccountsPDFs();
+}, [isLoggedIn, loggedInUser]);
+  
   // ===== LOGIN HANDLER =====
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
