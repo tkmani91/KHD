@@ -1,0 +1,29 @@
+{
+  "contacts": [
+    {
+      "id": "1",
+      "name": "সমর কুমার চক্রবর্তী",
+      "mobile": "01724982790",
+      "address": "কুমার পাড়া",
+      "occupation": "পুরোহিত",
+      "photo": "https://i.ibb.co.com/3m0sqgk8/SAMAR.jpg"
+    },
+    {
+      "id": "2",
+      "name": "গৌর",
+      "mobile": "01753838412",
+      "address": "রাখালগাছা সিংড়া",
+      "occupation": "ঢাকওয়ালা",
+      "photo": ""
+    },
+    {
+      "id": "3",
+      "name": "আনোয়ার সরদার",
+      "mobile": "01757909116",
+      "address": "বড় সাঐল বুদা বাজার",
+      "occupation": "নৌকাওয়ালা",
+      "photo": ""
+    }
+  ],
+  "pdfLink": ""
+}
