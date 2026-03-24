@@ -15,12 +15,12 @@ interface JSONFile {
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
 }
-
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
 const JSONEditor: React.FC = () => {
+  // Basic states
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -45,18 +45,18 @@ const JSONEditor: React.FC = () => {
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
 
-  // Invitations special states (এলাকা ভিত্তিক ফিল্টার)
+  // Invitations special states
   const [selectedArea, setSelectedArea] = useState<string>('');
   
-  // Quiz special states (বছর ভিত্তিক ফিল্টার)
+  // Quiz special states
   const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
-
-  // ============================================
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number>(0);
+  const [questionFormData, setQuestionFormData] = useState<any>({});
+    // ============================================
   // JSON FILES CONFIGURATION (১৪টি ফাইল)
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
-    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -65,7 +65,6 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
-    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -75,7 +74,6 @@ const JSONEditor: React.FC = () => {
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
-    // 3. যোগাযোগ (🆕 নতুন)
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -85,7 +83,6 @@ const JSONEditor: React.FC = () => {
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
-    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -94,7 +91,6 @@ const JSONEditor: React.FC = () => {
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
-    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -102,7 +98,6 @@ const JSONEditor: React.FC = () => {
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
-    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -111,7 +106,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
-    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -120,7 +114,6 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
-    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -129,7 +122,6 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
-    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -138,7 +130,6 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
-    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -146,7 +137,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
-    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -154,7 +144,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
-    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -163,7 +152,6 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
-    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -172,7 +160,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
-    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -184,8 +171,7 @@ const JSONEditor: React.FC = () => {
   ];
 
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
-
-  // ============================================
+    // ============================================
   // PUJA TYPES FOR GALLERY
   // ============================================
 
@@ -226,7 +212,6 @@ const JSONEditor: React.FC = () => {
     rath: '🎪 রথযাত্রা'
   };
 
-  // Schedule day labels
   const scheduleDayLabels: Record<string, string> = {
     'mahalaya': 'মহালয়া',
     'panchami': 'পঞ্চমী',
@@ -237,8 +222,35 @@ const JSONEditor: React.FC = () => {
     'dashami': 'দশমী'
   };
 
-  // ============================================
-  // LOAD JSON DATA
+  const labelMap: Record<string, string> = {
+    id: 'আইডি', title: 'শিরোনাম', name: 'নাম', description: 'বর্ণনা', details: 'বিবরণ',
+    date: 'তারিখ', dateEn: 'তারিখ (EN)', year: 'বছর', month: 'মাস', time: 'সময়', day: 'দিন',
+    eventDate: 'অনুষ্ঠানের তারিখ', venue: 'স্থান',
+    priority: 'প্রাধান্য', category: 'ক্যাটাগরি', status: 'স্ট্যাটাস',
+    question: 'প্রশ্ন', answer: 'উত্তর', keywords: 'কীওয়ার্ড', questions: 'প্রশ্নসমূহ',
+    role: 'পদবী', phone: 'ফোন', email: 'ইমেইল', address: 'ঠিকানা', area: 'এলাকা',
+    username: 'ইউজারনেম', password: 'পাসওয়ার্ড',
+    imageUrl: 'ছবি URL', image: 'ছবি', photo: 'ফটো', thumbnail: 'থাম্বনেইল', 
+    caption: 'ক্যাপশন', logo: 'লোগো',
+    audioUrl: 'অডিও URL', url: 'লিংক', pdfUrl: 'PDF URL', streamUrl: 'স্ট্রিম URL',
+    pdfLink: 'PDF লিংক',
+    location: 'স্থান', artist: 'শিল্পী', duration: 'সময়কাল',
+    channelName: 'চ্যানেল', fileName: 'ফাইল নাম', size: 'সাইজ',
+    pujaName: 'পূজার নাম', pujaType: 'পূজার ধরন',
+    mobile: 'মোবাইল', occupation: 'পেশা', designation: 'পদবী',
+    personName: 'ব্যক্তির নাম', familyName: 'পরিবারের নাম', familyCount: 'পরিবারের সদস্য',
+    dueAmount: 'বকেয়া', paidAmount: 'পরিশোধিত', remainingAmount: 'অবশিষ্ট',
+    lastPaymentDate: 'শেষ পেমেন্ট', paymentMethod: 'পেমেন্ট মাধ্যম',
+    transactionId: 'ট্রানজেকশন ID',
+    isLive: 'লাইভ?', isActive: 'সক্রিয়?',
+    streamType: 'স্ট্রিম টাইপ', offlineMessage: 'অফলাইন মেসেজ',
+    message: 'মেসেজ', instructions: 'নির্দেশনা',
+    totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
+    lastUpdated: 'সর্বশেষ আপডেট',
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
+  };
+    // ============================================
+  // LOAD JSON DATA - Main useEffect
   // ============================================
 
   useEffect(() => {
@@ -252,6 +264,8 @@ const JSONEditor: React.FC = () => {
       setMemberFilter('all');
       setSelectedArea('');
       setSelectedQuizYear('');
+      setSelectedQuestionIndex(0);
+      setQuestionFormData({});
       
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
@@ -332,7 +346,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার - Array format)
+  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার)
   // ============================================
 
   const handleQuizData = (data: any) => {
@@ -350,94 +364,16 @@ const JSONEditor: React.FC = () => {
       setJsonData(filteredData);
       setSelectedItemIndex(0);
       setFormData(filteredData[0] || {});
+      
+      // Set first question
+      if (filteredData[0]?.questions?.length > 0) {
+        setSelectedQuestionIndex(0);
+        setQuestionFormData(filteredData[0].questions[0]);
+      }
     } else {
       setJsonData(data);
       setSelectedItemIndex(0);
       setFormData(data[0] || {});
-    }
-  };
-
-  // ============================================
-  // GET INVITATION AREAS
-  // ============================================
-
-  const getInvitationAreas = (): string[] => {
-    if (!rawData || !rawData.invitations || !Array.isArray(rawData.invitations)) return [];
-    return [...new Set(rawData.invitations.map((item: any) => item.area))].filter(Boolean) as string[];
-  };
-
-  // ============================================
-  // GET QUIZ YEARS
-  // ============================================
-
-  const getQuizYears = (): string[] => {
-    if (!rawData || !Array.isArray(rawData)) return [];
-    return [...new Set(rawData.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
-  };
-
-  // ============================================
-  // INVITATION AREA FILTER EFFECT
-  // ============================================
-
-  useEffect(() => {
-    if (currentFile?.type === 'invitations-special' && rawData?.invitations && selectedArea && selectedSection === 'invitations') {
-      const filteredData = rawData.invitations.filter((item: any) => item.area === selectedArea);
-      setJsonData(filteredData);
-      setSelectedItemIndex(0);
-      setFormData(filteredData[0] || {});
-    }
-  }, [selectedArea]);
-
-  // ============================================
-  // QUIZ YEAR FILTER EFFECT
-  // ============================================
-
-  useEffect(() => {
-    if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData) && selectedQuizYear) {
-      const filteredData = rawData.filter((item: any) => item.year?.toString() === selectedQuizYear);
-      setJsonData(filteredData);
-      setSelectedItemIndex(0);
-      setFormData(filteredData[0] || {});
-    }
-  }, [selectedQuizYear]);
-
-  // ============================================
-  // PROCESS FUND COLLECTION FILE (dynamicContent.json)
-  // ============================================
-
-  const processFundCollectionFile = (data: any, section: string) => {
-    if (section === 'fundCollection') {
-      const fc = data.fundCollection || {};
-      
-      const settings = {
-        isActive: fc.isActive ?? true,
-        year: fc.year || '',
-        pujaName: fc.pujaName || '',
-        message: fc.message || '',
-        instructions: fc.instructions || [],
-        totalDue: fc.totalDue || 0,
-        totalPaid: fc.totalPaid || 0,
-        totalRemaining: fc.totalRemaining || 0,
-        lastUpdated: fc.lastUpdated || ''
-      };
-      setFundSettings(settings);
-      
-      const members = fc.members || [];
-      setFundMembers(members);
-      
-      const stats = fc.paymentStats || {
-        totalMembers: members.length,
-        paidMembers: members.filter((m: any) => m.status === 'paid').length,
-        partialMembers: members.filter((m: any) => m.status === 'partial').length,
-        unpaidMembers: members.filter((m: any) => m.status === 'unpaid').length,
-        paymentPercentage: 0
-      };
-      setPaymentStats(stats);
-      
-      setJsonData([]);
-      setFormData({});
-    } else {
-      processSection(data, section);
     }
   };
 
@@ -497,6 +433,46 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
+  // PROCESS FUND COLLECTION FILE
+  // ============================================
+
+  const processFundCollectionFile = (data: any, section: string) => {
+    if (section === 'fundCollection') {
+      const fc = data.fundCollection || {};
+      
+      const settings = {
+        isActive: fc.isActive ?? true,
+        year: fc.year || '',
+        pujaName: fc.pujaName || '',
+        message: fc.message || '',
+        instructions: fc.instructions || [],
+        totalDue: fc.totalDue || 0,
+        totalPaid: fc.totalPaid || 0,
+        totalRemaining: fc.totalRemaining || 0,
+        lastUpdated: fc.lastUpdated || ''
+      };
+      setFundSettings(settings);
+      
+      const members = fc.members || [];
+      setFundMembers(members);
+      
+      const stats = fc.paymentStats || {
+        totalMembers: members.length,
+        paidMembers: members.filter((m: any) => m.status === 'paid').length,
+        partialMembers: members.filter((m: any) => m.status === 'partial').length,
+        unpaidMembers: members.filter((m: any) => m.status === 'unpaid').length,
+        paymentPercentage: 0
+      };
+      setPaymentStats(stats);
+      
+      setJsonData([]);
+      setFormData({});
+    } else {
+      processSection(data, section);
+    }
+  };
+
+  // ============================================
   // PROCESS SECTION
   // ============================================
 
@@ -507,7 +483,6 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
-    // Handle pdfLink as single string
     if (section === 'pdfLink') {
       const pdfLinkValue = data.pdfLink || '';
       setJsonData([{ pdfLink: pdfLinkValue }]);
@@ -552,8 +527,10 @@ const JSONEditor: React.FC = () => {
       setSelectedItemIndex(0);
     }
   };
+    // ============================================
+  // SECTION CHANGE EFFECT
+  // ============================================
 
-  // Section change effect
   useEffect(() => {
     if (rawData && selectedSection) {
       if (currentFile?.type === 'fund-collection-special') {
@@ -572,13 +549,70 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedSection]);
 
+  // ============================================
+  // ITEM INDEX CHANGE EFFECT
+  // ============================================
+
   useEffect(() => {
     if (jsonData.length > 0 && jsonData[selectedItemIndex]) {
       setFormData({ ...jsonData[selectedItemIndex] });
+      
+      // Quiz: Set first question when quiz changes
+      if (currentFile?.type === 'quiz-special' && jsonData[selectedItemIndex]?.questions?.length > 0) {
+        setSelectedQuestionIndex(0);
+        setQuestionFormData({ ...jsonData[selectedItemIndex].questions[0] });
+      }
     }
   }, [selectedItemIndex, jsonData]);
 
-  // Gallery filter effect
+  // ============================================
+  // QUIZ QUESTION INDEX CHANGE EFFECT
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'quiz-special' && jsonData[selectedItemIndex]?.questions) {
+      const questions = jsonData[selectedItemIndex].questions;
+      if (questions[selectedQuestionIndex]) {
+        setQuestionFormData({ ...questions[selectedQuestionIndex] });
+      }
+    }
+  }, [selectedQuestionIndex]);
+
+  // ============================================
+  // INVITATION AREA FILTER EFFECT
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'invitations-special' && rawData?.invitations && selectedArea && selectedSection === 'invitations') {
+      const filteredData = rawData.invitations.filter((item: any) => item.area === selectedArea);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    }
+  }, [selectedArea]);
+
+  // ============================================
+  // QUIZ YEAR FILTER EFFECT
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData) && selectedQuizYear) {
+      const filteredData = rawData.filter((item: any) => item.year?.toString() === selectedQuizYear);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+      
+      if (filteredData[0]?.questions?.length > 0) {
+        setSelectedQuestionIndex(0);
+        setQuestionFormData({ ...filteredData[0].questions[0] });
+      }
+    }
+  }, [selectedQuizYear]);
+
+  // ============================================
+  // GALLERY FILTER EFFECT
+  // ============================================
+
   useEffect(() => {
     if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
       const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
@@ -597,8 +631,7 @@ const JSONEditor: React.FC = () => {
       setFormData(filteredData[0] || {});
     }
   }, [selectedYear, selectedPujaType]);
-
-  // ============================================
+    // ============================================
   // HELPER FUNCTIONS
   // ============================================
 
@@ -611,6 +644,16 @@ const JSONEditor: React.FC = () => {
     if (!rawData || !Array.isArray(rawData) || !selectedYear) return [];
     const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
     return [...new Set(yearData.map((item: any) => item.pujaType || item.category))].filter(Boolean);
+  };
+
+  const getInvitationAreas = (): string[] => {
+    if (!rawData || !rawData.invitations || !Array.isArray(rawData.invitations)) return [];
+    return [...new Set(rawData.invitations.map((item: any) => item.area))].filter(Boolean) as string[];
+  };
+
+  const getQuizYears = (): string[] => {
+    if (!rawData || !Array.isArray(rawData)) return [];
+    return [...new Set(rawData.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
   };
 
   const getFilteredMembers = () => {
@@ -643,8 +686,10 @@ const JSONEditor: React.FC = () => {
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
-  // ============================================
-  // HANDLERS
+  const btnClass = (active: boolean) => 
+    `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
+    // ============================================
+  // BASIC HANDLERS
   // ============================================
 
   const handleFieldChange = (key: string, value: any) => {
@@ -663,6 +708,10 @@ const JSONEditor: React.FC = () => {
 
   const handlePaymentStatsChange = (key: string, value: any) => {
     setPaymentStats((prev: any) => ({ ...prev, [key]: value }));
+  };
+
+  const handleQuestionChange = (key: string, value: any) => {
+    setQuestionFormData((prev: any) => ({ ...prev, [key]: value }));
   };
 
   const recalculateStats = () => {
@@ -692,10 +741,146 @@ const JSONEditor: React.FC = () => {
 
     alert('✅ পরিসংখ্যান পুনরায় গণনা করা হয়েছে!');
   };
+    // ============================================
+  // QUIZ QUESTION HANDLERS
+  // ============================================
+
+  const saveQuestion = () => {
+    if (!jsonData[selectedItemIndex]) return;
+    
+    const currentQuiz = jsonData[selectedItemIndex];
+    const questions = currentQuiz.questions || [];
+    
+    const updatedQuestions = [...questions];
+    updatedQuestions[selectedQuestionIndex] = { ...questionFormData };
+    
+    const updatedQuiz = { ...currentQuiz, questions: updatedQuestions };
+    const updatedJsonData = [...jsonData];
+    updatedJsonData[selectedItemIndex] = updatedQuiz;
+    setJsonData(updatedJsonData);
+    setFormData(updatedQuiz);
+    
+    // Update rawData
+    if (rawData && Array.isArray(rawData)) {
+      const newRawData = rawData.map((item: any) => {
+        if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
+          return updatedQuiz;
+        }
+        return item;
+      });
+      setRawData(newRawData);
+    }
+    
+    alert('✅ প্রশ্ন সংরক্ষিত!');
+  };
+
+  const addQuestion = () => {
+    if (!jsonData[selectedItemIndex]) return;
+    
+    const currentQuiz = jsonData[selectedItemIndex];
+    const questions = currentQuiz.questions || [];
+    
+    const maxId = questions.reduce((max: number, q: any) => Math.max(max, q.id || 0), 0);
+    const newQuestion = {
+      id: maxId + 1,
+      question: '',
+      answer: ''
+    };
+    
+    const updatedQuiz = { ...currentQuiz, questions: [...questions, newQuestion] };
+    const updatedJsonData = [...jsonData];
+    updatedJsonData[selectedItemIndex] = updatedQuiz;
+    setJsonData(updatedJsonData);
+    setFormData(updatedQuiz);
+    
+    // Update rawData
+    if (rawData && Array.isArray(rawData)) {
+      const newRawData = rawData.map((item: any) => {
+        if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
+          return updatedQuiz;
+        }
+        return item;
+      });
+      setRawData(newRawData);
+    }
+    
+    setSelectedQuestionIndex(questions.length);
+    setQuestionFormData(newQuestion);
+    
+    alert('➕ নতুন প্রশ্ন যোগ হয়েছে!');
+  };
+
+  const deleteQuestion = () => {
+    if (!jsonData[selectedItemIndex]) return;
+    
+    const currentQuiz = jsonData[selectedItemIndex];
+    const questions = currentQuiz.questions || [];
+    
+    if (questions.length <= 1) {
+      alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
+      return;
+    }
+    
+    if (!window.confirm('⚠️ এই প্রশ্ন মুছতে চান?')) return;
+    
+    const updatedQuestions = questions.filter((_: any, i: number) => i !== selectedQuestionIndex);
+    const updatedQuiz = { ...currentQuiz, questions: updatedQuestions };
+    const updatedJsonData = [...jsonData];
+    updatedJsonData[selectedItemIndex] = updatedQuiz;
+    setJsonData(updatedJsonData);
+    setFormData(updatedQuiz);
+    
+    // Update rawData
+    if (rawData && Array.isArray(rawData)) {
+      const newRawData = rawData.map((item: any) => {
+        if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
+          return updatedQuiz;
+        }
+        return item;
+      });
+      setRawData(newRawData);
+    }
+    
+    const newIndex = Math.max(0, selectedQuestionIndex - 1);
+    setSelectedQuestionIndex(newIndex);
+    setQuestionFormData(updatedQuestions[newIndex] || {});
+    
+    alert('🗑️ প্রশ্ন মুছে ফেলা হয়েছে!');
+  };
+    // ============================================
+  // SAVE ITEM HANDLER
+  // ============================================
 
   const handleSaveItem = () => {
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
       alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+      return;
+    }
+
+    if (currentFile?.type === 'quiz-special') {
+      // Save quiz info (not questions - those are saved separately)
+      const updatedQuiz = { 
+        ...jsonData[selectedItemIndex], 
+        title: formData.title,
+        year: formData.year,
+        eventDate: formData.eventDate,
+        venue: formData.venue
+      };
+      const updatedJsonData = [...jsonData];
+      updatedJsonData[selectedItemIndex] = updatedQuiz;
+      setJsonData(updatedJsonData);
+      
+      if (rawData && Array.isArray(rawData)) {
+        const newRawData = rawData.map((item: any, idx: number) => {
+          if (item.year === jsonData[selectedItemIndex].year && item.title === jsonData[selectedItemIndex].title) {
+            return updatedQuiz;
+          }
+          return item;
+        });
+        setRawData(newRawData);
+      }
+      
+      alert('✅ কুইজ তথ্য সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
       return;
     }
 
@@ -715,14 +900,6 @@ const JSONEditor: React.FC = () => {
       const newRawData = { ...rawData };
       newRawData.invitations = rawData.invitations.map((item: any) => {
         if (item.id === formData.id) {
-          return { ...formData };
-        }
-        return item;
-      });
-      setRawData(newRawData);
-    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
-      const newRawData = rawData.map((item: any) => {
-        if (item.year === formData.year && item.title === jsonData[selectedItemIndex]?.title) {
           return { ...formData };
         }
         return item;
@@ -750,8 +927,12 @@ const JSONEditor: React.FC = () => {
     
     alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
   };
+    // ============================================
+  // ADD ITEM HANDLER
+  // ============================================
 
   const handleAddItem = () => {
+    // Fund Collection Members
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
       const maxId = fundMembers.reduce((max, m) => Math.max(max, parseInt(m.id) || 0), 0);
       const newMember = {
@@ -772,6 +953,7 @@ const JSONEditor: React.FC = () => {
 
     if (!Array.isArray(jsonData)) return;
     
+    // Gallery
     if (currentFile?.type === 'gallery-special') {
       const newId = `img_${Date.now()}`;
       const template = {
@@ -793,6 +975,7 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
+    // Invitations
     if (currentFile?.type === 'invitations-special' && selectedSection === 'invitations') {
       const maxId = rawData?.invitations?.reduce((max: number, item: any) => Math.max(max, parseInt(item.id) || 0), 0) || 0;
       const template = {
@@ -814,13 +997,16 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
+    // Quiz
     if (currentFile?.type === 'quiz-special') {
       const template = {
         year: parseInt(selectedQuizYear) || new Date().getFullYear(),
         title: `কুইজ প্রতিযোগিতা ${selectedQuizYear || new Date().getFullYear()}`,
         eventDate: '',
         venue: 'কলম হিন্দু ধর্মসভা মন্দির',
-        questions: []
+        questions: [
+          { id: 1, question: '', answer: '' }
+        ]
       };
       
       const newRawData = [...(rawData || []), template];
@@ -830,10 +1016,13 @@ const JSONEditor: React.FC = () => {
       setJsonData(filteredData);
       setSelectedItemIndex(filteredData.length - 1);
       setFormData(template);
+      setSelectedQuestionIndex(0);
+      setQuestionFormData(template.questions[0]);
       alert('➕ নতুন কুইজ যোগ হয়েছে!');
       return;
     }
 
+    // Accounts PDF
     if (currentFile?.type === 'accounts-special') {
       const currentYear = new Date().getFullYear();
       const existingYears = jsonData.map(item => parseInt(item.year));
@@ -852,6 +1041,7 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
+    // Quick Replies / Fallback Messages
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, item.id || 0), 0);
       const template = { id: maxId + 1, text: '' };
@@ -863,6 +1053,7 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
+    // Contacts
     if (selectedSection === 'contacts') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
       const template = {
@@ -878,7 +1069,6 @@ const JSONEditor: React.FC = () => {
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
       
-      // Update rawData
       const newRawData = { ...rawData };
       newRawData.contacts = updatedData;
       setRawData(newRawData);
@@ -887,6 +1077,7 @@ const JSONEditor: React.FC = () => {
       return;
     }
     
+    // Default: Clone first item
     const template = jsonData[0] ? { ...jsonData[0] } : {};
     Object.keys(template).forEach(key => {
       if (key === 'id') {
@@ -906,8 +1097,12 @@ const JSONEditor: React.FC = () => {
     setFormData(template);
     alert('➕ নতুন আইটেম যোগ হয়েছে!');
   };
+    // ============================================
+  // DELETE ITEM HANDLER
+  // ============================================
 
   const handleDeleteItem = () => {
+    // Fund Collection Members
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
       if (fundMembers.length <= 1) {
         alert('❌ কমপক্ষে একজন সদস্য থাকতে হবে!');
@@ -929,20 +1124,27 @@ const JSONEditor: React.FC = () => {
     }
     if (!window.confirm('⚠️ মুছতে চান?')) return;
     
+    // Gallery
     if (currentFile?.type === 'gallery-special' && rawData) {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
-    } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+    } 
+    // Invitations
+    else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = { ...rawData };
       newRawData.invitations = rawData.invitations.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
-    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
+    } 
+    // Quiz
+    else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => !(item.year === itemToDelete.year && item.title === itemToDelete.title));
       setRawData(newRawData);
-    } else if (selectedSection === 'contacts' && rawData) {
+    } 
+    // Contacts
+    else if (selectedSection === 'contacts' && rawData) {
       const newRawData = { ...rawData };
       newRawData.contacts = jsonData.filter((_, i) => i !== selectedItemIndex);
       setRawData(newRawData);
@@ -955,6 +1157,10 @@ const JSONEditor: React.FC = () => {
     setFormData(updatedData[newIndex] || {});
     alert('🗑️ মুছে ফেলা হয়েছে!');
   };
+
+  // ============================================
+  // COPY JSON HANDLER
+  // ============================================
 
   const handleCopyJSON = () => {
     let finalData: any;
@@ -1019,49 +1225,18 @@ const JSONEditor: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  // ============================================
-  // LABEL MAPPING
-  // ============================================
-
-  const labelMap: Record<string, string> = {
-    id: 'আইডি', title: 'শিরোনাম', name: 'নাম', description: 'বর্ণনা', details: 'বিবরণ',
-    date: 'তারিখ', dateEn: 'তারিখ (EN)', year: 'বছর', month: 'মাস', time: 'সময়', day: 'দিন',
-    eventDate: 'অনুষ্ঠানের তারিখ', venue: 'স্থান',
-    priority: 'প্রাধান্য', category: 'ক্যাটাগরি', status: 'স্ট্যাটাস',
-    question: 'প্রশ্ন', answer: 'উত্তর', keywords: 'কীওয়ার্ড', questions: 'প্রশ্নসমূহ',
-    role: 'পদবী', phone: 'ফোন', email: 'ইমেইল', address: 'ঠিকানা', area: 'এলাকা',
-    username: 'ইউজারনেম', password: 'পাসওয়ার্ড',
-    imageUrl: 'ছবি URL', image: 'ছবি', photo: 'ফটো', thumbnail: 'থাম্বনেইল', 
-    caption: 'ক্যাপশন', logo: 'লোগো',
-    audioUrl: 'অডিও URL', url: 'লিংক', pdfUrl: 'PDF URL', streamUrl: 'স্ট্রিম URL',
-    pdfLink: 'PDF লিংক',
-    location: 'স্থান', artist: 'শিল্পী', duration: 'সময়কাল',
-    channelName: 'চ্যানেল', fileName: 'ফাইল নাম', size: 'সাইজ',
-    pujaName: 'পূজার নাম', pujaType: 'পূজার ধরন',
-    mobile: 'মোবাইল', occupation: 'পেশা', designation: 'পদবী',
-    personName: 'ব্যক্তির নাম', familyName: 'পরিবারের নাম', familyCount: 'পরিবারের সদস্য',
-    dueAmount: 'বকেয়া', paidAmount: 'পরিশোধিত', remainingAmount: 'অবশিষ্ট',
-    lastPaymentDate: 'শেষ পেমেন্ট', paymentMethod: 'পেমেন্ট মাধ্যম',
-    transactionId: 'ট্রানজেকশন ID',
-    isLive: 'লাইভ?', isActive: 'সক্রিয়?',
-    streamType: 'স্ট্রিম টাইপ', offlineMessage: 'অফলাইন মেসেজ',
-    message: 'মেসেজ', instructions: 'নির্দেশনা',
-    totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
-    lastUpdated: 'সর্বশেষ আপডেট',
-    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
-  };
-
-  // ============================================
+    // ============================================
   // RENDER FORM FIELD
   // ============================================
 
   const renderFormField = (key: string, value: any) => {
     if (key.startsWith('_') || value === undefined) return null;
+    if (key === 'questions' && currentFile?.type === 'quiz-special') return null; // Quiz questions handled separately
     
     const label = labelMap[key] || key;
     const fileConfig = currentFile;
 
+    // ID Field (readonly)
     if (key === 'id') {
       return (
         <div key={key} className="form-field">
@@ -1099,26 +1274,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Questions array for quiz
-    if (key === 'questions' && Array.isArray(value)) {
-      return (
-        <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {label} ({value.length} টি প্রশ্ন)
-          </label>
-          <div className="bg-gray-50 p-3 rounded-lg max-h-60 overflow-y-auto">
-            {value.map((q: any, idx: number) => (
-              <div key={idx} className="mb-2 p-2 bg-white rounded border text-xs">
-                <strong>প্রশ্ন {idx + 1}:</strong> {q.question}<br/>
-                <span className="text-green-600"><strong>উত্তর:</strong> {q.answer}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-1">* প্রশ্ন এডিট করতে JSON সরাসরি এডিট করুন</p>
-        </div>
-      );
-    }
-
+    // Puja Type for gallery
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
@@ -1134,6 +1290,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Image Preview
     if (fileConfig?.hasImagePreview && (key === 'url' || key === 'imageUrl' || key === 'image' || key === 'photo' || key === 'thumbnail')) {
       return (
         <div key={key} className="form-field">
@@ -1156,6 +1313,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Audio Preview
     if (fileConfig?.hasAudioPreview && (key === 'url' || key === 'audioUrl')) {
       return (
         <div key={key} className="form-field">
@@ -1175,6 +1333,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Textarea for long text
     if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'text'].includes(key))) {
       return (
         <div key={key} className="form-field">
@@ -1187,6 +1346,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Priority dropdown
     if (key === 'priority') {
       return (
         <div key={key} className="form-field">
@@ -1202,6 +1362,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Status dropdown
     if (key === 'status') {
       return (
         <div key={key} className="form-field">
@@ -1217,6 +1378,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Role dropdown
     if (key === 'role') {
       return (
         <div key={key} className="form-field">
@@ -1232,6 +1394,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Boolean checkbox
     if (typeof value === 'boolean') {
       return (
         <div key={key} className="form-field flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -1243,6 +1406,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // String array (one per line)
     if (Array.isArray(value) && value.every(v => typeof v === 'string')) {
       return (
         <div key={key} className="form-field">
@@ -1259,6 +1423,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Number input
     if (typeof value === 'number') {
       return (
         <div key={key} className="form-field">
@@ -1270,6 +1435,7 @@ const JSONEditor: React.FC = () => {
       );
     }
 
+    // Default text input
     return (
       <div key={key} className="form-field">
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
@@ -1279,8 +1445,201 @@ const JSONEditor: React.FC = () => {
       </div>
     );
   };
-
+    // ============================================
+  // RENDER QUIZ EDITOR
   // ============================================
+
+  const renderQuizEditor = () => {
+    if (currentFile?.type !== 'quiz-special') return null;
+
+    const currentQuiz = jsonData[selectedItemIndex];
+    const questions = currentQuiz?.questions || [];
+
+    return (
+      <div className="space-y-4">
+        {/* Quiz Selector */}
+        {jsonData.length > 0 && (
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <label className="text-sm font-bold text-gray-700">
+                📋 কুইজ নির্বাচন ({jsonData.length} টি):
+              </label>
+              <div className="flex gap-2">
+                <button onClick={handleAddItem} 
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                  <Plus className="w-4 h-4" /> কুইজ যোগ
+                </button>
+                <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                  <Trash2 className="w-4 h-4" /> মুছুন
+                </button>
+              </div>
+            </div>
+            {jsonData.length > 1 && (
+              <select value={selectedItemIndex} 
+                onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+                {jsonData.map((item: any, i: number) => (
+                  <option key={i} value={i}>
+                    #{i + 1} - {getItemDisplayName(item, i)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        {/* Quiz Info Section */}
+        <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-bold text-purple-800 flex items-center gap-2">
+              📝 কুইজ তথ্য এডিট
+            </h4>
+            <button onClick={handleSaveItem} 
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+              <Save className="w-4 h-4" /> তথ্য সংরক্ষণ
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label>
+              <input type="text" value={formData.title || ''} 
+                onChange={(e) => handleFieldChange('title', e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
+              <input type="number" value={formData.year || ''} 
+                onChange={(e) => handleFieldChange('year', parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">অনুষ্ঠানের তারিখ</label>
+              <input type="text" value={formData.eventDate || ''} 
+                onChange={(e) => handleFieldChange('eventDate', e.target.value)}
+                placeholder="১ অক্টোবর ২০২৫ (মহানবমী)"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">স্থান</label>
+              <input type="text" value={formData.venue || ''} 
+                onChange={(e) => handleFieldChange('venue', e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
+            </div>
+          </div>
+        </div>
+
+        {/* Questions Editor Section */}
+        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-bold text-green-800 flex items-center gap-2">
+              ❓ প্রশ্ন-উত্তর এডিটর ({questions.length} টি প্রশ্ন)
+            </h4>
+            <div className="flex gap-2">
+              <button onClick={addQuestion}
+                className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                <Plus className="w-4 h-4" /> প্রশ্ন যোগ
+              </button>
+              <button onClick={deleteQuestion} disabled={questions.length <= 1}
+                className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                <Trash2 className="w-4 h-4" /> মুছুন
+              </button>
+            </div>
+          </div>
+
+          {/* Question Selector */}
+          {questions.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">প্রশ্ন নির্বাচন করুন:</label>
+              <select value={selectedQuestionIndex} 
+                onChange={(e) => setSelectedQuestionIndex(Number(e.target.value))}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
+                {questions.map((q: any, i: number) => (
+                  <option key={i} value={i}>
+                    প্রশ্ন #{q.id || i + 1}: {q.question ? (q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '')) : 'নতুন প্রশ্ন'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Question Edit Form */}
+          {questions.length > 0 && (
+            <div className="bg-white p-4 rounded-lg border space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h5 className="font-semibold text-green-700">
+                  প্রশ্ন #{questionFormData.id || selectedQuestionIndex + 1} এডিট
+                </h5>
+                <button onClick={saveQuestion}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+                  <Save className="w-4 h-4" /> প্রশ্ন সংরক্ষণ
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  🤔 প্রশ্ন
+                </label>
+                <textarea 
+                  value={questionFormData.question || ''} 
+                  onChange={(e) => handleQuestionChange('question', e.target.value)}
+                  rows={3}
+                  placeholder="প্রশ্ন লিখুন..."
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  ✅ উত্তর
+                </label>
+                <textarea 
+                  value={questionFormData.answer || ''} 
+                  onChange={(e) => handleQuestionChange('answer', e.target.value)}
+                  rows={2}
+                  placeholder="উত্তর লিখুন..."
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" 
+                />
+              </div>
+            </div>
+          )}
+
+          {/* All Questions Preview */}
+          {questions.length > 0 && (
+            <div className="mt-4">
+              <h5 className="font-semibold text-gray-700 mb-2">📋 সকল প্রশ্ন প্রিভিউ:</h5>
+              <div className="bg-white rounded-lg border max-h-60 overflow-y-auto">
+                {questions.map((q: any, idx: number) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => setSelectedQuestionIndex(idx)}
+                    className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition ${
+                      selectedQuestionIndex === idx ? 'bg-green-50 border-l-4 border-l-green-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">
+                        #{q.id || idx + 1}
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">{q.question || 'প্রশ্ন নেই'}</p>
+                        <p className="text-xs text-green-600 mt-1">উত্তর: {q.answer || 'উত্তর নেই'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+    // ============================================
   // RENDER FUND COLLECTION EDITOR
   // ============================================
 
@@ -1452,9 +1811,8 @@ const JSONEditor: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
-
-                                          onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0} 
+                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
                   </div>
                   
@@ -1582,8 +1940,7 @@ const JSONEditor: React.FC = () => {
       </div>
     );
   };
-
-  // ============================================
+    // ============================================
   // RENDER ACCOUNTS PDF EDITOR
   // ============================================
 
@@ -1696,10 +2053,10 @@ const JSONEditor: React.FC = () => {
       </div>
     );
   };
-
-  // ============================================
+    // ============================================
   // GENERATE JSON
   // ============================================
+
   const generatedJSON = (() => {
     let finalData: any;
 
@@ -1761,12 +2118,8 @@ const JSONEditor: React.FC = () => {
 
     return JSON.stringify(finalData, null, 2);
   })();
-
-  const btnClass = (active: boolean) => 
-    `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
-
-  // ============================================
-  // RENDER
+    // ============================================
+  // MAIN RETURN - UI RENDER
   // ============================================
 
   return (
@@ -1783,6 +2136,7 @@ const JSONEditor: React.FC = () => {
         <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
       </div>
 
+      {/* Error Message */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
           <p className="text-red-800 font-semibold">❌ {error}</p>
@@ -1918,10 +2272,12 @@ const JSONEditor: React.FC = () => {
         <div className="bg-white rounded-xl p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
             <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
-            <button onClick={handleSaveItem} 
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-              <Save className="w-4 h-4" /> সংরক্ষণ
-            </button>
+            {currentFile?.type !== 'quiz-special' && (
+              <button onClick={handleSaveItem} 
+                className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+                <Save className="w-4 h-4" /> সংরক্ষণ
+              </button>
+            )}
           </div>
           
           <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
@@ -1934,6 +2290,8 @@ const JSONEditor: React.FC = () => {
               renderFundCollectionEditor()
             ) : currentFile?.type === 'accounts-special' ? (
               renderAccountsPdfEditor()
+            ) : currentFile?.type === 'quiz-special' ? (
+              renderQuizEditor()
             ) : (
               <>
                 {/* Item Selector for other types */}
