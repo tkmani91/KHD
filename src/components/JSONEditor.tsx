@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -10,7 +10,7 @@ interface JSONFile {
   label: string;
   url: string;
   path: string;
-  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special' | 'fund-collection-special';
+  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special' | 'fund-collection-special' | 'invitations-special' | 'quiz-special';
   sections?: string[];
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
@@ -45,11 +45,18 @@ const JSONEditor: React.FC = () => {
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
 
+  // Invitations special states (এলাকা ভিত্তিক ফিল্টার)
+  const [selectedArea, setSelectedArea] = useState<string>('');
+  
+  // Quiz special states (বছর ভিত্তিক ফিল্টার)
+  const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
+
   // ============================================
-  // JSON FILES CONFIGURATION
+  // JSON FILES CONFIGURATION (১৪টি ফাইল)
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
+    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -58,15 +65,44 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
+    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
       url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json',
       path: 'members-data.json',
       type: 'nested-sections',
-      sections: ['members', 'contacts', 'invitations', 'pdfLinks'],
+      sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
+    // 3. যোগাযোগ (🆕 নতুন)
+    {
+      id: 'contactsData',
+      label: '📞 যোগাযোগ',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json',
+      path: 'contacts.json',
+      type: 'nested-sections',
+      sections: ['contacts', 'pdfLink'],
+      hasImagePreview: true
+    },
+    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
+    {
+      id: 'invitationsData',
+      label: '💌 নিমন্ত্রণ',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/invitations.json',
+      path: 'invitations.json',
+      type: 'invitations-special',
+      sections: ['invitations', 'pdfLink']
+    },
+    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
+    {
+      id: 'quizData',
+      label: '❓ কুইজ',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json',
+      path: 'quiz-archive.json',
+      type: 'quiz-special'
+    },
+    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -75,6 +111,7 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
+    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -83,6 +120,7 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
+    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -91,6 +129,7 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
+    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -99,6 +138,7 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
+    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -106,6 +146,7 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
+    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -113,6 +154,7 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
+    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -121,6 +163,7 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
+    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -129,6 +172,7 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
+    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -165,6 +209,7 @@ const JSONEditor: React.FC = () => {
     contacts: '📞 যোগাযোগ',
     invitations: '💌 নিমন্ত্রণ',
     pdfLinks: '📄 PDF লিংক',
+    pdfLink: '📄 PDF লিংক',
     accountsMembers: '🔑 Admin সদস্য',
     normalMembers: '👤 সাধারণ সদস্য',
     welcomeMessage: '👋 স্বাগত বার্তা',
@@ -205,6 +250,8 @@ const JSONEditor: React.FC = () => {
       setSelectedPdfYear('');
       setFundSubSection('settings');
       setMemberFilter('all');
+      setSelectedArea('');
+      setSelectedQuizYear('');
       
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
@@ -233,6 +280,11 @@ const JSONEditor: React.FC = () => {
         } else if (file.type === 'fund-collection-special') {
           setSelectedSection('notices');
           processFundCollectionFile(data, 'notices');
+        } else if (file.type === 'invitations-special') {
+          setSelectedSection('invitations');
+          handleInvitationsData(data);
+        } else if (file.type === 'quiz-special') {
+          handleQuizData(data);
         } else if (file.type === 'nested-sections' && file.sections) {
           setSelectedSection(file.sections[0]);
           processSection(data, file.sections[0]);
@@ -253,6 +305,103 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   // ============================================
+  // HANDLE INVITATIONS DATA (এলাকা ভিত্তিক ফিল্টার)
+  // ============================================
+
+  const handleInvitationsData = (data: any) => {
+    if (!data || !data.invitations || !Array.isArray(data.invitations)) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
+
+    const invitations = data.invitations;
+    const areas = [...new Set(invitations.map((item: any) => item.area))].filter(Boolean) as string[];
+    
+    if (areas.length > 0) {
+      setSelectedArea(areas[0]);
+      const filteredData = invitations.filter((item: any) => item.area === areas[0]);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    } else {
+      setJsonData(invitations);
+      setSelectedItemIndex(0);
+      setFormData(invitations[0] || {});
+    }
+  };
+
+  // ============================================
+  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার - Array format)
+  // ============================================
+
+  const handleQuizData = (data: any) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
+
+    const years = [...new Set(data.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
+    
+    if (years.length > 0) {
+      setSelectedQuizYear(years[0]);
+      const filteredData = data.filter((item: any) => item.year?.toString() === years[0]);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    } else {
+      setJsonData(data);
+      setSelectedItemIndex(0);
+      setFormData(data[0] || {});
+    }
+  };
+
+  // ============================================
+  // GET INVITATION AREAS
+  // ============================================
+
+  const getInvitationAreas = (): string[] => {
+    if (!rawData || !rawData.invitations || !Array.isArray(rawData.invitations)) return [];
+    return [...new Set(rawData.invitations.map((item: any) => item.area))].filter(Boolean) as string[];
+  };
+
+  // ============================================
+  // GET QUIZ YEARS
+  // ============================================
+
+  const getQuizYears = (): string[] => {
+    if (!rawData || !Array.isArray(rawData)) return [];
+    return [...new Set(rawData.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
+  };
+
+  // ============================================
+  // INVITATION AREA FILTER EFFECT
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'invitations-special' && rawData?.invitations && selectedArea && selectedSection === 'invitations') {
+      const filteredData = rawData.invitations.filter((item: any) => item.area === selectedArea);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    }
+  }, [selectedArea]);
+
+  // ============================================
+  // QUIZ YEAR FILTER EFFECT
+  // ============================================
+
+  useEffect(() => {
+    if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData) && selectedQuizYear) {
+      const filteredData = rawData.filter((item: any) => item.year?.toString() === selectedQuizYear);
+      setJsonData(filteredData);
+      setSelectedItemIndex(0);
+      setFormData(filteredData[0] || {});
+    }
+  }, [selectedQuizYear]);
+
+  // ============================================
   // PROCESS FUND COLLECTION FILE (dynamicContent.json)
   // ============================================
 
@@ -260,7 +409,6 @@ const JSONEditor: React.FC = () => {
     if (section === 'fundCollection') {
       const fc = data.fundCollection || {};
       
-      // Extract settings
       const settings = {
         isActive: fc.isActive ?? true,
         year: fc.year || '',
@@ -274,11 +422,9 @@ const JSONEditor: React.FC = () => {
       };
       setFundSettings(settings);
       
-      // Extract members
       const members = fc.members || [];
       setFundMembers(members);
       
-      // Extract payment stats
       const stats = fc.paymentStats || {
         totalMembers: members.length,
         paidMembers: members.filter((m: any) => m.status === 'paid').length,
@@ -355,13 +501,27 @@ const JSONEditor: React.FC = () => {
   // ============================================
 
   const processSection = (data: any, section: string) => {
-    if (!data || !data[section]) {
+    if (!data) {
       setJsonData([]);
       setFormData({});
       return;
     }
 
+    // Handle pdfLink as single string
+    if (section === 'pdfLink') {
+      const pdfLinkValue = data.pdfLink || '';
+      setJsonData([{ pdfLink: pdfLinkValue }]);
+      setFormData({ pdfLink: pdfLinkValue });
+      setSelectedItemIndex(0);
+      return;
+    }
+
     const sectionData = data[section];
+    if (!sectionData) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
 
     if (section === 'quickReplies' || section === 'fallbackMessages') {
       if (Array.isArray(sectionData)) {
@@ -400,7 +560,13 @@ const JSONEditor: React.FC = () => {
         processFundCollectionFile(rawData, selectedSection);
       } else if (currentFile?.type === 'accounts-special') {
         handleAccountsPdfData(rawData, selectedSection);
-      } else if (currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special') {
+      } else if (currentFile?.type === 'invitations-special') {
+        if (selectedSection === 'invitations') {
+          handleInvitationsData(rawData);
+        } else {
+          processSection(rawData, selectedSection);
+        }
+      } else if (currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special' && currentFile?.type !== 'quiz-special') {
         processSection(rawData, selectedSection);
       }
     }
@@ -458,8 +624,16 @@ const JSONEditor: React.FC = () => {
       return scheduleDayLabels[dayKey] || item.day || item.event || `আইটেম ${index + 1}`;
     }
     
-    if (selectedSection === 'invitations') {
+    if (currentFile?.type === 'invitations-special' || selectedSection === 'invitations') {
       return item.personName || item.name || item.familyName || `আইটেম ${index + 1}`;
+    }
+
+    if (currentFile?.type === 'quiz-special') {
+      return item.title || `${item.year} সালের কুইজ` || `কুইজ ${index + 1}`;
+    }
+
+    if (selectedSection === 'contacts') {
+      return item.name || item.designation || `যোগাযোগ ${index + 1}`;
     }
     
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
@@ -521,7 +695,6 @@ const JSONEditor: React.FC = () => {
 
   const handleSaveItem = () => {
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
-      // Will be saved when copying JSON
       alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
       return;
     }
@@ -538,6 +711,23 @@ const JSONEditor: React.FC = () => {
         return item;
       });
       setRawData(newRawData);
+    } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+      const newRawData = { ...rawData };
+      newRawData.invitations = rawData.invitations.map((item: any) => {
+        if (item.id === formData.id) {
+          return { ...formData };
+        }
+        return item;
+      });
+      setRawData(newRawData);
+    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
+      const newRawData = rawData.map((item: any) => {
+        if (item.year === formData.year && item.title === jsonData[selectedItemIndex]?.title) {
+          return { ...formData };
+        }
+        return item;
+      });
+      setRawData(newRawData);
     } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
       const newRawData = { ...rawData };
       if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
@@ -546,7 +736,9 @@ const JSONEditor: React.FC = () => {
     } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
       const newRawData = { ...rawData };
       
-      if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      if (selectedSection === 'pdfLink') {
+        newRawData.pdfLink = formData.pdfLink || '';
+      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
         newRawData[selectedSection] = updatedData.map(item => item.text);
       } else {
         newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
@@ -601,6 +793,47 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
+    if (currentFile?.type === 'invitations-special' && selectedSection === 'invitations') {
+      const maxId = rawData?.invitations?.reduce((max: number, item: any) => Math.max(max, parseInt(item.id) || 0), 0) || 0;
+      const template = {
+        id: String(maxId + 1),
+        area: selectedArea || '',
+        personName: '',
+        familyCount: 1
+      };
+      
+      const newRawData = { ...rawData };
+      newRawData.invitations = [...(rawData.invitations || []), template];
+      setRawData(newRawData);
+      
+      const filteredData = [...jsonData, template];
+      setJsonData(filteredData);
+      setSelectedItemIndex(filteredData.length - 1);
+      setFormData(template);
+      alert('➕ নতুন নিমন্ত্রণ যোগ হয়েছে!');
+      return;
+    }
+
+    if (currentFile?.type === 'quiz-special') {
+      const template = {
+        year: parseInt(selectedQuizYear) || new Date().getFullYear(),
+        title: `কুইজ প্রতিযোগিতা ${selectedQuizYear || new Date().getFullYear()}`,
+        eventDate: '',
+        venue: 'কলম হিন্দু ধর্মসভা মন্দির',
+        questions: []
+      };
+      
+      const newRawData = [...(rawData || []), template];
+      setRawData(newRawData);
+      
+      const filteredData = [...jsonData, template];
+      setJsonData(filteredData);
+      setSelectedItemIndex(filteredData.length - 1);
+      setFormData(template);
+      alert('➕ নতুন কুইজ যোগ হয়েছে!');
+      return;
+    }
+
     if (currentFile?.type === 'accounts-special') {
       const currentYear = new Date().getFullYear();
       const existingYears = jsonData.map(item => parseInt(item.year));
@@ -627,6 +860,30 @@ const JSONEditor: React.FC = () => {
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
       alert('➕ নতুন আইটেম যোগ হয়েছে!');
+      return;
+    }
+
+    if (selectedSection === 'contacts') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = {
+        id: String(maxId + 1),
+        name: '',
+        mobile: '',
+        address: '',
+        occupation: '',
+        photo: ''
+      };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      // Update rawData
+      const newRawData = { ...rawData };
+      newRawData.contacts = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন যোগাযোগ যোগ হয়েছে!');
       return;
     }
     
@@ -676,6 +933,19 @@ const JSONEditor: React.FC = () => {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
+    } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+      const itemToDelete = jsonData[selectedItemIndex];
+      const newRawData = { ...rawData };
+      newRawData.invitations = rawData.invitations.filter((item: any) => item.id !== itemToDelete.id);
+      setRawData(newRawData);
+    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
+      const itemToDelete = jsonData[selectedItemIndex];
+      const newRawData = rawData.filter((item: any) => !(item.year === itemToDelete.year && item.title === itemToDelete.title));
+      setRawData(newRawData);
+    } else if (selectedSection === 'contacts' && rawData) {
+      const newRawData = { ...rawData };
+      newRawData.contacts = jsonData.filter((_, i) => i !== selectedItemIndex);
+      setRawData(newRawData);
     }
     
     const updatedData = jsonData.filter((_, i) => i !== selectedItemIndex);
@@ -690,24 +960,32 @@ const JSONEditor: React.FC = () => {
     let finalData: any;
 
     if (currentFile?.type === 'simple-array') {
-      finalData = jsonData;
+      const updated = [...jsonData];
+      if (updated.length > 0) updated[selectedItemIndex] = formData;
+      finalData = updated;
     } else if (currentFile?.type === 'gallery-special') {
       finalData = rawData;
     } else if (currentFile?.type === 'fund-collection-special' && rawData) {
       finalData = { ...rawData };
-      // Rebuild fundCollection
       finalData.fundCollection = {
         ...fundSettings,
         members: fundMembers,
         paymentStats: paymentStats
       };
+    } else if (currentFile?.type === 'invitations-special' && rawData) {
+      finalData = { ...rawData };
+    } else if (currentFile?.type === 'quiz-special' && rawData) {
+      finalData = rawData;
     } else if (currentFile?.type === 'accounts-special' && rawData) {
       finalData = { ...rawData };
-      if (selectedSection) {
+      if (selectedSection && rawData[selectedSection]) {
         const yearsObj: Record<string, string> = {};
         jsonData.forEach(item => {
           yearsObj[item.year] = item.url;
         });
+        if (formData.year && formData.url) {
+          yearsObj[formData.year] = formData.url;
+        }
         finalData[selectedSection] = { 
           title: formData.title || rawData[selectedSection]?.title || '',
           years: yearsObj 
@@ -716,9 +994,13 @@ const JSONEditor: React.FC = () => {
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
-        finalData[selectedSection] = Array.isArray(rawData[selectedSection]) 
-          ? jsonData 
-          : jsonData[0];
+        if (selectedSection === 'pdfLink') {
+          finalData.pdfLink = formData.pdfLink || '';
+        } else {
+          const updated = [...jsonData];
+          if (updated.length > 0) updated[selectedItemIndex] = formData;
+          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
+        }
       }
     } else if (currentFile?.type === 'complex-object' && rawData) {
       finalData = { ...rawData };
@@ -745,17 +1027,20 @@ const JSONEditor: React.FC = () => {
   const labelMap: Record<string, string> = {
     id: 'আইডি', title: 'শিরোনাম', name: 'নাম', description: 'বর্ণনা', details: 'বিবরণ',
     date: 'তারিখ', dateEn: 'তারিখ (EN)', year: 'বছর', month: 'মাস', time: 'সময়', day: 'দিন',
+    eventDate: 'অনুষ্ঠানের তারিখ', venue: 'স্থান',
     priority: 'প্রাধান্য', category: 'ক্যাটাগরি', status: 'স্ট্যাটাস',
-    question: 'প্রশ্ন', answer: 'উত্তর', keywords: 'কীওয়ার্ড',
-    role: 'পদবী', phone: 'ফোন', email: 'ইমেইল', address: 'ঠিকানা',
+    question: 'প্রশ্ন', answer: 'উত্তর', keywords: 'কীওয়ার্ড', questions: 'প্রশ্নসমূহ',
+    role: 'পদবী', phone: 'ফোন', email: 'ইমেইল', address: 'ঠিকানা', area: 'এলাকা',
     username: 'ইউজারনেম', password: 'পাসওয়ার্ড',
     imageUrl: 'ছবি URL', image: 'ছবি', photo: 'ফটো', thumbnail: 'থাম্বনেইল', 
     caption: 'ক্যাপশন', logo: 'লোগো',
     audioUrl: 'অডিও URL', url: 'লিংক', pdfUrl: 'PDF URL', streamUrl: 'স্ট্রিম URL',
+    pdfLink: 'PDF লিংক',
     location: 'স্থান', artist: 'শিল্পী', duration: 'সময়কাল',
     channelName: 'চ্যানেল', fileName: 'ফাইল নাম', size: 'সাইজ',
     pujaName: 'পূজার নাম', pujaType: 'পূজার ধরন',
     mobile: 'মোবাইল', occupation: 'পেশা', designation: 'পদবী',
+    personName: 'ব্যক্তির নাম', familyName: 'পরিবারের নাম', familyCount: 'পরিবারের সদস্য',
     dueAmount: 'বকেয়া', paidAmount: 'পরিশোধিত', remainingAmount: 'অবশিষ্ট',
     lastPaymentDate: 'শেষ পেমেন্ট', paymentMethod: 'পেমেন্ট মাধ্যম',
     transactionId: 'ট্রানজেকশন ID',
@@ -764,8 +1049,7 @@ const JSONEditor: React.FC = () => {
     message: 'মেসেজ', instructions: 'নির্দেশনা',
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
-    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট', familyName: 'পরিবারের নাম',
-    personName: 'ব্যক্তির নাম'
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
   };
 
   // ============================================
@@ -784,6 +1068,53 @@ const JSONEditor: React.FC = () => {
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
           <input type="text" value={String(formData[key] || '')} disabled 
             className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" />
+        </div>
+      );
+    }
+
+    // Area dropdown for invitations
+    if (key === 'area' && currentFile?.type === 'invitations-special') {
+      const areas = getInvitationAreas();
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <div className="flex gap-2">
+            <select value={String(formData[key] || '')} 
+              onChange={(e) => handleFieldChange(key, e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+              <option value="">এলাকা নির্বাচন করুন</option>
+              {areas.map(area => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+            <input 
+              type="text" 
+              placeholder="বা নতুন এলাকা লিখুন"
+              value={areas.includes(formData[key]) ? '' : formData[key] || ''}
+              onChange={(e) => handleFieldChange(key, e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Questions array for quiz
+    if (key === 'questions' && Array.isArray(value)) {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {label} ({value.length} টি প্রশ্ন)
+          </label>
+          <div className="bg-gray-50 p-3 rounded-lg max-h-60 overflow-y-auto">
+            {value.map((q: any, idx: number) => (
+              <div key={idx} className="mb-2 p-2 bg-white rounded border text-xs">
+                <strong>প্রশ্ন {idx + 1}:</strong> {q.question}<br/>
+                <span className="text-green-600"><strong>উত্তর:</strong> {q.answer}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">* প্রশ্ন এডিট করতে JSON সরাসরি এডিট করুন</p>
         </div>
       );
     }
@@ -1059,7 +1390,6 @@ const JSONEditor: React.FC = () => {
         {/* Members Sub-section */}
         {fundSubSection === 'members' && (
           <div className="space-y-4">
-            {/* Filter and Actions */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-blue-600" />
@@ -1084,7 +1414,6 @@ const JSONEditor: React.FC = () => {
               </div>
             </div>
 
-            {/* Member Selector */}
             <select value={selectedItemIndex} 
               onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
@@ -1096,7 +1425,6 @@ const JSONEditor: React.FC = () => {
               ))}
             </select>
 
-            {/* Member Edit Form */}
             {getFilteredMembers()[selectedItemIndex] && (
               <div className="p-4 bg-white rounded-lg border space-y-4">
                 <h4 className="font-bold text-blue-700 border-b pb-2">
@@ -1124,8 +1452,9 @@ const JSONEditor: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+
+                                          onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
                   </div>
                   
@@ -1272,7 +1601,6 @@ const JSONEditor: React.FC = () => {
             {sectionLabels[selectedSection]} - PDF লিংক
           </h4>
           
-          {/* Title Edit */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label>
             <input type="text" value={formData.title || sectionData?.title || ''} 
@@ -1280,7 +1608,6 @@ const JSONEditor: React.FC = () => {
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
           </div>
 
-          {/* Year Buttons */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর নির্বাচন:</label>
             <div className="flex flex-wrap gap-2">
@@ -1311,7 +1638,6 @@ const JSONEditor: React.FC = () => {
             </div>
           </div>
 
-          {/* Selected Year Edit */}
           {selectedPdfYear && (
             <div className="bg-white p-4 rounded-lg border space-y-4">
               <div className="flex items-center justify-between">
@@ -1390,15 +1716,17 @@ const JSONEditor: React.FC = () => {
         members: fundMembers,
         paymentStats: paymentStats
       };
+    } else if (currentFile?.type === 'invitations-special' && rawData) {
+      finalData = { ...rawData };
+    } else if (currentFile?.type === 'quiz-special' && rawData) {
+      finalData = rawData;
     } else if (currentFile?.type === 'accounts-special' && rawData) {
       finalData = { ...rawData };
-      // Update all sections with current data
       if (selectedSection && rawData[selectedSection]) {
         const yearsObj: Record<string, string> = {};
         jsonData.forEach(item => {
           yearsObj[item.year] = item.url;
         });
-        // Update current year's URL
         if (formData.year && formData.url) {
           yearsObj[formData.year] = formData.url;
         }
@@ -1410,9 +1738,13 @@ const JSONEditor: React.FC = () => {
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
-        const updated = [...jsonData];
-        if (updated.length > 0) updated[selectedItemIndex] = formData;
-        finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
+        if (selectedSection === 'pdfLink') {
+          finalData.pdfLink = formData.pdfLink || '';
+        } else {
+          const updated = [...jsonData];
+          if (updated.length > 0) updated[selectedItemIndex] = formData;
+          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
+        }
       }
     } else if (currentFile?.type === 'complex-object' && rawData) {
       finalData = { ...rawData };
@@ -1448,7 +1780,7 @@ const JSONEditor: React.FC = () => {
       {/* Info */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
         <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">১১টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
+        <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
       </div>
 
       {error && (
@@ -1460,7 +1792,7 @@ const JSONEditor: React.FC = () => {
       {/* File Selector */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
           {JSON_FILES.map(file => (
             <button key={file.id} onClick={() => setSelectedFile(file.id)} 
               className={btnClass(selectedFile === file.id)}>
@@ -1476,7 +1808,7 @@ const JSONEditor: React.FC = () => {
       </div>
 
       {/* Section Selector */}
-      {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && (
+      {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <label className="block text-sm font-bold text-gray-700 mb-3">📂 সেকশন নির্বাচন:</label>
           <div className="flex flex-wrap gap-2">
@@ -1486,6 +1818,58 @@ const JSONEditor: React.FC = () => {
                 {sectionLabels[section] || section}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Invitations Special Filters (এলাকা ভিত্তিক) */}
+      {currentFile?.type === 'invitations-special' && selectedSection === 'invitations' && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-pink-500" />
+              <label className="text-sm font-bold text-gray-700">এলাকা নির্বাচন:</label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {getInvitationAreas().map(area => (
+                <button key={area} onClick={() => setSelectedArea(area)}
+                  className={btnClass(selectedArea === area)}>
+                  📍 {area}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 p-3 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg">
+            <p className="text-sm text-pink-800">
+              📊 <strong>{selectedArea}</strong> এলাকা: 
+              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি নিমন্ত্রণ</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Special Filters (বছর ভিত্তিক) */}
+      {currentFile?.type === 'quiz-special' && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-purple-500" />
+              <label className="text-sm font-bold text-gray-700">বছর নির্বাচন:</label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {getQuizYears().map(year => (
+                <button key={year} onClick={() => setSelectedQuizYear(year)}
+                  className={btnClass(selectedQuizYear === year)}>
+                  📅 {year}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg">
+            <p className="text-sm text-purple-800">
+              📊 <strong>{selectedQuizYear}</strong> সাল: 
+              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি কুইজ</span>
+            </p>
           </div>
         </div>
       )}
@@ -1553,7 +1937,7 @@ const JSONEditor: React.FC = () => {
             ) : (
               <>
                 {/* Item Selector for other types */}
-                {Array.isArray(jsonData) && jsonData.length > 0 && (
+                {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
                   <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                       <label className="text-sm font-bold text-gray-700">
@@ -1638,4 +2022,3 @@ const JSONEditor: React.FC = () => {
 };
 
 export default JSONEditor;
-  
