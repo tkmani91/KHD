@@ -155,6 +155,7 @@ interface LoginUser {
   email: string;
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
+  photo?: string;
 }
 
 // Data URLs
@@ -1851,7 +1852,7 @@ function LoginPage() {
         if (savedUser) {
           const user = JSON.parse(savedUser);
           setLoggedInUser(user);
-          setUserPhoto(savedPhoto || '');
+          setUserPhoto(user.photo || savedPhoto || '');
           setIsLoggedIn(true);
         }
       } catch (error) {
@@ -1963,10 +1964,17 @@ function LoginPage() {
           mobile: foundUser.mobile || '',
           email: foundUser.email || '',
           password: '',
-          role: userRole
+          role: userRole,
+          photo: foundUser.photo || ''
         };
 
         localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
+
+        if (foundUser.photo) {
+        setUserPhoto(foundUser.photo);
+        localStorage.setItem('khd_user_photo', foundUser.photo);
+      }
+
 
         setIsLoggedIn(true); 
         setLoggedInUser(userWithRole);
