@@ -851,38 +851,82 @@ const JSONEditor: React.FC = () => {
   // SAVE ITEM HANDLER
   // ============================================
 
-  const handleSaveItem = () => {
-    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
-      alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-      return;
-    }
+const handleSaveItem = () => {
+  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
+    alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+    return;
+  }
 
-    if (currentFile?.type === 'quiz-special') {
-      // Save quiz info (not questions - those are saved separately)
-      const updatedQuiz = { 
-        ...jsonData[selectedItemIndex], 
-        title: formData.title,
-        year: formData.year,
-        eventDate: formData.eventDate,
-        venue: formData.venue
-      };
-      const updatedJsonData = [...jsonData];
-      updatedJsonData[selectedItemIndex] = updatedQuiz;
-      setJsonData(updatedJsonData);
-      
-      if (rawData && Array.isArray(rawData)) {
-        const newRawData = rawData.map((item: any, idx: number) => {
-          if (item.year === jsonData[selectedItemIndex].year && item.title === jsonData[selectedItemIndex].title) {
-            return updatedQuiz;
-          }
-          return item;
-        });
-        setRawData(newRawData);
-      }
-      
-      alert('✅ কুইজ তথ্য সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-      return;
+  if (currentFile?.type === 'quiz-special') {
+    // Save quiz info (not questions - those are saved separately)
+    const updatedQuiz = { 
+      ...jsonData[selectedItemIndex], 
+      title: formData.title,
+      year: formData.year,
+      eventDate: formData.eventDate,
+      venue: formData.venue
+    };
+    const updatedJsonData = [...jsonData];
+    updatedJsonData[selectedItemIndex] = updatedQuiz;
+    setJsonData(updatedJsonData);
+    
+    if (rawData && Array.isArray(rawData)) {
+      const newRawData = rawData.map((item: any) => {  // ← idx বাদ দিন
+        if (item.year === jsonData[selectedItemIndex].year && item.title === jsonData[selectedItemIndex].title) {
+          return updatedQuiz;
+        }
+        return item;
+      });
+      setRawData(newRawData);
     }
+    
+    alert('✅ কুইজ তথ্য সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+    return;
+  }
+
+  const updatedData = [...jsonData];
+  updatedData[selectedItemIndex] = { ...formData };
+  setJsonData(updatedData);
+  
+  if (currentFile?.type === 'gallery-special' && rawData) {
+    const newRawData = rawData.map((item: any) => {
+      if (item.id === formData.id) {
+        return { ...formData };
+      }
+      return item;
+    });
+    setRawData(newRawData);
+  } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+    const newRawData = { ...rawData };
+    newRawData.invitations = rawData.invitations.map((item: any) => {
+      if (item.id === formData.id) {
+        return { ...formData };
+      }
+      return item;
+    });
+    setRawData(newRawData);
+  } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
+    const newRawData = { ...rawData };
+    if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
+    newRawData[selectedSection].years[formData.year] = formData.url;
+    setRawData(newRawData);
+  } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
+    const newRawData = { ...rawData };
+    
+    if (selectedSection === 'pdfLink') {
+      newRawData.pdfLink = formData.pdfLink || '';
+    } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      newRawData[selectedSection] = updatedData.map(item => item.text);
+    } else {
+      newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
+        ? updatedData 
+        : updatedData[0];
+    }
+    setRawData(newRawData);
+  }
+  
+  alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+};
 
     const updatedData = [...jsonData];
     updatedData[selectedItemIndex] = { ...formData };
