@@ -6,7 +6,8 @@
       "mobile": "01733118313",
       "email": "tanmoy4bd@gmail.com",
       "password": "admin123",
-      "role": "Super Admin"
+      "role": "Super Admin",
+      "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png"
     },
     {
       "id": "3",
@@ -14,7 +15,8 @@
       "mobile": "01612118313",
       "email": "",
       "password": "admin1234",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/LDS167S1/SHAMON.png"
     },
     {
       "id": "5",
@@ -22,7 +24,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/fGXxJVpq/ASASH.png"
     },
     {
       "id": "6",
@@ -30,7 +33,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/PJQFx4g/TAPAN.png"
     },
     {
       "id": "7",
@@ -38,7 +42,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/nMZ6vgSm/NAYAN.png"
     },
     {
       "id": "8",
@@ -46,7 +51,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/zVn70PjM/LITON.png"
     },
     {
       "id": "10",
@@ -54,7 +60,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png"
     },
     {
       "id": "14",
@@ -62,7 +69,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png"
     },
     {
       "id": "15",
@@ -70,7 +78,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png"
     },
     {
       "id": "16",
@@ -78,15 +87,17 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/2JwvZVK/ANUPAM.png"
     },
     {
       "id": "17",
       "name": "শুভ কুমার ঘোষ",
-      "mobile": "01871891553",
-      "email": "shuvokumarghose08@gmail.com",
-      "password": "01871891553",
-      "role": "Admin"
+      "mobile": "",
+      "email": "",
+      "password": "",
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/b5NjXH3V/SUVO.png"
     },
     {
       "id": "19",
@@ -94,15 +105,17 @@
       "mobile": "01796069660",
       "email": "",
       "password": "01796069660",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png"
     },
     {
       "id": "20",
       "name": "পাপ্পু কুমার বিশ্বাস",
-      "mobile": "01729312822",
-      "email": "suvrobiswas69@gmail.com",
-      "password": "01729312822",
-      "role": "Admin"
+      "mobile": "",
+      "email": "",
+      "password": "",
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/zV3hyBhx/PAPPU.png"
     },
     {
       "id": "21",
@@ -110,7 +123,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png"
     },
     {
       "id": "29",
@@ -118,7 +132,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Admin"
+      "role": "Admin",
+      "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png"
     }
   ],
   "normalMembers": [
@@ -128,7 +143,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/rGc8KB5J/ACHINTA.png"
     },
     {
       "id": "9",
@@ -136,7 +152,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/99r78jvR/SUJIT.png"
     },
     {
       "id": "11",
@@ -144,7 +161,8 @@
       "mobile": "01718542303",
       "email": "",
       "password": "admin303",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/6jHCSNZ/CHANCAL.png"
     },
     {
       "id": "12",
@@ -152,7 +170,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/W4pgPvkt/BAPPI.png"
     },
     {
       "id": "13",
@@ -160,7 +179,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/ZzRkV404/SANAT.png"
     },
     {
       "id": "22",
@@ -168,7 +188,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/JFwyQ4Hv/BIPUL.png"
     },
     {
       "id": "23",
@@ -176,7 +197,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/ycTn5mKn/NONDO.png"
     },
     {
       "id": "24",
@@ -184,7 +206,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/jPPCpjCK/ASIM.png"
     },
     {
       "id": "25",
@@ -192,7 +215,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/TBGN5qZr/TONI.png"
     },
     {
       "id": "26",
@@ -200,7 +224,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/B2Vg8cHY/SUDIPTA.png"
     },
     {
       "id": "27",
@@ -208,7 +233,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/hPNhZw1/PIJUS.png"
     },
     {
       "id": "28",
@@ -216,7 +242,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/fGTfmFrG/AVIJIT.png"
     },
     {
       "id": "30",
@@ -224,7 +251,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     },
     {
       "id": "31",
@@ -232,7 +260,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     },
     {
       "id": "32",
@@ -240,7 +269,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     },
     {
       "id": "33",
@@ -248,7 +278,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/q6NBffp/UTTOM.png"
     },
     {
       "id": "34",
@@ -256,7 +287,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": "https://i.ibb.co.com/Q3ysYBnz/SHAM.png"
     },
     {
       "id": "35",
@@ -264,7 +296,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     },
     {
       "id": "36",
@@ -272,7 +305,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     },
     {
       "id": "37",
@@ -280,7 +314,8 @@
       "mobile": "",
       "email": "",
       "password": "",
-      "role": "Member"
+      "role": "Member",
+      "photo": ""
     }
   ]
 }
