@@ -15,12 +15,12 @@ interface JSONFile {
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
 }
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
 const JSONEditor: React.FC = () => {
-  // Basic states
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -31,29 +31,23 @@ const JSONEditor: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   
-  // Gallery special states
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedPujaType, setSelectedPujaType] = useState<string>('');
-  
-  // Accounts PDF special states
   const [selectedPdfYear, setSelectedPdfYear] = useState<string>('');
   
-  // Fund collection special states
   const [fundSubSection, setFundSubSection] = useState<string>('settings');
   const [memberFilter, setMemberFilter] = useState<string>('all');
   const [fundMembers, setFundMembers] = useState<any[]>([]);
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
 
-  // Invitations special states
   const [selectedArea, setSelectedArea] = useState<string>('');
-  
-  // Quiz special states
   const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
   const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number>(0);
   const [questionFormData, setQuestionFormData] = useState<any>({});
-    // ============================================
-  // JSON FILES CONFIGURATION (১৪টি ফাইল)
+
+  // ============================================
+  // JSON FILES CONFIGURATION
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
@@ -171,9 +165,6 @@ const JSONEditor: React.FC = () => {
   ];
 
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
-    // ============================================
-  // PUJA TYPES FOR GALLERY
-  // ============================================
 
   const PUJA_TYPES = [
     { id: 'durga', label: '🎉 দুর্গাপূজা', value: 'দুর্গাপূজা' },
@@ -182,10 +173,6 @@ const JSONEditor: React.FC = () => {
     { id: 'rath', label: '🎪 রথযাত্রা', value: 'রথযাত্রা' },
     { id: 'other', label: '🙏 অন্যান্য', value: 'অন্যান্য' }
   ];
-
-  // ============================================
-  // SECTION LABELS
-  // ============================================
 
   const sectionLabels: Record<string, string> = {
     notices: '📢 ঘোষণা',
@@ -230,7 +217,7 @@ const JSONEditor: React.FC = () => {
     question: 'প্রশ্ন', answer: 'উত্তর', keywords: 'কীওয়ার্ড', questions: 'প্রশ্নসমূহ',
     role: 'পদবী', phone: 'ফোন', email: 'ইমেইল', address: 'ঠিকানা', area: 'এলাকা',
     username: 'ইউজারনেম', password: 'পাসওয়ার্ড',
-    imageUrl: 'ছবি URL', image: 'ছবি', photo: 'ফটো', thumbnail: 'থাম্বনেইল', 
+    imageUrl: 'ছবি URL', image: 'ছবি', photo: 'ফটো', thumbnail: 'থাম্বনেইল',
     caption: 'ক্যাপশন', logo: 'লোগো',
     audioUrl: 'অডিও URL', url: 'লিংক', pdfUrl: 'PDF URL', streamUrl: 'স্ট্রিম URL',
     pdfLink: 'PDF লিংক',
@@ -249,8 +236,9 @@ const JSONEditor: React.FC = () => {
     lastUpdated: 'সর্বশেষ আপডেট',
     event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
   };
-    // ============================================
-  // LOAD JSON DATA - Main useEffect
+
+  // ============================================
+  // DATA LOADING
   // ============================================
 
   useEffect(() => {
@@ -266,7 +254,7 @@ const JSONEditor: React.FC = () => {
       setSelectedQuizYear('');
       setSelectedQuestionIndex(0);
       setQuestionFormData({});
-      
+
       try {
         const file = JSON_FILES.find(f => f.id === selectedFile);
         if (!file) {
@@ -277,7 +265,7 @@ const JSONEditor: React.FC = () => {
 
         const response = await fetch(file.url, { cache: 'no-cache' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         const data = await response.json();
         setRawData(data);
 
@@ -308,7 +296,6 @@ const JSONEditor: React.FC = () => {
             processSection(data, file.sections[0]);
           }
         }
-
       } catch (err: any) {
         console.error('Error:', err);
         setError(`লোড সমস্যা: ${err.message}`);
@@ -318,20 +305,14 @@ const JSONEditor: React.FC = () => {
     fetchJSON();
   }, [selectedFile]);
 
-  // ============================================
-  // HANDLE INVITATIONS DATA (এলাকা ভিত্তিক ফিল্টার)
-  // ============================================
-
   const handleInvitationsData = (data: any) => {
     if (!data || !data.invitations || !Array.isArray(data.invitations)) {
       setJsonData([]);
       setFormData({});
       return;
     }
-
     const invitations = data.invitations;
     const areas = [...new Set(invitations.map((item: any) => item.area))].filter(Boolean) as string[];
-    
     if (areas.length > 0) {
       setSelectedArea(areas[0]);
       const filteredData = invitations.filter((item: any) => item.area === areas[0]);
@@ -345,27 +326,19 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // ============================================
-  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার)
-  // ============================================
-
   const handleQuizData = (data: any) => {
     if (!Array.isArray(data) || data.length === 0) {
       setJsonData([]);
       setFormData({});
       return;
     }
-
     const years = [...new Set(data.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
-    
     if (years.length > 0) {
       setSelectedQuizYear(years[0]);
       const filteredData = data.filter((item: any) => item.year?.toString() === years[0]);
       setJsonData(filteredData);
       setSelectedItemIndex(0);
       setFormData(filteredData[0] || {});
-      
-      // Set first question
       if (filteredData[0]?.questions?.length > 0) {
         setSelectedQuestionIndex(0);
         setQuestionFormData(filteredData[0].questions[0]);
@@ -377,35 +350,24 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // ============================================
-  // HANDLE GALLERY DATA
-  // ============================================
-
   const handleGalleryData = (data: any[]) => {
     if (!Array.isArray(data) || data.length === 0) {
       setJsonData([]);
       setFormData({});
       return;
     }
-
     const years = [...new Set(data.map(item => item.year))].sort((a, b) => b - a);
     const firstYear = years[0]?.toString() || '';
     setSelectedYear(firstYear);
-
     const yearData = data.filter(item => item.year?.toString() === firstYear);
     const pujaTypes = [...new Set(yearData.map(item => item.pujaType || item.category))];
     const firstPujaType = pujaTypes[0] || '';
     setSelectedPujaType(firstPujaType);
-
     const filteredData = yearData.filter(item => (item.pujaType || item.category) === firstPujaType);
     setJsonData(filteredData);
     setSelectedItemIndex(0);
     setFormData(filteredData[0] || {});
   };
-
-  // ============================================
-  // HANDLE ACCOUNTS PDF DATA
-  // ============================================
 
   const handleAccountsPdfData = (data: any, section: string) => {
     if (!data || !data[section]) {
@@ -413,18 +375,16 @@ const JSONEditor: React.FC = () => {
       setFormData({});
       return;
     }
-
     const sectionData = data[section];
     if (sectionData.years && typeof sectionData.years === 'object') {
       const years = Object.keys(sectionData.years).sort((a, b) => parseInt(b) - parseInt(a));
       const firstYear = years[0] || '';
       setSelectedPdfYear(firstYear);
-      
       if (firstYear && sectionData.years[firstYear]) {
-        setFormData({ 
+        setFormData({
           title: sectionData.title || '',
-          year: firstYear, 
-          url: sectionData.years[firstYear] 
+          year: firstYear,
+          url: sectionData.years[firstYear]
         });
         setJsonData(years.map(y => ({ year: y, url: sectionData.years[y] })));
         setSelectedItemIndex(0);
@@ -432,14 +392,9 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // ============================================
-  // PROCESS FUND COLLECTION FILE
-  // ============================================
-
   const processFundCollectionFile = (data: any, section: string) => {
     if (section === 'fundCollection') {
       const fc = data.fundCollection || {};
-      
       const settings = {
         isActive: fc.isActive ?? true,
         year: fc.year || '',
@@ -452,10 +407,8 @@ const JSONEditor: React.FC = () => {
         lastUpdated: fc.lastUpdated || ''
       };
       setFundSettings(settings);
-      
       const members = fc.members || [];
       setFundMembers(members);
-      
       const stats = fc.paymentStats || {
         totalMembers: members.length,
         paidMembers: members.filter((m: any) => m.status === 'paid').length,
@@ -464,7 +417,6 @@ const JSONEditor: React.FC = () => {
         paymentPercentage: 0
       };
       setPaymentStats(stats);
-      
       setJsonData([]);
       setFormData({});
     } else {
@@ -472,17 +424,12 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // ============================================
-  // PROCESS SECTION
-  // ============================================
-
   const processSection = (data: any, section: string) => {
     if (!data) {
       setJsonData([]);
       setFormData({});
       return;
     }
-
     if (section === 'pdfLink') {
       const pdfLinkValue = data.pdfLink || '';
       setJsonData([{ pdfLink: pdfLinkValue }]);
@@ -490,14 +437,12 @@ const JSONEditor: React.FC = () => {
       setSelectedItemIndex(0);
       return;
     }
-
     const sectionData = data[section];
     if (!sectionData) {
       setJsonData([]);
       setFormData({});
       return;
     }
-
     if (section === 'quickReplies' || section === 'fallbackMessages') {
       if (Array.isArray(sectionData)) {
         const converted = sectionData.map((item, index) => {
@@ -512,7 +457,6 @@ const JSONEditor: React.FC = () => {
         return;
       }
     }
-
     if (Array.isArray(sectionData)) {
       setJsonData(sectionData);
       setSelectedItemIndex(0);
@@ -527,8 +471,9 @@ const JSONEditor: React.FC = () => {
       setSelectedItemIndex(0);
     }
   };
-    // ============================================
-  // SECTION CHANGE EFFECT
+
+  // ============================================
+  // USE EFFECTS
   // ============================================
 
   useEffect(() => {
@@ -549,25 +494,15 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedSection]);
 
-  // ============================================
-  // ITEM INDEX CHANGE EFFECT
-  // ============================================
-
   useEffect(() => {
     if (jsonData.length > 0 && jsonData[selectedItemIndex]) {
       setFormData({ ...jsonData[selectedItemIndex] });
-      
-      // Quiz: Set first question when quiz changes
       if (currentFile?.type === 'quiz-special' && jsonData[selectedItemIndex]?.questions?.length > 0) {
         setSelectedQuestionIndex(0);
         setQuestionFormData({ ...jsonData[selectedItemIndex].questions[0] });
       }
     }
   }, [selectedItemIndex, jsonData]);
-
-  // ============================================
-  // QUIZ QUESTION INDEX CHANGE EFFECT
-  // ============================================
 
   useEffect(() => {
     if (currentFile?.type === 'quiz-special' && jsonData[selectedItemIndex]?.questions) {
@@ -578,10 +513,6 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedQuestionIndex]);
 
-  // ============================================
-  // INVITATION AREA FILTER EFFECT
-  // ============================================
-
   useEffect(() => {
     if (currentFile?.type === 'invitations-special' && rawData?.invitations && selectedArea && selectedSection === 'invitations') {
       const filteredData = rawData.invitations.filter((item: any) => item.area === selectedArea);
@@ -591,17 +522,12 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedArea]);
 
-  // ============================================
-  // QUIZ YEAR FILTER EFFECT
-  // ============================================
-
   useEffect(() => {
     if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData) && selectedQuizYear) {
       const filteredData = rawData.filter((item: any) => item.year?.toString() === selectedQuizYear);
       setJsonData(filteredData);
       setSelectedItemIndex(0);
       setFormData(filteredData[0] || {});
-      
       if (filteredData[0]?.questions?.length > 0) {
         setSelectedQuestionIndex(0);
         setQuestionFormData({ ...filteredData[0].questions[0] });
@@ -609,29 +535,23 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedQuizYear]);
 
-  // ============================================
-  // GALLERY FILTER EFFECT
-  // ============================================
-
   useEffect(() => {
     if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
       const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
       const pujaTypes = [...new Set(yearData.map((item: any) => item.pujaType || item.category))];
-      
       if (!pujaTypes.includes(selectedPujaType) && pujaTypes.length > 0) {
         setSelectedPujaType(pujaTypes[0] as string);
       }
-      
-      const filteredData = selectedPujaType 
+      const filteredData = selectedPujaType
         ? yearData.filter((item: any) => (item.pujaType || item.category) === selectedPujaType)
         : yearData;
-      
       setJsonData(filteredData);
       setSelectedItemIndex(0);
       setFormData(filteredData[0] || {});
     }
   }, [selectedYear, selectedPujaType]);
-    // ============================================
+
+  // ============================================
   // HELPER FUNCTIONS
   // ============================================
 
@@ -666,30 +586,26 @@ const JSONEditor: React.FC = () => {
       const dayKey = item.day.toLowerCase().replace(/\s/g, '');
       return scheduleDayLabels[dayKey] || item.day || item.event || `আইটেম ${index + 1}`;
     }
-    
     if (currentFile?.type === 'invitations-special' || selectedSection === 'invitations') {
       return item.personName || item.name || item.familyName || `আইটেম ${index + 1}`;
     }
-
     if (currentFile?.type === 'quiz-special') {
       return item.title || `${item.year} সালের কুইজ` || `কুইজ ${index + 1}`;
     }
-
     if (selectedSection === 'contacts') {
       return item.name || item.designation || `যোগাযোগ ${index + 1}`;
     }
-    
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
     }
-    
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
-  const btnClass = (active: boolean) => 
+  const btnClass = (active: boolean) =>
     `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
-    // ============================================
-  // BASIC HANDLERS
+
+  // ============================================
+  // HANDLERS
   // ============================================
 
   const handleFieldChange = (key: string, value: any) => {
@@ -701,7 +617,7 @@ const JSONEditor: React.FC = () => {
   };
 
   const handleMemberChange = (memberId: string, key: string, value: any) => {
-    setFundMembers(prev => prev.map(m => 
+    setFundMembers(prev => prev.map(m =>
       m.id === memberId ? { ...m, [key]: value } : m
     ));
   };
@@ -723,44 +639,22 @@ const JSONEditor: React.FC = () => {
     const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
     const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
     const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
-
-    setPaymentStats({
-      totalMembers,
-      paidMembers,
-      partialMembers,
-      unpaidMembers,
-      paymentPercentage
-    });
-
-    setFundSettings((prev: any) => ({
-      ...prev,
-      totalDue,
-      totalPaid,
-      totalRemaining
-    }));
-
+    setPaymentStats({ totalMembers, paidMembers, partialMembers, unpaidMembers, paymentPercentage });
+    setFundSettings((prev: any) => ({ ...prev, totalDue, totalPaid, totalRemaining }));
     alert('✅ পরিসংখ্যান পুনরায় গণনা করা হয়েছে!');
   };
-    // ============================================
-  // QUIZ QUESTION HANDLERS
-  // ============================================
 
   const saveQuestion = () => {
     if (!jsonData[selectedItemIndex]) return;
-    
     const currentQuiz = jsonData[selectedItemIndex];
     const questions = currentQuiz.questions || [];
-    
     const updatedQuestions = [...questions];
     updatedQuestions[selectedQuestionIndex] = { ...questionFormData };
-    
     const updatedQuiz = { ...currentQuiz, questions: updatedQuestions };
     const updatedJsonData = [...jsonData];
     updatedJsonData[selectedItemIndex] = updatedQuiz;
     setJsonData(updatedJsonData);
     setFormData(updatedQuiz);
-    
-    // Update rawData
     if (rawData && Array.isArray(rawData)) {
       const newRawData = rawData.map((item: any) => {
         if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
@@ -770,30 +664,20 @@ const JSONEditor: React.FC = () => {
       });
       setRawData(newRawData);
     }
-    
     alert('✅ প্রশ্ন সংরক্ষিত!');
   };
 
   const addQuestion = () => {
     if (!jsonData[selectedItemIndex]) return;
-    
     const currentQuiz = jsonData[selectedItemIndex];
     const questions = currentQuiz.questions || [];
-    
     const maxId = questions.reduce((max: number, q: any) => Math.max(max, q.id || 0), 0);
-    const newQuestion = {
-      id: maxId + 1,
-      question: '',
-      answer: ''
-    };
-    
+    const newQuestion = { id: maxId + 1, question: '', answer: '' };
     const updatedQuiz = { ...currentQuiz, questions: [...questions, newQuestion] };
     const updatedJsonData = [...jsonData];
     updatedJsonData[selectedItemIndex] = updatedQuiz;
     setJsonData(updatedJsonData);
     setFormData(updatedQuiz);
-    
-    // Update rawData
     if (rawData && Array.isArray(rawData)) {
       const newRawData = rawData.map((item: any) => {
         if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
@@ -803,34 +687,26 @@ const JSONEditor: React.FC = () => {
       });
       setRawData(newRawData);
     }
-    
     setSelectedQuestionIndex(questions.length);
     setQuestionFormData(newQuestion);
-    
     alert('➕ নতুন প্রশ্ন যোগ হয়েছে!');
   };
 
   const deleteQuestion = () => {
     if (!jsonData[selectedItemIndex]) return;
-    
     const currentQuiz = jsonData[selectedItemIndex];
     const questions = currentQuiz.questions || [];
-    
     if (questions.length <= 1) {
       alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
       return;
     }
-    
     if (!window.confirm('⚠️ এই প্রশ্ন মুছতে চান?')) return;
-    
     const updatedQuestions = questions.filter((_: any, i: number) => i !== selectedQuestionIndex);
     const updatedQuiz = { ...currentQuiz, questions: updatedQuestions };
     const updatedJsonData = [...jsonData];
     updatedJsonData[selectedItemIndex] = updatedQuiz;
     setJsonData(updatedJsonData);
     setFormData(updatedQuiz);
-    
-    // Update rawData
     if (rawData && Array.isArray(rawData)) {
       const newRawData = rawData.map((item: any) => {
         if (item.year === currentQuiz.year && item.title === currentQuiz.title) {
@@ -840,112 +716,53 @@ const JSONEditor: React.FC = () => {
       });
       setRawData(newRawData);
     }
-    
     const newIndex = Math.max(0, selectedQuestionIndex - 1);
     setSelectedQuestionIndex(newIndex);
     setQuestionFormData(updatedQuestions[newIndex] || {});
-    
     alert('🗑️ প্রশ্ন মুছে ফেলা হয়েছে!');
   };
-    // ============================================
-  // SAVE ITEM HANDLER
-  // ============================================
 
-const handleSaveItem = () => {
-  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
-    alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-    return;
-  }
-
-  if (currentFile?.type === 'quiz-special') {
-    // Save quiz info (not questions - those are saved separately)
-    const updatedQuiz = { 
-      ...jsonData[selectedItemIndex], 
-      title: formData.title,
-      year: formData.year,
-      eventDate: formData.eventDate,
-      venue: formData.venue
-    };
-    const updatedJsonData = [...jsonData];
-    updatedJsonData[selectedItemIndex] = updatedQuiz;
-    setJsonData(updatedJsonData);
-    
-    if (rawData && Array.isArray(rawData)) {
-      const newRawData = rawData.map((item: any) => {  // ← idx বাদ দিন
-        if (item.year === jsonData[selectedItemIndex].year && item.title === jsonData[selectedItemIndex].title) {
-          return updatedQuiz;
-        }
-        return item;
-      });
-      setRawData(newRawData);
+  const handleSaveItem = () => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
+      alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+      return;
     }
-    
-    alert('✅ কুইজ তথ্য সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-    return;
-  }
-
-  const updatedData = [...jsonData];
-  updatedData[selectedItemIndex] = { ...formData };
-  setJsonData(updatedData);
-  
-  if (currentFile?.type === 'gallery-special' && rawData) {
-    const newRawData = rawData.map((item: any) => {
-      if (item.id === formData.id) {
-        return { ...formData };
+    if (currentFile?.type === 'quiz-special') {
+      const updatedQuiz = {
+        ...jsonData[selectedItemIndex],
+        title: formData.title,
+        year: formData.year,
+        eventDate: formData.eventDate,
+        venue: formData.venue
+      };
+      const updatedJsonData = [...jsonData];
+      updatedJsonData[selectedItemIndex] = updatedQuiz;
+      setJsonData(updatedJsonData);
+      if (rawData && Array.isArray(rawData)) {
+        const newRawData = rawData.map((item: any) => {
+          if (item.year === jsonData[selectedItemIndex].year && item.title === jsonData[selectedItemIndex].title) {
+            return updatedQuiz;
+          }
+          return item;
+        });
+        setRawData(newRawData);
       }
-      return item;
-    });
-    setRawData(newRawData);
-  } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
-    const newRawData = { ...rawData };
-    newRawData.invitations = rawData.invitations.map((item: any) => {
-      if (item.id === formData.id) {
-        return { ...formData };
-      }
-      return item;
-    });
-    setRawData(newRawData);
-  } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
-    const newRawData = { ...rawData };
-    if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
-    newRawData[selectedSection].years[formData.year] = formData.url;
-    setRawData(newRawData);
-  } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
-    const newRawData = { ...rawData };
-    
-    if (selectedSection === 'pdfLink') {
-      newRawData.pdfLink = formData.pdfLink || '';
-    } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-      newRawData[selectedSection] = updatedData.map(item => item.text);
-    } else {
-      newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
-        ? updatedData 
-        : updatedData[0];
+      alert('✅ কুইজ তথ্য সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+      return;
     }
-    setRawData(newRawData);
-  }
-  
-  alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-};
-
     const updatedData = [...jsonData];
     updatedData[selectedItemIndex] = { ...formData };
     setJsonData(updatedData);
-    
     if (currentFile?.type === 'gallery-special' && rawData) {
       const newRawData = rawData.map((item: any) => {
-        if (item.id === formData.id) {
-          return { ...formData };
-        }
+        if (item.id === formData.id) return { ...formData };
         return item;
       });
       setRawData(newRawData);
     } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
       const newRawData = { ...rawData };
       newRawData.invitations = rawData.invitations.map((item: any) => {
-        if (item.id === formData.id) {
-          return { ...formData };
-        }
+        if (item.id === formData.id) return { ...formData };
         return item;
       });
       setRawData(newRawData);
@@ -956,61 +773,35 @@ const handleSaveItem = () => {
       setRawData(newRawData);
     } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
       const newRawData = { ...rawData };
-      
       if (selectedSection === 'pdfLink') {
         newRawData.pdfLink = formData.pdfLink || '';
       } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
         newRawData[selectedSection] = updatedData.map(item => item.text);
       } else {
-        newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
-          ? updatedData 
-          : updatedData[0];
+        newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updatedData : updatedData[0];
       }
       setRawData(newRawData);
     }
-    
     alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
   };
-    // ============================================
-  // ADD ITEM HANDLER
-  // ============================================
 
   const handleAddItem = () => {
-    // Fund Collection Members
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
       const maxId = fundMembers.reduce((max, m) => Math.max(max, parseInt(m.id) || 0), 0);
       const newMember = {
-        id: String(maxId + 1),
-        name: '',
-        dueAmount: 5000,
-        paidAmount: 0,
-        remainingAmount: 5000,
-        lastPaymentDate: null,
-        paymentMethod: null,
-        status: 'unpaid',
-        transactionId: null
+        id: String(maxId + 1), name: '', dueAmount: 5000, paidAmount: 0, remainingAmount: 5000,
+        lastPaymentDate: null, paymentMethod: null, status: 'unpaid', transactionId: null
       };
       setFundMembers([...fundMembers, newMember]);
       alert('➕ নতুন সদস্য যোগ হয়েছে!');
       return;
     }
-
     if (!Array.isArray(jsonData)) return;
-    
-    // Gallery
     if (currentFile?.type === 'gallery-special') {
       const newId = `img_${Date.now()}`;
-      const template = {
-        id: newId,
-        url: '',
-        caption: '',
-        year: parseInt(selectedYear) || new Date().getFullYear(),
-        pujaType: selectedPujaType || 'দুর্গাপূজা'
-      };
-      
+      const template = { id: newId, url: '', caption: '', year: parseInt(selectedYear) || new Date().getFullYear(), pujaType: selectedPujaType || 'দুর্গাপূজা' };
       const newRawData = [...(rawData || []), template];
       setRawData(newRawData);
-      
       const filteredData = [...jsonData, template];
       setJsonData(filteredData);
       setSelectedItemIndex(filteredData.length - 1);
@@ -1018,21 +809,12 @@ const handleSaveItem = () => {
       alert('➕ নতুন ছবি যোগ হয়েছে!');
       return;
     }
-
-    // Invitations
     if (currentFile?.type === 'invitations-special' && selectedSection === 'invitations') {
       const maxId = rawData?.invitations?.reduce((max: number, item: any) => Math.max(max, parseInt(item.id) || 0), 0) || 0;
-      const template = {
-        id: String(maxId + 1),
-        area: selectedArea || '',
-        personName: '',
-        familyCount: 1
-      };
-      
+      const template = { id: String(maxId + 1), area: selectedArea || '', personName: '', familyCount: 1 };
       const newRawData = { ...rawData };
       newRawData.invitations = [...(rawData.invitations || []), template];
       setRawData(newRawData);
-      
       const filteredData = [...jsonData, template];
       setJsonData(filteredData);
       setSelectedItemIndex(filteredData.length - 1);
@@ -1040,22 +822,15 @@ const handleSaveItem = () => {
       alert('➕ নতুন নিমন্ত্রণ যোগ হয়েছে!');
       return;
     }
-
-    // Quiz
     if (currentFile?.type === 'quiz-special') {
       const template = {
         year: parseInt(selectedQuizYear) || new Date().getFullYear(),
         title: `কুইজ প্রতিযোগিতা ${selectedQuizYear || new Date().getFullYear()}`,
-        eventDate: '',
-        venue: 'কলম হিন্দু ধর্মসভা মন্দির',
-        questions: [
-          { id: 1, question: '', answer: '' }
-        ]
+        eventDate: '', venue: 'কলম হিন্দু ধর্মসভা মন্দির',
+        questions: [{ id: 1, question: '', answer: '' }]
       };
-      
       const newRawData = [...(rawData || []), template];
       setRawData(newRawData);
-      
       const filteredData = [...jsonData, template];
       setJsonData(filteredData);
       setSelectedItemIndex(filteredData.length - 1);
@@ -1065,16 +840,11 @@ const handleSaveItem = () => {
       alert('➕ নতুন কুইজ যোগ হয়েছে!');
       return;
     }
-
-    // Accounts PDF
     if (currentFile?.type === 'accounts-special') {
       const currentYear = new Date().getFullYear();
       const existingYears = jsonData.map(item => parseInt(item.year));
       let newYear = currentYear;
-      while (existingYears.includes(newYear)) {
-        newYear--;
-      }
-      
+      while (existingYears.includes(newYear)) newYear--;
       const template = { year: newYear.toString(), url: '' };
       const updatedData = [...jsonData, template];
       setJsonData(updatedData);
@@ -1084,8 +854,6 @@ const handleSaveItem = () => {
       alert('➕ নতুন বছর যোগ হয়েছে!');
       return;
     }
-
-    // Quick Replies / Fallback Messages
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, item.id || 0), 0);
       const template = { id: maxId + 1, text: '' };
@@ -1096,104 +864,66 @@ const handleSaveItem = () => {
       alert('➕ নতুন আইটেম যোগ হয়েছে!');
       return;
     }
-
-    // Contacts
     if (selectedSection === 'contacts') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
-      const template = {
-        id: String(maxId + 1),
-        name: '',
-        mobile: '',
-        address: '',
-        occupation: '',
-        photo: ''
-      };
+      const template = { id: String(maxId + 1), name: '', mobile: '', address: '', occupation: '', photo: '' };
       const updatedData = [...jsonData, template];
       setJsonData(updatedData);
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
-      
       const newRawData = { ...rawData };
       newRawData.contacts = updatedData;
       setRawData(newRawData);
-      
       alert('➕ নতুন যোগাযোগ যোগ হয়েছে!');
       return;
     }
-    
-    // Default: Clone first item
     const template = jsonData[0] ? { ...jsonData[0] } : {};
     Object.keys(template).forEach(key => {
       if (key === 'id') {
-        const maxId = jsonData.reduce((max, item) => {
-          const id = parseInt(item.id) || 0;
-          return id > max ? id : max;
-        }, 0);
+        const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
         template[key] = String(maxId + 1);
       } else if (typeof template[key] === 'string') template[key] = '';
       else if (typeof template[key] === 'number') template[key] = 0;
       else if (Array.isArray(template[key])) template[key] = [];
     });
-    
     const updatedData = [...jsonData, template];
     setJsonData(updatedData);
     setSelectedItemIndex(updatedData.length - 1);
     setFormData(template);
     alert('➕ নতুন আইটেম যোগ হয়েছে!');
   };
-    // ============================================
-  // DELETE ITEM HANDLER
-  // ============================================
 
   const handleDeleteItem = () => {
-    // Fund Collection Members
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
-      if (fundMembers.length <= 1) {
-        alert('❌ কমপক্ষে একজন সদস্য থাকতে হবে!');
-        return;
-      }
+      if (fundMembers.length <= 1) { alert('❌ কমপক্ষে একজন সদস্য থাকতে হবে!'); return; }
       const memberToDelete = getFilteredMembers()[selectedItemIndex];
       if (!memberToDelete) return;
       if (!window.confirm(`⚠️ "${memberToDelete.name}" মুছতে চান?`)) return;
-      
       setFundMembers(prev => prev.filter(m => m.id !== memberToDelete.id));
       setSelectedItemIndex(0);
       alert('🗑️ সদস্য মুছে ফেলা হয়েছে!');
       return;
     }
-
-    if (jsonData.length <= 1) {
-      alert('❌ কমপক্ষে একটি আইটেম থাকতে হবে!');
-      return;
-    }
+    if (jsonData.length <= 1) { alert('❌ কমপক্ষে একটি আইটেম থাকতে হবে!'); return; }
     if (!window.confirm('⚠️ মুছতে চান?')) return;
-    
-    // Gallery
     if (currentFile?.type === 'gallery-special' && rawData) {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
-    } 
-    // Invitations
-    else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+    } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = { ...rawData };
       newRawData.invitations = rawData.invitations.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
-    } 
-    // Quiz
-    else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
+    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => !(item.year === itemToDelete.year && item.title === itemToDelete.title));
       setRawData(newRawData);
-    } 
-    // Contacts
-    else if (selectedSection === 'contacts' && rawData) {
+    } else if (selectedSection === 'contacts' && rawData) {
       const newRawData = { ...rawData };
       newRawData.contacts = jsonData.filter((_, i) => i !== selectedItemIndex);
       setRawData(newRawData);
     }
-    
     const updatedData = jsonData.filter((_, i) => i !== selectedItemIndex);
     setJsonData(updatedData);
     const newIndex = Math.max(0, selectedItemIndex - 1);
@@ -1202,13 +932,8 @@ const handleSaveItem = () => {
     alert('🗑️ মুছে ফেলা হয়েছে!');
   };
 
-  // ============================================
-  // COPY JSON HANDLER
-  // ============================================
-
   const handleCopyJSON = () => {
     let finalData: any;
-
     if (currentFile?.type === 'simple-array') {
       const updated = [...jsonData];
       if (updated.length > 0) updated[selectedItemIndex] = formData;
@@ -1217,11 +942,7 @@ const handleSaveItem = () => {
       finalData = rawData;
     } else if (currentFile?.type === 'fund-collection-special' && rawData) {
       finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
-      };
+      finalData.fundCollection = { ...fundSettings, members: fundMembers, paymentStats: paymentStats };
     } else if (currentFile?.type === 'invitations-special' && rawData) {
       finalData = { ...rawData };
     } else if (currentFile?.type === 'quiz-special' && rawData) {
@@ -1230,16 +951,9 @@ const handleSaveItem = () => {
       finalData = { ...rawData };
       if (selectedSection && rawData[selectedSection]) {
         const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
-        }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
+        jsonData.forEach(item => { yearsObj[item.year] = item.url; });
+        if (formData.year && formData.url) yearsObj[formData.year] = formData.url;
+        finalData[selectedSection] = { title: formData.title || rawData[selectedSection]?.title || '', years: yearsObj };
       }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
@@ -1255,420 +969,220 @@ const handleSaveItem = () => {
     } else if (currentFile?.type === 'complex-object' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
+        if (selectedSection === 'welcomeMessage') finalData[selectedSection] = formData.value || '';
+        else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') finalData[selectedSection] = jsonData.map(item => item.text);
+        else finalData[selectedSection] = jsonData;
       }
     }
-
     navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-    // ============================================
+
+  // ============================================
   // RENDER FORM FIELD
   // ============================================
 
   const renderFormField = (key: string, value: any) => {
     if (key.startsWith('_') || value === undefined) return null;
-    if (key === 'questions' && currentFile?.type === 'quiz-special') return null; // Quiz questions handled separately
-    
+    if (key === 'questions' && currentFile?.type === 'quiz-special') return null;
     const label = labelMap[key] || key;
     const fileConfig = currentFile;
 
-    // ID Field (readonly)
     if (key === 'id') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <input type="text" value={String(formData[key] || '')} disabled 
-            className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" />
+          <input type="text" value={String(formData[key] || '')} disabled className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" />
         </div>
       );
     }
-
-    // Area dropdown for invitations
     if (key === 'area' && currentFile?.type === 'invitations-special') {
       const areas = getInvitationAreas();
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
           <div className="flex gap-2">
-            <select value={String(formData[key] || '')} 
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            <select value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
               <option value="">এলাকা নির্বাচন করুন</option>
-              {areas.map(area => (
-                <option key={area} value={area}>{area}</option>
-              ))}
+              {areas.map(area => (<option key={area} value={area}>{area}</option>))}
             </select>
-            <input 
-              type="text" 
-              placeholder="বা নতুন এলাকা লিখুন"
-              value={areas.includes(formData[key]) ? '' : formData[key] || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
-            />
+            <input type="text" placeholder="বা নতুন এলাকা লিখুন" value={areas.includes(formData[key]) ? '' : formData[key] || ''} onChange={(e) => handleFieldChange(key, e.target.value)} className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
           </div>
         </div>
       );
     }
-
-    // Puja Type for gallery
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <select value={String(formData[key] || '')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-            {PUJA_TYPES.map(puja => (
-              <option key={puja.id} value={puja.value}>{puja.label}</option>
-            ))}
+          <select value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            {PUJA_TYPES.map(puja => (<option key={puja.id} value={puja.value}>{puja.label}</option>))}
           </select>
         </div>
       );
     }
-
-    // Image Preview
     if (fileConfig?.hasImagePreview && (key === 'url' || key === 'imageUrl' || key === 'image' || key === 'photo' || key === 'thumbnail')) {
       return (
         <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <ImageIcon className="w-4 h-4" />
-            {label}
-          </label>
-          <input type="text" value={String(formData[key] || '')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm mb-2" />
-          {formData[key] && (
-            <div className="mt-2 p-2 bg-gray-50 rounded-lg border">
-              <img src={formData[key]} alt="Preview" 
-                className="w-full h-32 object-cover rounded" 
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid+Image'; }}
-              />
-            </div>
-          )}
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"><ImageIcon className="w-4 h-4" />{label}</label>
+          <input type="text" value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm mb-2" />
+          {formData[key] && (<div className="mt-2 p-2 bg-gray-50 rounded-lg border"><img src={formData[key]} alt="Preview" className="w-full h-32 object-cover rounded" onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid+Image'; }} /></div>)}
         </div>
       );
     }
-
-    // Audio Preview
     if (fileConfig?.hasAudioPreview && (key === 'url' || key === 'audioUrl')) {
       return (
         <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <Music className="w-4 h-4" />
-            {label}
-          </label>
-          <input type="text" value={String(formData[key] || '')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm mb-2" />
-          {formData[key] && (
-            <audio controls className="w-full mt-2">
-              <source src={formData[key]} type="audio/mpeg" />
-            </audio>
-          )}
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"><Music className="w-4 h-4" />{label}</label>
+          <input type="text" value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm mb-2" />
+          {formData[key] && (<audio controls className="w-full mt-2"><source src={formData[key]} type="audio/mpeg" /></audio>)}
         </div>
       );
     }
-
-    // Textarea for long text
     if (typeof value === 'string' && (value.length > 100 || ['details', 'answer', 'description', 'address', 'message', 'offlineMessage', 'text'].includes(key))) {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <textarea value={String(formData[key] || '')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)} 
-            rows={4}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 resize-y text-sm" />
+          <textarea value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} rows={4} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 resize-y text-sm" />
         </div>
       );
     }
-
-    // Priority dropdown
     if (key === 'priority') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <select value={String(formData[key] || 'medium')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-            <option value="high">🔴 উচ্চ</option>
-            <option value="medium">🟡 মাঝারি</option>
-            <option value="low">🟢 নিম্ন</option>
+          <select value={String(formData[key] || 'medium')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            <option value="high">🔴 উচ্চ</option><option value="medium">🟡 মাঝারি</option><option value="low">🟢 নিম্ন</option>
           </select>
         </div>
       );
     }
-
-    // Status dropdown
     if (key === 'status') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <select value={String(formData[key] || '')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-            <option value="paid">✅ পরিশোধিত</option>
-            <option value="partial">🟡 আংশিক</option>
-            <option value="unpaid">❌ বকেয়া</option>
+          <select value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            <option value="paid">✅ পরিশোধিত</option><option value="partial">🟡 আংশিক</option><option value="unpaid">❌ বকেয়া</option>
           </select>
         </div>
       );
     }
-
-    // Role dropdown
     if (key === 'role') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <select value={String(formData[key] || 'Member')} 
-            onChange={(e) => handleFieldChange(key, e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-            <option value="Super Admin">Super Admin</option>
-            <option value="Admin">Admin</option>
-            <option value="Member">Member</option>
+          <select value={String(formData[key] || 'Member')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+            <option value="Super Admin">Super Admin</option><option value="Admin">Admin</option><option value="Member">Member</option>
           </select>
         </div>
       );
     }
-
-    // Boolean checkbox
     if (typeof value === 'boolean') {
       return (
         <div key={key} className="form-field flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-          <input type="checkbox" checked={Boolean(formData[key])} 
-            onChange={(e) => handleFieldChange(key, e.target.checked)}
-            className="w-5 h-5 text-orange-500 rounded" />
+          <input type="checkbox" checked={Boolean(formData[key])} onChange={(e) => handleFieldChange(key, e.target.checked)} className="w-5 h-5 text-orange-500 rounded" />
           <label className="font-semibold text-gray-700 text-sm">{label}</label>
         </div>
       );
     }
-
-    // String array (one per line)
     if (Array.isArray(value) && value.every(v => typeof v === 'string')) {
       return (
         <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {label} <span className="text-xs text-gray-500">(প্রতি লাইনে একটি)</span>
-          </label>
-          <textarea 
-            value={(formData[key] || []).join('\n')}
-            onChange={(e) => handleFieldChange(key, e.target.value.split('\n').filter(Boolean))}
-            rows={4}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-          />
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label} <span className="text-xs text-gray-500">(প্রতি লাইনে একটি)</span></label>
+          <textarea value={(formData[key] || []).join('\n')} onChange={(e) => handleFieldChange(key, e.target.value.split('\n').filter(Boolean))} rows={4} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
         </div>
       );
     }
-
-    // Number input
     if (typeof value === 'number') {
       return (
         <div key={key} className="form-field">
           <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <input type="number" value={formData[key] || 0} 
-            onChange={(e) => handleFieldChange(key, parseFloat(e.target.value) || 0)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          <input type="number" value={formData[key] || 0} onChange={(e) => handleFieldChange(key, parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
         </div>
       );
     }
-
-    // Default text input
     return (
       <div key={key} className="form-field">
         <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-        <input type="text" value={String(formData[key] || '')} 
-          onChange={(e) => handleFieldChange(key, e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+        <input type="text" value={String(formData[key] || '')} onChange={(e) => handleFieldChange(key, e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
       </div>
     );
   };
-    // ============================================
+
+  // ============================================
   // RENDER QUIZ EDITOR
   // ============================================
 
   const renderQuizEditor = () => {
     if (currentFile?.type !== 'quiz-special') return null;
-
     const currentQuiz = jsonData[selectedItemIndex];
     const questions = currentQuiz?.questions || [];
 
     return (
       <div className="space-y-4">
-        {/* Quiz Selector */}
         {jsonData.length > 0 && (
           <div className="p-3 bg-gray-50 rounded-lg">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-              <label className="text-sm font-bold text-gray-700">
-                📋 কুইজ নির্বাচন ({jsonData.length} টি):
-              </label>
+              <label className="text-sm font-bold text-gray-700">📋 কুইজ নির্বাচন ({jsonData.length} টি):</label>
               <div className="flex gap-2">
-                <button onClick={handleAddItem} 
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                  <Plus className="w-4 h-4" /> কুইজ যোগ
-                </button>
-                <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                  <Trash2 className="w-4 h-4" /> মুছুন
-                </button>
+                <button onClick={handleAddItem} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"><Plus className="w-4 h-4" /> কুইজ যোগ</button>
+                <button onClick={handleDeleteItem} disabled={jsonData.length <= 1} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400"><Trash2 className="w-4 h-4" /> মুছুন</button>
               </div>
             </div>
             {jsonData.length > 1 && (
-              <select value={selectedItemIndex} 
-                onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-                {jsonData.map((item: any, i: number) => (
-                  <option key={i} value={i}>
-                    #{i + 1} - {getItemDisplayName(item, i)}
-                  </option>
-                ))}
+              <select value={selectedItemIndex} onChange={(e) => setSelectedItemIndex(Number(e.target.value))} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+                {jsonData.map((item: any, i: number) => (<option key={i} value={i}>#{i + 1} - {getItemDisplayName(item, i)}</option>))}
               </select>
             )}
           </div>
         )}
-
-        {/* Quiz Info Section */}
         <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-bold text-purple-800 flex items-center gap-2">
-              📝 কুইজ তথ্য এডিট
-            </h4>
-            <button onClick={handleSaveItem} 
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-              <Save className="w-4 h-4" /> তথ্য সংরক্ষণ
-            </button>
+            <h4 className="font-bold text-purple-800 flex items-center gap-2">📝 কুইজ তথ্য এডিট</h4>
+            <button onClick={handleSaveItem} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"><Save className="w-4 h-4" /> তথ্য সংরক্ষণ</button>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label>
-              <input type="text" value={formData.title || ''} 
-                onChange={(e) => handleFieldChange('title', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
-              <input type="number" value={formData.year || ''} 
-                onChange={(e) => handleFieldChange('year', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">অনুষ্ঠানের তারিখ</label>
-              <input type="text" value={formData.eventDate || ''} 
-                onChange={(e) => handleFieldChange('eventDate', e.target.value)}
-                placeholder="১ অক্টোবর ২০২৫ (মহানবমী)"
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">স্থান</label>
-              <input type="text" value={formData.venue || ''} 
-                onChange={(e) => handleFieldChange('venue', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-            </div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label><input type="text" value={formData.title || ''} onChange={(e) => handleFieldChange('title', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label><input type="number" value={formData.year || ''} onChange={(e) => handleFieldChange('year', parseInt(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">অনুষ্ঠানের তারিখ</label><input type="text" value={formData.eventDate || ''} onChange={(e) => handleFieldChange('eventDate', e.target.value)} placeholder="১ অক্টোবর ২০২৫ (মহানবমী)" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">স্থান</label><input type="text" value={formData.venue || ''} onChange={(e) => handleFieldChange('venue', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" /></div>
           </div>
         </div>
-
-        {/* Questions Editor Section */}
         <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-bold text-green-800 flex items-center gap-2">
-              ❓ প্রশ্ন-উত্তর এডিটর ({questions.length} টি প্রশ্ন)
-            </h4>
+            <h4 className="font-bold text-green-800 flex items-center gap-2">❓ প্রশ্ন-উত্তর এডিটর ({questions.length} টি প্রশ্ন)</h4>
             <div className="flex gap-2">
-              <button onClick={addQuestion}
-                className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                <Plus className="w-4 h-4" /> প্রশ্ন যোগ
-              </button>
-              <button onClick={deleteQuestion} disabled={questions.length <= 1}
-                className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                <Trash2 className="w-4 h-4" /> মুছুন
-              </button>
+              <button onClick={addQuestion} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"><Plus className="w-4 h-4" /> প্রশ্ন যোগ</button>
+              <button onClick={deleteQuestion} disabled={questions.length <= 1} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400"><Trash2 className="w-4 h-4" /> মুছুন</button>
             </div>
           </div>
-
-          {/* Question Selector */}
           {questions.length > 0 && (
             <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-700 mb-2">প্রশ্ন নির্বাচন করুন:</label>
-              <select value={selectedQuestionIndex} 
-                onChange={(e) => setSelectedQuestionIndex(Number(e.target.value))}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
-                {questions.map((q: any, i: number) => (
-                  <option key={i} value={i}>
-                    প্রশ্ন #{q.id || i + 1}: {q.question ? (q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '')) : 'নতুন প্রশ্ন'}
-                  </option>
-                ))}
+              <select value={selectedQuestionIndex} onChange={(e) => setSelectedQuestionIndex(Number(e.target.value))} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm">
+                {questions.map((q: any, i: number) => (<option key={i} value={i}>প্রশ্ন #{q.id || i + 1}: {q.question ? (q.question.substring(0, 50) + (q.question.length > 50 ? '...' : '')) : 'নতুন প্রশ্ন'}</option>))}
               </select>
             </div>
           )}
-
-          {/* Question Edit Form */}
           {questions.length > 0 && (
             <div className="bg-white p-4 rounded-lg border space-y-4">
               <div className="flex items-center justify-between border-b pb-2">
-                <h5 className="font-semibold text-green-700">
-                  প্রশ্ন #{questionFormData.id || selectedQuestionIndex + 1} এডিট
-                </h5>
-                <button onClick={saveQuestion}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-                  <Save className="w-4 h-4" /> প্রশ্ন সংরক্ষণ
-                </button>
+                <h5 className="font-semibold text-green-700">প্রশ্ন #{questionFormData.id || selectedQuestionIndex + 1} এডিট</h5>
+                <button onClick={saveQuestion} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"><Save className="w-4 h-4" /> প্রশ্ন সংরক্ষণ</button>
               </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  🤔 প্রশ্ন
-                </label>
-                <textarea 
-                  value={questionFormData.question || ''} 
-                  onChange={(e) => handleQuestionChange('question', e.target.value)}
-                  rows={3}
-                  placeholder="প্রশ্ন লিখুন..."
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" 
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  ✅ উত্তর
-                </label>
-                <textarea 
-                  value={questionFormData.answer || ''} 
-                  onChange={(e) => handleQuestionChange('answer', e.target.value)}
-                  rows={2}
-                  placeholder="উত্তর লিখুন..."
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" 
-                />
-              </div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">🤔 প্রশ্ন</label><textarea value={questionFormData.question || ''} onChange={(e) => handleQuestionChange('question', e.target.value)} rows={3} placeholder="প্রশ্ন লিখুন..." className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">✅ উত্তর</label><textarea value={questionFormData.answer || ''} onChange={(e) => handleQuestionChange('answer', e.target.value)} rows={2} placeholder="উত্তর লিখুন..." className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" /></div>
             </div>
           )}
-
-          {/* All Questions Preview */}
           {questions.length > 0 && (
             <div className="mt-4">
               <h5 className="font-semibold text-gray-700 mb-2">📋 সকল প্রশ্ন প্রিভিউ:</h5>
               <div className="bg-white rounded-lg border max-h-60 overflow-y-auto">
                 {questions.map((q: any, idx: number) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setSelectedQuestionIndex(idx)}
-                    className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition ${
-                      selectedQuestionIndex === idx ? 'bg-green-50 border-l-4 border-l-green-500' : ''
-                    }`}
-                  >
+                  <div key={idx} onClick={() => setSelectedQuestionIndex(idx)} className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition ${selectedQuestionIndex === idx ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}>
                     <div className="flex items-start gap-2">
-                      <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">
-                        #{q.id || idx + 1}
-                      </span>
+                      <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded">#{q.id || idx + 1}</span>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{q.question || 'প্রশ্ন নেই'}</p>
                         <p className="text-xs text-green-600 mt-1">উত্তর: {q.answer || 'উত্তর নেই'}</p>
@@ -1683,122 +1197,50 @@ const handleSaveItem = () => {
       </div>
     );
   };
-    // ============================================
+
+  // ============================================
   // RENDER FUND COLLECTION EDITOR
   // ============================================
 
   const renderFundCollectionEditor = () => {
     return (
       <div className="space-y-4">
-        {/* Sub-section tabs */}
         <div className="flex flex-wrap gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-          <button onClick={() => setFundSubSection('settings')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-              fundSubSection === 'settings' ? 'bg-green-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-green-50'
-            }`}>
-            <Settings className="w-4 h-4" /> সেটিংস
-          </button>
-          <button onClick={() => setFundSubSection('members')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-              fundSubSection === 'members' ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-blue-50'
-            }`}>
-            <Users className="w-4 h-4" /> সদস্য ({fundMembers.length})
-          </button>
-          <button onClick={() => setFundSubSection('stats')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-              fundSubSection === 'stats' ? 'bg-purple-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-purple-50'
-            }`}>
-            <TrendingUp className="w-4 h-4" /> পরিসংখ্যান
-          </button>
+          <button onClick={() => setFundSubSection('settings')} className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${fundSubSection === 'settings' ? 'bg-green-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-green-50'}`}><Settings className="w-4 h-4" /> সেটিংস</button>
+          <button onClick={() => setFundSubSection('members')} className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${fundSubSection === 'members' ? 'bg-blue-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-blue-50'}`}><Users className="w-4 h-4" /> সদস্য ({fundMembers.length})</button>
+          <button onClick={() => setFundSubSection('stats')} className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${fundSubSection === 'stats' ? 'bg-purple-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-purple-50'}`}><TrendingUp className="w-4 h-4" /> পরিসংখ্যান</button>
         </div>
 
-        {/* Settings Sub-section */}
         {fundSubSection === 'settings' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
-            <h4 className="font-bold text-green-700 flex items-center gap-2">
-              <DollarSign className="w-5 h-5" /> চাঁদা সংগ্রহ সেটিংস
-            </h4>
-            
+            <h4 className="font-bold text-green-700 flex items-center gap-2"><DollarSign className="w-5 h-5" /> চাঁদা সংগ্রহ সেটিংস</h
+                                                                                                                                             <h4 className="font-bold text-green-700 flex items-center gap-2"><DollarSign className="w-5 h-5" /> চাঁদা সংগ্রহ সেটিংস</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <input type="checkbox" checked={fundSettings.isActive} 
-                  onChange={(e) => handleFundSettingsChange('isActive', e.target.checked)}
-                  className="w-5 h-5 text-green-500 rounded" />
+                <input type="checkbox" checked={fundSettings.isActive} onChange={(e) => handleFundSettingsChange('isActive', e.target.checked)} className="w-5 h-5 text-green-500 rounded" />
                 <label className="font-semibold text-gray-700">সক্রিয়?</label>
               </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
-                <input type="text" value={fundSettings.year || ''} 
-                  onChange={(e) => handleFundSettingsChange('year', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">পূজার নাম</label>
-                <input type="text" value={fundSettings.pujaName || ''} 
-                  onChange={(e) => handleFundSettingsChange('pujaName', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">সর্বশেষ আপডেট</label>
-                <input type="text" value={fundSettings.lastUpdated || ''} 
-                  onChange={(e) => handleFundSettingsChange('lastUpdated', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label><input type="text" value={fundSettings.year || ''} onChange={(e) => handleFundSettingsChange('year', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">পূজার নাম</label><input type="text" value={fundSettings.pujaName || ''} onChange={(e) => handleFundSettingsChange('pujaName', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">সর্বশেষ আপডেট</label><input type="text" value={fundSettings.lastUpdated || ''} onChange={(e) => handleFundSettingsChange('lastUpdated', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
             </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">মেসেজ</label>
-              <textarea value={fundSettings.message || ''} 
-                onChange={(e) => handleFundSettingsChange('message', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                নির্দেশনা <span className="text-xs text-gray-500">(প্রতি লাইনে একটি)</span>
-              </label>
-              <textarea value={(fundSettings.instructions || []).join('\n')} 
-                onChange={(e) => handleFundSettingsChange('instructions', e.target.value.split('\n').filter(Boolean))}
-                rows={4}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-            </div>
-
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">মেসেজ</label><textarea value={fundSettings.message || ''} onChange={(e) => handleFundSettingsChange('message', e.target.value)} rows={3} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-2">নির্দেশনা <span className="text-xs text-gray-500">(প্রতি লাইনে একটি)</span></label><textarea value={(fundSettings.instructions || []).join('\n')} onChange={(e) => handleFundSettingsChange('instructions', e.target.value.split('\n').filter(Boolean))} rows={4} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
             <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label>
-                <input type="number" value={fundSettings.totalDue || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalDue', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label>
-                <input type="number" value={fundSettings.totalPaid || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalPaid', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label>
-                <input type="number" value={fundSettings.totalRemaining || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalRemaining', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-              </div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label><input type="number" value={fundSettings.totalDue || 0} onChange={(e) => handleFundSettingsChange('totalDue', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label><input type="number" value={fundSettings.totalPaid || 0} onChange={(e) => handleFundSettingsChange('totalPaid', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label><input type="number" value={fundSettings.totalRemaining || 0} onChange={(e) => handleFundSettingsChange('totalRemaining', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" /></div>
             </div>
           </div>
         )}
 
-        {/* Members Sub-section */}
         {fundSubSection === 'members' && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-semibold text-blue-800">ফিল্টার:</span>
-                <select value={memberFilter} onChange={(e) => { setMemberFilter(e.target.value); setSelectedItemIndex(0); }}
-                  className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <select value={memberFilter} onChange={(e) => { setMemberFilter(e.target.value); setSelectedItemIndex(0); }} className="px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
                   <option value="all">সকল ({fundMembers.length})</option>
                   <option value="paid">✅ পরিশোধিত ({fundMembers.filter(m => m.status === 'paid').length})</option>
                   <option value="partial">🟡 আংশিক ({fundMembers.filter(m => m.status === 'partial').length})</option>
@@ -1806,304 +1248,93 @@ const handleSaveItem = () => {
                 </select>
               </div>
               <div className="flex gap-2">
-                <button onClick={handleAddItem}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                  <Plus className="w-4 h-4" /> সদস্য যোগ
-                </button>
-                <button onClick={handleDeleteItem} disabled={getFilteredMembers().length <= 1}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                  <Trash2 className="w-4 h-4" /> মুছুন
-                </button>
+                <button onClick={handleAddItem} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"><Plus className="w-4 h-4" /> সদস্য যোগ</button>
+                <button onClick={handleDeleteItem} disabled={getFilteredMembers().length <= 1} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400"><Trash2 className="w-4 h-4" /> মুছুন</button>
               </div>
             </div>
-
-            <select value={selectedItemIndex} 
-              onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-              {getFilteredMembers().map((member, i) => (
-                <option key={member.id} value={i}>
-                  {member.status === 'paid' ? '✅' : member.status === 'partial' ? '🟡' : '❌'} {member.name || `সদস্য ${member.id}`} 
-                  - ৳{member.paidAmount || 0}/{member.dueAmount || 0}
-                </option>
-              ))}
+            <select value={selectedItemIndex} onChange={(e) => setSelectedItemIndex(Number(e.target.value))} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+              {getFilteredMembers().map((member, i) => (<option key={member.id} value={i}>{member.status === 'paid' ? '✅' : member.status === 'partial' ? '🟡' : '❌'} {member.name || `সদস্য ${member.id}`} - ৳{member.paidAmount || 0}/{member.dueAmount || 0}</option>))}
             </select>
-
             {getFilteredMembers()[selectedItemIndex] && (
               <div className="p-4 bg-white rounded-lg border space-y-4">
-                <h4 className="font-bold text-blue-700 border-b pb-2">
-                  সদস্য #{getFilteredMembers()[selectedItemIndex].id} এডিট
-                </h4>
-                
+                <h4 className="font-bold text-blue-700 border-b pb-2">সদস্য #{getFilteredMembers()[selectedItemIndex].id} এডিট</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">নাম</label>
-                    <input type="text" value={getFilteredMembers()[selectedItemIndex].name || ''} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'name', e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">স্ট্যাটাস</label>
-                    <select value={getFilteredMembers()[selectedItemIndex].status || 'unpaid'} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'status', e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                      <option value="paid">✅ পরিশোধিত</option>
-                      <option value="partial">🟡 আংশিক</option>
-                      <option value="unpaid">❌ বকেয়া</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">অবশিষ্ট</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'remainingAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
-                    <select value={getFilteredMembers()[selectedItemIndex].paymentMethod || ''} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paymentMethod', e.target.value || null)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                      <option value="">নির্বাচন করুন</option>
-                      <option value="বিকাশ">💳 বিকাশ</option>
-                      <option value="নগদ">💵 নগদ</option>
-                      <option value="রকেট">🚀 রকেট</option>
-                      <option value="ব্যাংক">🏦 ব্যাংক</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">শেষ পেমেন্ট তারিখ</label>
-                    <input type="text" value={getFilteredMembers()[selectedItemIndex].lastPaymentDate || ''} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'lastPaymentDate', e.target.value || null)}
-                      placeholder="২০২৬-০৯-২০"
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">ট্রানজেকশন ID</label>
-                    <input type="text" value={getFilteredMembers()[selectedItemIndex].transactionId || ''} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'transactionId', e.target.value || null)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" />
-                  </div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">নাম</label><input type="text" value={getFilteredMembers()[selectedItemIndex].name || ''} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'name', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">স্ট্যাটাস</label><select value={getFilteredMembers()[selectedItemIndex].status || 'unpaid'} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'status', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"><option value="paid">✅ পরিশোধিত</option><option value="partial">🟡 আংশিক</option><option value="unpaid">❌ বকেয়া</option></select></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label><input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত</label><input type="number" value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">অবশিষ্ট</label><input type="number" value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'remainingAmount', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label><select value={getFilteredMembers()[selectedItemIndex].paymentMethod || ''} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paymentMethod', e.target.value || null)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"><option value="">নির্বাচন করুন</option><option value="বিকাশ">💳 বিকাশ</option><option value="নগদ">💵 নগদ</option><option value="রকেট">🚀 রকেট</option><option value="ব্যাংক">🏦 ব্যাংক</option></select></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">শেষ পেমেন্ট তারিখ</label><input type="text" value={getFilteredMembers()[selectedItemIndex].lastPaymentDate || ''} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'lastPaymentDate', e.target.value || null)} placeholder="২০২৬-০৯-২০" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" /></div>
+                  <div><label className="block text-sm font-semibold text-gray-700 mb-2">ট্রানজেকশন ID</label><input type="text" value={getFilteredMembers()[selectedItemIndex].transactionId || ''} onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'transactionId', e.target.value || null)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" /></div>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Stats Sub-section */}
         {fundSubSection === 'stats' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-purple-700 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" /> পেমেন্ট পরিসংখ্যান
-              </h4>
-              <button onClick={recalculateStats}
-                className="px-3 py-1.5 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 flex items-center gap-1">
-                🔄 পুনরায় গণনা
-              </button>
+              <h4 className="font-bold text-purple-700 flex items-center gap-2"><TrendingUp className="w-5 h-5" /> পেমেন্ট পরিসংখ্যান</h4>
+              <button onClick={recalculateStats} className="px-3 py-1.5 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 flex items-center gap-1">🔄 পুনরায় গণনা</button>
             </div>
-            
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg text-center">
-                <div className="text-3xl font-bold text-blue-600">{paymentStats.totalMembers || 0}</div>
-                <div className="text-sm text-blue-800">মোট সদস্য</div>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg text-center">
-                <div className="text-3xl font-bold text-green-600">{paymentStats.paidMembers || 0}</div>
-                <div className="text-sm text-green-800">পরিশোধিত</div>
-              </div>
-              <div className="p-4 bg-yellow-50 rounded-lg text-center">
-                <div className="text-3xl font-bold text-yellow-600">{paymentStats.partialMembers || 0}</div>
-                <div className="text-sm text-yellow-800">আংশিক</div>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg text-center">
-                <div className="text-3xl font-bold text-red-600">{paymentStats.unpaidMembers || 0}</div>
-                <div className="text-sm text-red-800">বকেয়া</div>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg text-center col-span-2">
-                <div className="text-3xl font-bold text-purple-600">{paymentStats.paymentPercentage || 0}%</div>
-                <div className="text-sm text-purple-800">পেমেন্ট সম্পন্ন</div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                  <div className="bg-purple-500 h-2 rounded-full transition-all" 
-                    style={{ width: `${paymentStats.paymentPercentage || 0}%` }}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">মোট সদস্য</label>
-                <input type="number" value={paymentStats.totalMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('totalMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত সদস্য</label>
-                <input type="number" value={paymentStats.paidMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('paidMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">আংশিক সদস্য</label>
-                <input type="number" value={paymentStats.partialMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('partialMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া সদস্য</label>
-                <input type="number" value={paymentStats.unpaidMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('unpaidMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট শতাংশ</label>
-                <input type="number" value={paymentStats.paymentPercentage || 0} 
-                  onChange={(e) => handlePaymentStatsChange('paymentPercentage', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-              </div>
+              <div className="p-4 bg-blue-50 rounded-lg text-center"><div className="text-3xl font-bold text-blue-600">{paymentStats.totalMembers || 0}</div><div className="text-sm text-blue-800">মোট সদস্য</div></div>
+              <div className="p-4 bg-green-50 rounded-lg text-center"><div className="text-3xl font-bold text-green-600">{paymentStats.paidMembers || 0}</div><div className="text-sm text-green-800">পরিশোধিত</div></div>
+              <div className="p-4 bg-yellow-50 rounded-lg text-center"><div className="text-3xl font-bold text-yellow-600">{paymentStats.partialMembers || 0}</div><div className="text-sm text-yellow-800">আংশিক</div></div>
+              <div className="p-4 bg-red-50 rounded-lg text-center"><div className="text-3xl font-bold text-red-600">{paymentStats.unpaidMembers || 0}</div><div className="text-sm text-red-800">বকেয়া</div></div>
+              <div className="p-4 bg-purple-50 rounded-lg text-center col-span-2"><div className="text-3xl font-bold text-purple-600">{paymentStats.paymentPercentage || 0}%</div><div className="text-sm text-purple-800">পেমেন্ট সম্পন্ন</div><div className="w-full bg-gray-200 rounded-full h-2 mt-2"><div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${paymentStats.paymentPercentage || 0}%` }}></div></div></div>
             </div>
           </div>
         )}
       </div>
     );
   };
-    // ============================================
+
+  // ============================================
   // RENDER ACCOUNTS PDF EDITOR
   // ============================================
 
   const renderAccountsPdfEditor = () => {
     if (currentFile?.type !== 'accounts-special' || !rawData) return null;
-
     const sectionData = rawData[selectedSection];
     const years = sectionData?.years ? Object.keys(sectionData.years).sort((a, b) => parseInt(b) - parseInt(a)) : [];
 
     return (
       <div className="space-y-4">
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
-          <h4 className="font-bold text-indigo-800 mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            {sectionLabels[selectedSection]} - PDF লিংক
-          </h4>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label>
-            <input type="text" value={formData.title || sectionData?.title || ''} 
-              onChange={(e) => handleFieldChange('title', e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
-          </div>
-
+          <h4 className="font-bold text-indigo-800 mb-4 flex items-center gap-2"><FileText className="w-5 h-5" />{sectionLabels[selectedSection]} - PDF লিংক</h4>
+          <div className="mb-4"><label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম</label><input type="text" value={formData.title || sectionData?.title || ''} onChange={(e) => handleFieldChange('title', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" /></div>
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">📅 বছর নির্বাচন:</label>
             <div className="flex flex-wrap gap-2">
-              {years.map((year, index) => (
-                <button
-                  key={year}
-                  onClick={() => {
-                    setSelectedPdfYear(year);
-                    setSelectedItemIndex(index);
-                    setFormData(prev => ({ ...prev, year, url: sectionData.years[year] }));
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
-                    selectedPdfYear === year 
-                      ? 'bg-indigo-500 text-white shadow-lg' 
-                      : 'bg-white text-gray-700 hover:bg-indigo-50 border'
-                  }`}
-                >
-                  <Calendar className="w-4 h-4" />
-                  {year}
-                </button>
-              ))}
-              <button
-                onClick={handleAddItem}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" /> নতুন বছর
-              </button>
+              {years.map((year, index) => (<button key={year} onClick={() => { setSelectedPdfYear(year); setSelectedItemIndex(index); setFormData(prev => ({ ...prev, year, url: sectionData.years[year] })); }} className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${selectedPdfYear === year ? 'bg-indigo-500 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-indigo-50 border'}`}><Calendar className="w-4 h-4" />{year}</button>))}
+              <button onClick={handleAddItem} className="px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 flex items-center gap-1"><Plus className="w-4 h-4" /> নতুন বছর</button>
             </div>
           </div>
-
           {selectedPdfYear && (
             <div className="bg-white p-4 rounded-lg border space-y-4">
               <div className="flex items-center justify-between">
                 <h5 className="font-semibold text-indigo-700">{selectedPdfYear} সালের PDF</h5>
-                <button
-                  onClick={() => {
-                    if (years.length <= 1) {
-                      alert('❌ কমপক্ষে একটি বছর থাকতে হবে!');
-                      return;
-                    }
-                    if (!window.confirm(`⚠️ ${selectedPdfYear} সাল মুছতে চান?`)) return;
-                    
-                    const newYears = { ...sectionData.years };
-                    delete newYears[selectedPdfYear];
-                    
-                    const newRawData = { ...rawData };
-                    newRawData[selectedSection] = { ...sectionData, years: newYears };
-                    setRawData(newRawData);
-                    
-                    const remainingYears = Object.keys(newYears).sort((a, b) => parseInt(b) - parseInt(a));
-                    setSelectedPdfYear(remainingYears[0] || '');
-                    setJsonData(remainingYears.map(y => ({ year: y, url: newYears[y] })));
-                    
-                    alert('🗑️ বছর মুছে ফেলা হয়েছে!');
-                  }}
-                  className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 flex items-center gap-1"
-                >
-                  <Trash2 className="w-3 h-3" /> মুছুন
-                </button>
+                <button onClick={() => { if (years.length <= 1) { alert('❌ কমপক্ষে একটি বছর থাকতে হবে!'); return; } if (!window.confirm(`⚠️ ${selectedPdfYear} সাল মুছতে চান?`)) return; const newYears = { ...sectionData.years }; delete newYears[selectedPdfYear]; const newRawData = { ...rawData }; newRawData[selectedSection] = { ...sectionData, years: newYears }; setRawData(newRawData); const remainingYears = Object.keys(newYears).sort((a, b) => parseInt(b) - parseInt(a)); setSelectedPdfYear(remainingYears[0] || ''); setJsonData(remainingYears.map(y => ({ year: y, url: newYears[y] }))); alert('🗑️ বছর মুছে ফেলা হয়েছে!'); }} className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 flex items-center gap-1"><Trash2 className="w-3 h-3" /> মুছুন</button>
               </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label>
-                <input type="text" value={formData.year || ''} 
-                  onChange={(e) => handleFieldChange('year', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">PDF URL</label>
-                <input type="text" value={formData.url || ''} 
-                  onChange={(e) => handleFieldChange('url', e.target.value)}
-                  placeholder="/pdfs/accounts/example-2024.pdf"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" />
-              </div>
-              
-              {formData.url && (
-                <a href={formData.url} target="_blank" rel="noopener noreferrer" 
-                  className="inline-flex items-center gap-2 text-indigo-600 text-sm hover:underline">
-                  <FileText className="w-4 h-4" /> PDF দেখুন →
-                </a>
-              )}
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">বছর</label><input type="text" value={formData.year || ''} onChange={(e) => handleFieldChange('year', e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" /></div>
+              <div><label className="block text-sm font-semibold text-gray-700 mb-2">PDF URL</label><input type="text" value={formData.url || ''} onChange={(e) => handleFieldChange('url', e.target.value)} placeholder="/pdfs/accounts/example-2024.pdf" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" /></div>
+              {formData.url && (<a href={formData.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 text-sm hover:underline"><FileText className="w-4 h-4" /> PDF দেখুন →</a>)}
             </div>
           )}
         </div>
       </div>
     );
   };
-    // ============================================
+
+  // ============================================
   // GENERATE JSON
   // ============================================
 
   const generatedJSON = (() => {
     let finalData: any;
-
     if (currentFile?.type === 'simple-array') {
       const updated = [...jsonData];
       if (updated.length > 0) updated[selectedItemIndex] = formData;
@@ -2112,11 +1343,7 @@ const handleSaveItem = () => {
       finalData = rawData;
     } else if (currentFile?.type === 'fund-collection-special' && rawData) {
       finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
-      };
+      finalData.fundCollection = { ...fundSettings, members: fundMembers, paymentStats: paymentStats };
     } else if (currentFile?.type === 'invitations-special' && rawData) {
       finalData = { ...rawData };
     } else if (currentFile?.type === 'quiz-special' && rawData) {
@@ -2125,23 +1352,15 @@ const handleSaveItem = () => {
       finalData = { ...rawData };
       if (selectedSection && rawData[selectedSection]) {
         const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
-        }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
+        jsonData.forEach(item => { yearsObj[item.year] = item.url; });
+        if (formData.year && formData.url) yearsObj[formData.year] = formData.url;
+        finalData[selectedSection] = { title: formData.title || rawData[selectedSection]?.title || '', years: yearsObj };
       }
     } else if (currentFile?.type === 'nested-sections' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
-        if (selectedSection === 'pdfLink') {
-          finalData.pdfLink = formData.pdfLink || '';
-        } else {
+        if (selectedSection === 'pdfLink') finalData.pdfLink = formData.pdfLink || '';
+        else {
           const updated = [...jsonData];
           if (updated.length > 0) updated[selectedItemIndex] = formData;
           finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
@@ -2150,186 +1369,78 @@ const handleSaveItem = () => {
     } else if (currentFile?.type === 'complex-object' && rawData) {
       finalData = { ...rawData };
       if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
+        if (selectedSection === 'welcomeMessage') finalData[selectedSection] = formData.value || '';
+        else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') finalData[selectedSection] = jsonData.map(item => item.text);
+        else finalData[selectedSection] = jsonData;
       }
     }
-
     return JSON.stringify(finalData, null, 2);
   })();
-    // ============================================
-  // MAIN RETURN - UI RENDER
+
+  // ============================================
+  // MAIN RETURN
   // ============================================
 
   return (
     <div className="space-y-4 p-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Settings className="w-7 h-7 text-orange-500" />
-        <h2 className="text-2xl font-bold text-orange-600">অ্যাডমিন ড্যাশবোর্ড</h2>
-      </div>
+      <div className="flex items-center gap-2"><Settings className="w-7 h-7 text-orange-500" /><h2 className="text-2xl font-bold text-orange-600">অ্যাডমিন ড্যাশবোর্ড</h2></div>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg"><p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p><p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p></div>
+      {error && (<div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg"><p className="text-red-800 font-semibold">❌ {error}</p></div>)}
 
-      {/* Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
-        <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-          <p className="text-red-800 font-semibold">❌ {error}</p>
-        </div>
-      )}
-
-      {/* File Selector */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {JSON_FILES.map(file => (
-            <button key={file.id} onClick={() => setSelectedFile(file.id)} 
-              className={btnClass(selectedFile === file.id)}>
-              {file.label}
-            </button>
-          ))}
+          {JSON_FILES.map(file => (<button key={file.id} onClick={() => setSelectedFile(file.id)} className={btnClass(selectedFile === file.id)}>{file.label}</button>))}
         </div>
-        {currentFile && (
-          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-            📂 <code>{currentFile.path}</code>
-          </div>
-        )}
+        {currentFile && (<div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">📂 <code>{currentFile.path}</code></div>)}
       </div>
 
-      {/* Section Selector */}
       {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <label className="block text-sm font-bold text-gray-700 mb-3">📂 সেকশন নির্বাচন:</label>
-          <div className="flex flex-wrap gap-2">
-            {currentFile.sections.map(section => (
-              <button key={section} onClick={() => setSelectedSection(section)}
-                className={btnClass(selectedSection === section)}>
-                {sectionLabels[section] || section}
-              </button>
-            ))}
-          </div>
+          <div className="flex flex-wrap gap-2">{currentFile.sections.map(section => (<button key={section} onClick={() => setSelectedSection(section)} className={btnClass(selectedSection === section)}>{sectionLabels[section] || section}</button>))}</div>
         </div>
       )}
 
-      {/* Invitations Special Filters (এলাকা ভিত্তিক) */}
       {currentFile?.type === 'invitations-special' && selectedSection === 'invitations' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-pink-500" />
-              <label className="text-sm font-bold text-gray-700">এলাকা নির্বাচন:</label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {getInvitationAreas().map(area => (
-                <button key={area} onClick={() => setSelectedArea(area)}
-                  className={btnClass(selectedArea === area)}>
-                  📍 {area}
-                </button>
-              ))}
-            </div>
+            <div className="flex items-center gap-2"><MapPin className="w-5 h-5 text-pink-500" /><label className="text-sm font-bold text-gray-700">এলাকা নির্বাচন:</label></div>
+            <div className="flex flex-wrap gap-2">{getInvitationAreas().map(area => (<button key={area} onClick={() => setSelectedArea(area)} className={btnClass(selectedArea === area)}>📍 {area}</button>))}</div>
           </div>
-          <div className="mt-3 p-3 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg">
-            <p className="text-sm text-pink-800">
-              📊 <strong>{selectedArea}</strong> এলাকা: 
-              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি নিমন্ত্রণ</span>
-            </p>
-          </div>
+          <div className="mt-3 p-3 bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg"><p className="text-sm text-pink-800">📊 <strong>{selectedArea}</strong> এলাকা: <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি নিমন্ত্রণ</span></p></div>
         </div>
       )}
 
-      {/* Quiz Special Filters (বছর ভিত্তিক) */}
       {currentFile?.type === 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-purple-500" />
-              <label className="text-sm font-bold text-gray-700">বছর নির্বাচন:</label>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {getQuizYears().map(year => (
-                <button key={year} onClick={() => setSelectedQuizYear(year)}
-                  className={btnClass(selectedQuizYear === year)}>
-                  📅 {year}
-                </button>
-              ))}
-            </div>
+            <div className="flex items-center gap-2"><Calendar className="w-5 h-5 text-purple-500" /><label className="text-sm font-bold text-gray-700">বছর নির্বাচন:</label></div>
+            <div className="flex flex-wrap gap-2">{getQuizYears().map(year => (<button key={year} onClick={() => setSelectedQuizYear(year)} className={btnClass(selectedQuizYear === year)}>📅 {year}</button>))}</div>
           </div>
-          <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg">
-            <p className="text-sm text-purple-800">
-              📊 <strong>{selectedQuizYear}</strong> সাল: 
-              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি কুইজ</span>
-            </p>
-          </div>
+          <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg"><p className="text-sm text-purple-800">📊 <strong>{selectedQuizYear}</strong> সাল: <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি কুইজ</span></p></div>
         </div>
       )}
 
-      {/* Gallery Special Filters */}
       {currentFile?.type === 'gallery-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">📅 বছর নির্বাচন:</label>
-              <div className="flex flex-wrap gap-2">
-                {getGalleryYears().map(year => (
-                  <button key={year} onClick={() => setSelectedYear(year)}
-                    className={btnClass(selectedYear === year)}>
-                    {year}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">🙏 পূজার ধরন:</label>
-              <div className="flex flex-wrap gap-2">
-                {getGalleryPujaTypes().map(puja => (
-                  <button key={puja} onClick={() => setSelectedPujaType(puja)}
-                    className={btnClass(selectedPujaType === puja)}>
-                    {PUJA_TYPES.find(p => p.value === puja)?.label || puja}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-3">📅 বছর নির্বাচন:</label><div className="flex flex-wrap gap-2">{getGalleryYears().map(year => (<button key={year} onClick={() => setSelectedYear(year)} className={btnClass(selectedYear === year)}>{year}</button>))}</div></div>
+            <div><label className="block text-sm font-bold text-gray-700 mb-3">🙏 পূজার ধরন:</label><div className="flex flex-wrap gap-2">{getGalleryPujaTypes().map(puja => (<button key={puja} onClick={() => setSelectedPujaType(puja)} className={btnClass(selectedPujaType === puja)}>{PUJA_TYPES.find(p => p.value === puja)?.label || puja}</button>))}</div></div>
           </div>
-          
-          <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-            <p className="text-sm text-purple-800">
-              📊 <strong>{selectedYear}</strong> সালের <strong>{selectedPujaType}</strong>: 
-              <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি ছবি</span>
-            </p>
-          </div>
+          <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg"><p className="text-sm text-purple-800">📊 <strong>{selectedYear}</strong> সালের <strong>{selectedPujaType}</strong>: <span className="ml-2 font-bold text-orange-600">{jsonData.length} টি ছবি</span></p></div>
         </div>
       )}
 
-      {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: Form */}
         <div className="bg-white rounded-xl p-6 shadow-lg">
           <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
             <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
-            {currentFile?.type !== 'quiz-special' && (
-              <button onClick={handleSaveItem} 
-                className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-                <Save className="w-4 h-4" /> সংরক্ষণ
-              </button>
-            )}
+            {currentFile?.type !== 'quiz-special' && (<button onClick={handleSaveItem} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"><Save className="w-4 h-4" /> সংরক্ষণ</button>)}
           </div>
-          
           <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
             {loading ? (
-              <div className="text-center py-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-                <p className="mt-3 text-gray-600">লোডিং...</p>
-              </div>
+              <div className="text-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div><p className="mt-3 text-gray-600">লোডিং...</p></div>
             ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
               renderFundCollectionEditor()
             ) : currentFile?.type === 'accounts-special' ? (
@@ -2338,82 +1449,39 @@ const handleSaveItem = () => {
               renderQuizEditor()
             ) : (
               <>
-                {/* Item Selector for other types */}
                 {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
                   <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                      <label className="text-sm font-bold text-gray-700">
-                        📋 আইটেম ({jsonData.length} টি):
-                      </label>
+                      <label className="text-sm font-bold text-gray-700">📋 আইটেম ({jsonData.length} টি):</label>
                       <div className="flex gap-2">
-                        <button onClick={handleAddItem} 
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                          <Plus className="w-4 h-4" /> যোগ
-                        </button>
-                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                          <Trash2 className="w-4 h-4" /> মুছুন
-                        </button>
+                        <button onClick={handleAddItem} className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"><Plus className="w-4 h-4" /> যোগ</button>
+                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1} className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400"><Trash2 className="w-4 h-4" /> মুছুন</button>
                       </div>
                     </div>
-                    {jsonData.length > 1 && (
-                      <select value={selectedItemIndex} 
-                        onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-                        {jsonData.map((item: any, i: number) => (
-                          <option key={i} value={i}>
-                            #{i + 1} - {getItemDisplayName(item, i)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                    {jsonData.length > 1 && (<select value={selectedItemIndex} onChange={(e) => setSelectedItemIndex(Number(e.target.value))} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">{jsonData.map((item: any, i: number) => (<option key={i} value={i}>#{i + 1} - {getItemDisplayName(item, i)}</option>))}</select>)}
                   </div>
                 )}
-
-                {/* Form Fields */}
-                {Object.keys(formData).length > 0 ? (
-                  Object.keys(formData).map(key => renderFormField(key, formData[key]))
-                ) : (
-                  <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
-                )}
+                {Object.keys(formData).length > 0 ? (Object.keys(formData).map(key => renderFormField(key, formData[key]))) : (<p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>)}
               </>
             )}
           </div>
         </div>
 
-        {/* Right: JSON Code */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              JSON কোড
-            </h3>
-            <button onClick={handleCopyJSON} 
-              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? '✅ কপি হয়েছে!' : '📋 কপি'}
-            </button>
+            <h3 className="text-white font-bold flex items-center gap-2"><FileText className="w-5 h-5" />JSON কোড</h3>
+            <button onClick={handleCopyJSON} className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">{copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? '✅ কপি হয়েছে!' : '📋 কপি'}</button>
           </div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
-            <code>{generatedJSON}</code>
-          </pre>
-          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
-            <p className="text-xs text-yellow-800">
-              ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
-            </p>
-          </div>
+          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]"><code>{generatedJSON}</code></pre>
+          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3"><p className="text-xs text-yellow-800">⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন</p></div>
         </div>
       </div>
 
-      {/* Instructions */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 shadow-lg border-l-4 border-purple-500">
-        <h3 className="font-bold mb-3 text-purple-800 flex items-center gap-2">
-          <span className="text-lg">📝</span> GitHub এ আপডেট করার পদ্ধতি:
-        </h3>
+        <h3 className="font-bold mb-3 text-purple-800 flex items-center gap-2"><span className="text-lg">📝</span> GitHub এ আপডেট করার পদ্ধতি:</h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-purple-900">
           <li>"📋 কপি" বাটনে ক্লিক করুন</li>
-          <li><a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
-            className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
+          <li><a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
           <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path}</code> ফাইলটি খুলুন</li>
           <li>✏️ Edit → পেস্ট → Commit</li>
           <li>২-৩ মিনিট পর সাইটে রিফ্রেশ করুন 🔄</li>
