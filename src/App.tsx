@@ -160,6 +160,8 @@ interface LoginUser {
 
 // Data URLs
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
+const GITHUB_CONTACTS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json';
+const GITHUB_INVITATIONS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/invitations.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
@@ -1885,52 +1887,56 @@ function LoginPage() {
   }, []);
 
  // Load member data after login (WITHOUT photo matching)
+// Load all data after login
 useEffect(() => {
   if (!isLoggedIn || !loggedInUser) return;
   
   const fetchAllData = async () => {
     setIsDataLoading(true);
     try {
-      const response = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-      
-      if (data.members) {
-        setMembersData(data.members);
+      // Fetch Members
+      const membersRes = await fetch(GITHUB_MEMBERS_DATA_URL, { cache: 'no-cache' });
+      if (membersRes.ok) {
+        const membersJson = await membersRes.json();
+        if (membersJson.members) {
+          setMembersData(membersJson.members);
+          setPdfLinks(prev => ({ ...prev, membersList: membersJson.pdfLink || '' }));
+        }
         
-        // ✅ FIXED: শুধুমাত্র যদি login data তে photo না থাকে তাহলে খুঁজবে
+        // Photo logic (only if login data has no photo)
         if (!loggedInUser.photo || loggedInUser.photo === '') {
-          console.log('⚠️ Login data তে photo নেই, members-data থেকে খুঁজছি...');
-          
-          const currentUserMember = data.members.find((m: Member) => {
-            const memberId = String(m.id || '').trim();
-            const userId = String(loggedInUser.id || '').trim();
-            
-            // ID দিয়ে match করুন (সবচেয়ে reliable)
-            if (memberId && userId && memberId === userId) {
-              console.log('✅ ID match:', userId);
-              return true;
-            }
-            return false;
+          const currentUserMember = membersJson.members.find((m: Member) => {
+            return String(m.id).trim() === String(loggedInUser.id).trim();
           });
-          
           if (currentUserMember?.photo) {
-            console.log('📸 members-data থেকে photo পাওয়া গেছে:', currentUserMember.photo);
             setUserPhoto(currentUserMember.photo);
             localStorage.setItem('khd_user_photo', currentUserMember.photo);
-          } else {
-            console.log('⚠️ members-data তেও photo নেই');
           }
         } else {
-          // ✅ Login data তে photo আছে, সেটাই ব্যবহার করুন
-          console.log('✅ Login data থেকে photo ব্যবহার করছি:', loggedInUser.photo);
           setUserPhoto(loggedInUser.photo);
         }
       }
-      
-      if (data.contacts) setContactsData(data.contacts);
-      if (data.invitations) setInvitationData(data.invitations);
-      if (data.pdfLinks) setPdfLinks(data.pdfLinks);
+
+      // Fetch Contacts
+      const contactsRes = await fetch(GITHUB_CONTACTS_URL, { cache: 'no-cache' });
+      if (contactsRes.ok) {
+        const contactsJson = await contactsRes.json();
+        if (contactsJson.contacts) {
+          setContactsData(contactsJson.contacts);
+          setPdfLinks(prev => ({ ...prev, contactsList: contactsJson.pdfLink || '' }));
+        }
+      }
+
+      // Fetch Invitations
+      const invitationsRes = await fetch(GITHUB_INVITATIONS_URL, { cache: 'no-cache' });
+      if (invitationsRes.ok) {
+        const invitationsJson = await invitationsRes.json();
+        if (invitationsJson.invitations) {
+          setInvitationData(invitationsJson.invitations);
+          setPdfLinks(prev => ({ ...prev, invitationList: invitationsJson.pdfLink || '' }));
+        }
+      }
+
     } catch (error) { 
       console.error('❌ Data fetch error:', error); 
     } finally { 
@@ -1940,6 +1946,7 @@ useEffect(() => {
   
   fetchAllData();
 
+  // Load accounts PDFs
   const loadAccountsPDFs = async () => {
     try {
       const response = await fetch('/data/accountsPDFs.json');
