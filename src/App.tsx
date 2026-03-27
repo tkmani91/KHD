@@ -2276,9 +2276,7 @@ useEffect(() => {
         />
       )}
 
-      {/* AI Chatbox Tab */}
-      {activeTab === 'ai' && !isDataLoading && <AIChatbox />}
-
+   
       {/* Accounts Tab (Admin/Super Admin only) */}
       {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
