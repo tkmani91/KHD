@@ -1716,8 +1716,9 @@ function LiveBroadcasting() {
 
 // AI Chatbox Component
 function AIChatbox() {
-  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
-  const chatbot = dynamicContent.aiChatbot || {};
+  const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json';
+  const [chatbotData] = useDataLoader<any>(GITHUB_CHATBOT_URL, {});
+  const chatbot = chatbotData || {};
   
   const [messages, setMessages] = useState<{role: string; text: string}[]>([]);
   const [input, setInput] = useState('');
