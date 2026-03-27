@@ -38,8 +38,7 @@ import {
   Settings,
   Check,
   LogOut,
-  DollarSign,
-  MessageCircle
+  DollarSign
 } from 'lucide-react';
 import { OptimizedImage } from './components/OptimizedImage';
 // cn function - classnames utility
