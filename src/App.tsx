@@ -2049,8 +2049,7 @@ useEffect(() => {
       { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
       { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
       { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
-      { id: 'ai', label: 'আমাকে জানুন', icon: MessageCircle },
-    ];
+     ];
 
     if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
       baseTabs.push({ id: 'accounts', label: 'হিসাব', icon: FileText });
