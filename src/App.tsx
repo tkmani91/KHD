@@ -1476,6 +1476,8 @@ function ContactPage() {
         <h1 className="text-3xl font-bold gradient-text mb-2">যোগাযোগ</h1>
         <p className="text-gray-600">আমাদের সাথে যোগাযোগ করুন</p>
       </div>
+
+      {/* যোগাযোগের ঠিকানা ও সোশ্যাল মিডিয়া */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">যোগাযোগের ঠিকানা</h3>
@@ -1494,6 +1496,7 @@ function ContactPage() {
             </div>
           </div>
         </div>
+        
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <h3 className="text-xl font-bold mb-6 gradient-text">সোশ্যাল মিডিয়া</h3>
           <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl bg-blue-50 hover:bg-blue-100">
@@ -1501,6 +1504,15 @@ function ContactPage() {
             <div><p className="font-medium">ফেসবুক পেজ</p><p className="text-sm text-gray-600">@KHDS3</p></div>
           </a>
         </div>
+      </div>
+
+      {/* ✅ এখানে "আমাকে জানুন" যোগ হবে - লগইন ছাড়াই */}
+      <div>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold gradient-text mb-2">আমাকে জানুন</h2>
+          <p className="text-gray-600">আপনার প্রশ্নের উত্তর পেতে আমাদের AI সহায়কের সাথে কথা বলুন</p>
+        </div>
+        <AIChatbox />
       </div>
     </div>
   );
