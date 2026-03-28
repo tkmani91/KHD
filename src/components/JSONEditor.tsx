@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -30,6 +30,8 @@ const JSONEditor: React.FC = () => {
   const [copied, setCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   
   // Gallery special states
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -1019,7 +1021,73 @@ const JSONEditor: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+  
+// ============================================
+// DIRECT GITHUB UPLOAD
+// ============================================
 
+const handleDirectUpload = async () => {
+  if (!currentFile) {
+    alert('❌ কোন ফাইল নির্বাচন করা নেই!');
+    return;
+  }
+
+  const confirmUpload = window.confirm(
+    `⚠️ নিশ্চিত করুন:\n\n` +
+    `ফাইল: ${currentFile.path}\n` +
+    `লেবেল: ${currentFile.label}\n\n` +
+    `সরাসরি GitHub এ আপলোড হবে।\n` +
+    `এগিয়ে যেতে চান?`
+  );
+
+  if (!confirmUpload) return;
+
+  setIsUploading(true);
+  setError('');
+  setUploadSuccess(false);
+
+  try {
+    // Call our backend API
+    const response = await fetch('/api/github-upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        filePath: currentFile.path,
+        content: generatedJSON,
+        commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Upload failed');
+    }
+
+    // Success!
+    setUploadSuccess(true);
+    alert(
+      `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
+      `📁 ফাইল: ${currentFile.label}\n` +
+      `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
+      `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+    );
+
+    // Reset success message after 5 seconds
+    setTimeout(() => setUploadSuccess(false), 5000);
+
+  } catch (err) {
+    console.error('Upload error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+    alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
+  } finally {
+    setIsUploading(false);
+  }
+};
+  
   // ============================================
   // LABEL MAPPING
   // ============================================
@@ -2068,16 +2136,48 @@ if (key === 'questions' && Array.isArray(value)) {
         {/* Right: JSON Code */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              JSON কোড
-            </h3>
-            <button onClick={handleCopyJSON} 
-              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? '✅ কপি হয়েছে!' : '📋 কপি'}
-            </button>
-          </div>
+  <h3 className="text-white font-bold flex items-center gap-2">
+    <FileText className="w-5 h-5" />
+    JSON কোড
+  </h3>
+  <div className="flex gap-2">
+    {/* Copy Button */}
+    <button onClick={handleCopyJSON} 
+      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
+      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+      {copied ? '✅ কপি' : '📋 কপি'}
+    </button>
+    
+    {/* Upload Button */}
+    <button 
+      onClick={handleDirectUpload} 
+      disabled={isUploading || loading}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+        uploadSuccess 
+          ? 'bg-green-600 text-white' 
+          : isUploading 
+            ? 'bg-gray-400 text-white cursor-not-allowed' 
+            : 'bg-blue-500 text-white hover:bg-blue-600'
+      }`}>
+      {isUploading ? (
+        <>
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          আপলোড হচ্ছে...
+        </>
+      ) : uploadSuccess ? (
+        <>
+          <Check className="w-4 h-4" />
+          ✅ আপলোড হয়েছে!
+        </>
+      ) : (
+        <>
+          <Upload className="w-4 h-4" />
+          🚀 সরাসরি আপলোড
+        </>
+      )}
+    </button>
+  </div>
+</div>
           <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
             <code>{generatedJSON}</code>
           </pre>
