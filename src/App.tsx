@@ -205,7 +205,7 @@ const deities: Deity[] = [
 const notices = [
   '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
   '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
-  '🎉 মেম্বার তথ্য এবং হিসাব বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
+  '🎉 মেম্বার তথ্য এবং  বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
   '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
 ];
 
@@ -2043,15 +2043,15 @@ useEffect(() => {
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
       { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
-      { id: 'invitation', label: 'নিমন্ত্রণ', icon: FileText },
+      { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
       { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
       { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
-      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
-     ];
+       ];
 
     if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'accounts', label: 'হিসাব', icon: FileText });
+      baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
     }
 
     if (loggedInUser?.role === 'Super Admin') {
