@@ -1605,7 +1605,7 @@ if (key === 'questions' && Array.isArray(value)) {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া টাকা</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">দায্যকৃত টাকা</label>
                     <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
 
                                           onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
@@ -1636,6 +1636,7 @@ if (key === 'questions' && Array.isArray(value)) {
                       <option value="নগদ">💵 নগদ</option>
                       <option value="রকেট">🚀 রকেট</option>
                       <option value="ব্যাংক">🏦 ব্যাংক</option>
+                      <option value="ব্যাংক">💲 নগদ অর্থ </option>
                     </select>
                   </div>
                   
