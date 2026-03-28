@@ -740,23 +740,7 @@ function Footer() {
             <p className="text-xs text-orange-300 text-center md:text-left">
               © ২০২৬ কলম হিন্দু ধর্মসভা। সর্বস্বত্ব সংরক্ষিত।
             </p>
-            
-            {/* Developer Credit */}
-            <div className="flex items-center gap-2 text-xs text-orange-200">
-              <span className="opacity-75">ডিজাইন ও ডেভেলপমেন্ট:</span>
-              <a 
-                href="https://facebook.com/tkmani91" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition group"
-              >
-                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                  T
-                </div>
-                <span className="font-semibold group-hover:text-white">তন্ময় কুমার মানী</span>
-              </a>
             </div>
-          </div>
         </div>
       </div>
     </footer>
