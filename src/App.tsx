@@ -703,6 +703,7 @@ function Footer() {
     <footer className="bg-gradient-to-r from-orange-900 to-red-900 text-white py-8 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* কলম হিন্দু ধর্মসভা */}
           <div>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               🕉️ কলম হিন্দু ধর্মসভা
@@ -712,29 +713,56 @@ function Footer() {
               স্থাপিত: ২০১৭ সাল
             </p>
           </div>
+
+          {/* দ্রুত লিংক */}
           <div>
             <h4 className="font-semibold mb-4">দ্রুত লিংক</h4>
             <ul className="space-y-2 text-sm text-orange-200">
               <li><Link to="/durga" className="hover:text-white">দূর্গাপূজা</Link></li>
               <li><Link to="/shyama" className="hover:text-white">শ্যামাপূজা</Link></li>
-              <li><Link to="/" className="hover:text-white">ফটো গ্যালারি</Link></li>
+              <li><Link to="/gallery" className="hover:text-white">ফটো গ্যালারি</Link></li>
             </ul>
           </div>
+
+          {/* সোশ্যাল মিডিয়া */}
           <div>
             <h4 className="font-semibold mb-4">সোশ্যাল মিডিয়া</h4>
             <a href="https://facebook.com/KHDS3" target="_blank" rel="noopener noreferrer"
               className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition">
               <Facebook className="w-5 h-5" />
             </a>
-            <p className="mt-4 text-xs text-orange-300">
-              © ২০২৬ কলম হিন্দু ধর্মসভা
+          </div>
+        </div>
+
+        {/* ✅ নতুন Section: Developer Info */}
+        <div className="mt-8 pt-6 border-t border-orange-700">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-orange-300 text-center md:text-left">
+              © ২০২৬ কলম হিন্দু ধর্মসভা। সর্বস্বত্ব সংরক্ষিত।
             </p>
+            
+            {/* Developer Credit */}
+            <div className="flex items-center gap-2 text-xs text-orange-200">
+              <span className="opacity-75">ডিজাইন ও ডেভেলপমেন্ট:</span>
+              <a 
+                href="https://facebook.com/tkmani91" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition group"
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                  T
+                </div>
+                <span className="font-semibold group-hover:text-white">তন্ময় কুমার মানী</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
 function HomePage() {
   const [pujaData] = useDataLoader<PujaInfo[]>('/data/pujaData.json', []);
   const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
