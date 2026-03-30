@@ -45,9 +45,16 @@ const MembersList: React.FC<MembersListProps> = ({ membersData, pdfLink }) => {
     document.body.removeChild(link);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+const handlePrint = () => {
+  const originalTitle = document.title;
+  document.title = 'সদস্য-তালিকা-কলম-হিন্দু-ধর্মসভা';
+  
+  window.print();
+  
+  setTimeout(() => {
+    document.title = originalTitle;
+  }, 1000);
+};
 
   return (
     <div className="space-y-4">
