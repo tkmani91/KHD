@@ -486,9 +486,11 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             <div className="divide-y divide-gray-100">
               {filteredContacts.map((person, index) => (
                 <div 
-                  key={person.id} 
-                  className="grid grid-cols-1 md:grid-cols-11 gap-2 p-4 hover:bg-blue-50 transition items-center"
-                >
+                  <div 
+            <div 
+              key={person.id} 
+            className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2 hover:bg-blue-50 transition items-center">
+                  
                   {/* Desktop View */}
                   <div className="hidden md:block col-span-1 text-center">
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-bold">
