@@ -98,7 +98,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             margin-bottom: 12px;
           }
           .header h1 { 
-            font-size: 26px; 
+            font-size: 23px; 
             color: #f97316;
             margin-bottom: 3px;
             font-weight: bold;
@@ -110,8 +110,8 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
           .stats {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            margin-bottom: 12px;
+            gap: 23px;
+            margin-bottom: 11px;
             padding: 8px;
             background: #fff7ed;
             border-radius: 6px;
@@ -119,7 +119,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
           .stats span {
             font-weight: bold;
             color: #ea580c;
-            font-size: 12px;
+            font-size: 11px;
           }
           table { 
             width: 100%; 
@@ -131,7 +131,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             color: white;
             padding: 10px 8px;
             text-align: left;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             border: 1px solid #ea580c;
           }
@@ -147,7 +147,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
           .name { 
             font-weight: bold; 
             color: #1f2937; 
-            font-size: 13px;
+            font-size: 12px;
           }
           .occupation { 
             color: #f97316; 
@@ -157,7 +157,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             color: #2563eb; 
             font-weight: 600;
             font-family: 'Courier New', monospace;
-            font-size: 13px;
+            font-size: 12px;
           }
           .address { 
             color: #4b5563; 
@@ -165,7 +165,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             line-height: 1.4;
           }
           .footer {
-            margin-top: 15px;
+            margin-top: 14px;
             padding-top: 10px;
             border-top: 2px solid #f97316;
             text-align: center;
