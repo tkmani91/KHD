@@ -3,12 +3,10 @@ import {
   Phone, 
   Download, 
   MapPin, 
-  ChevronRight, 
   Search, 
   Grid3X3, 
   List, 
   Printer,
-  User,
   Briefcase,
   X,
   Eye
@@ -37,7 +35,6 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
 
   // ============================================
   // SEARCH FILTER
