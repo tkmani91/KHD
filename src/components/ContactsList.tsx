@@ -488,8 +488,9 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
                 <div 
                   <div 
             <div 
-              key={person.id} 
-            className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2 hover:bg-blue-50 transition items-center">
+  key={person.id} 
+  className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2 hover:bg-blue-50 transition items-center"
+>
                   
                   {/* Desktop View */}
                   <div className="hidden md:block col-span-1 text-center">
