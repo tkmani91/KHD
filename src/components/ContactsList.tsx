@@ -65,12 +65,22 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
     document.body.removeChild(link);
   };
 
-  // ============================================
-  // PRINT FUNCTION
-  // ============================================
-  const handlePrint = () => {
-    window.print();
-  };
+ // ============================================
+// PRINT FUNCTION
+// ============================================
+const handlePrint = () => {
+  // সাময়িকভাবে পেজ টাইটেল পরিবর্তন
+  const originalTitle = document.title;
+  document.title = 'যোগাযোগ-তালিকা-কলম-হিন্দু-ধর্মসভা';
+  
+  // প্রিন্ট করুন
+  window.print();
+  
+  // প্রিন্ট শেষে আসল টাইটেল ফিরিয়ে দিন
+  setTimeout(() => {
+    document.title = originalTitle;
+  }, 1000);
+};
 
   return (
     <div className="space-y-4">
