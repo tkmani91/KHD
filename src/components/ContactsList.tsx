@@ -77,184 +77,189 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
       {/* ============================================ */}
       {/* PRINT STYLES */}
       {/* ============================================ */}
-      <style>{`
-        @media print {
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          
-          html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            background: white !important;
-          }
-          
-          body * {
-            visibility: hidden;
-          }
-          
-          .print-section, .print-section * {
-            visibility: visible;
-          }
-          
-          .print-section {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          
-          .no-print {
-            display: none !important;
-          }
-          
-          .print-only {
-            display: block !important;
-          }
-          
-          .print-container {
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-          }
-          
-          /* Header */
-          .print-header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-            color: white !important;
-            padding: 8px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
-          
-          .print-header h1 {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0;
-          }
-          
-          .print-header .contact-count {
-            background: white !important;
-            color: #1d4ed8 !important;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-          }
-          
-          .print-date {
-            text-align: right;
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 8px;
-          }
-          
-          /* Table */
-          .print-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            border: 1px solid #374151;
-          }
-          
-          .print-table th {
-            background: #1e40af !important;
-            color: white !important;
-            padding: 8px 6px;
-            font-weight: 700;
-            font-size: 14px;
-            border: 1px solid #1e3a8a;
-            text-align: center;
-          }
-          
-          .print-table td {
-            padding: 6px;
-            border: 1px solid #d1d5db;
-            vertical-align: middle;
-            font-size: 14px;
-            line-height: 1.3;
-          }
-          
-          .print-table tbody tr:nth-child(even) {
-            background: #f0f9ff !important;
-          }
-          
-          .print-table .serial {
-            text-align: center;
-            font-weight: bold;
-            color: #1e40af;
-            font-size: 14px;
-            width: 8%;
-          }
-          
-          .print-table .name-cell {
-            font-weight: 600;
-            font-size: 15px;
-            color: #111827;
-            width: 25%;
-          }
-          
-          .print-table .occupation-cell {
-            text-align: center;
-            width: 18%;
-          }
-          
-          .print-table .occupation-badge {
-            background: #dbeafe !important;
-            color: #1e40af !important;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-block;
-          }
-          
-          .print-table .phone-cell {
-            text-align: center;
-            font-family: 'Courier New', monospace;
-            font-weight: 600;
-            color: #059669;
-            font-size: 15px;
-            width: 20%;
-          }
-          
-          .print-table .address-cell {
-            color: #4b5563;
-            font-size: 13px;
-            line-height: 1.4;
-            width: 29%;
-          }
-          
-          .print-footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 2px solid #2563eb;
-            text-align: center;
-            font-size: 11px;
-            color: #666;
-          }
-          
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
-          }
-          
-          tr {
-            page-break-inside: avoid;
-          }
-          
-          thead {
-            display: table-header-group;
-          }
-        }
-        
-        .print-only {
-          display: none;
-        }
-      `}</style>
+    <style>{`
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+    }
+    
+    body * {
+      visibility: hidden;
+    }
+    
+    .print-section, .print-section * {
+      visibility: visible;
+    }
+    
+    .print-section {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+    
+    .no-print {
+      display: none !important;
+    }
+    
+    .print-only {
+      display: block !important;
+    }
+    
+    .print-container {
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+    
+    /* Header - Compact Single Line */
+    .print-header {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+      color: white !important;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .print-header h1 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .print-header .contact-count {
+      background: white !important;
+      color: #1d4ed8 !important;
+      padding: 2px 8px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    
+    .print-date {
+      text-align: right;
+      font-size: 10px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    /* Table - Ultra Compact for Portrait (MembersList Style) */
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      border: 1px solid #374151;
+    }
+    
+    .print-table th {
+      background: #1f2937 !important;
+      color: white !important;
+      padding: 4px 2px;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      border: 1px solid #4b5563;
+    }
+    
+    .print-table td {
+      padding: 2px;
+      border: 1px solid #d1d5db;
+      vertical-align: middle;
+      font-size: 11px;
+      line-height: 1.1;
+    }
+    
+    .print-table tbody tr:nth-child(even) {
+      background: #f3f4f6 !important;
+    }
+    
+    .print-table .serial {
+      text-align: center;
+      font-weight: bold;
+      color: #2563eb;
+      font-size: 11px;
+      width: 8%;
+    }
+    
+    .print-table .name-cell {
+      font-weight: 600;
+      font-size: 11px;
+      color: #111827;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .print-table .occupation-cell {
+      text-align: center;
+    }
+    
+    .print-table .badge {
+      padding: 1px 3px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    
+    .print-table .badge-blue {
+      background: #dbeafe !important;
+      color: #1e40af !important;
+    }
+    
+    .print-table .phone-cell {
+      text-align: center;
+      font-family: monospace;
+      font-weight: 600;
+      color: #059669;
+      font-size: 11px;
+    }
+    
+    .print-table .address-cell {
+      color: #4b5563;
+      font-size: 10px;
+      line-height: 1.2;
+      max-width: 100px;
+    }
+    
+    .print-footer {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 2px solid #2563eb;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+    }
+    
+    @page {
+      size: A4 portrait;
+      margin: 3mm;
+    }
+    
+    tr {
+      page-break-inside: avoid;
+    }
+    
+    thead {
+      display: table-header-group;
+    }
+  }
+  
+  .print-only {
+    display: none;
+  }
+`}</style>
 
       {/* ============================================ */}
       {/* HEADER - Screen Only */}
