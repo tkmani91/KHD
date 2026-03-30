@@ -470,88 +470,84 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
         {/* ============================================ */}
         {/* LIST VIEW - Screen Only */}
         {/* ============================================ */}
-        {viewMode === 'list' && filteredContacts.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
-            {/* Table Header */}
-            <div className="hidden md:grid md:grid-cols-11 gap-4 p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold">
-              <div className="col-span-1 text-center">ক্রম</div>
-              <div className="col-span-1"></div>
-              <div className="col-span-3">নাম</div>
-              <div className="col-span-2">পেশা</div>
-              <div className="col-span-2">মোবাইল</div>
-              <div className="col-span-2">ঠিকানা</div>
-            </div>
+     {viewMode === 'list' && filteredContacts.length > 0 && (
+  <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
+    {/* Table Header */}
+    <div className="hidden md:grid md:grid-cols-11 gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-sm">
+      <div className="col-span-1 text-center">ক্রম</div>
+      <div className="col-span-1"></div>
+      <div className="col-span-3">নাম</div>
+      <div className="col-span-2">পেশা</div>
+      <div className="col-span-2">মোবাইল</div>
+      <div className="col-span-2">ঠিকানা</div>
+    </div>
 
-            {/* Table Body */}
-            <div className="divide-y divide-gray-100">
-              {filteredContacts.map((person, index) => (
-                <div 
-                  key={person.id} 
-                  className="grid grid-cols-1 md:grid-cols-11 gap-4 p-4 hover:bg-blue-50 transition items-center"
-                >
-                  {/* Desktop View */}
-                  <div className="hidden md:block col-span-1 text-center">
-                    <span className="inline-flex items-center justify-center w-9 h-9 bg-blue-100 text-blue-600 rounded-full font-bold">
-                      {index + 1}
-                    </span>
-                  </div>
+    {/* Table Body */}
+    <div className="divide-y divide-gray-100">
+      {filteredContacts.map((person, index) => (
+        <div 
+          key={person.id} 
+          className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2.5 hover:bg-blue-50 transition items-center"
+        >
+          {/* Desktop View */}
+          <div className="hidden md:block col-span-1 text-center">
+            <span className="inline-flex items-center justify-center w-7 h-7 bg-blue-100 text-blue-600 rounded-full font-bold text-sm">
+              {index + 1}
+            </span>
+          </div>
 
-                  <div className="hidden md:block col-span-1">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-200">
-                      <img 
-                        src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                        alt={person.name} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Mobile View */}
-                  <div className="md:hidden flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center w-9 h-9 bg-blue-100 text-blue-600 rounded-full font-bold">
-                      {index + 1}
-                    </span>
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200">
-                      <img 
-                        src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                        alt={person.name} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-800">{person.name}</h4>
-                      <p className="text-blue-600 text-sm">{person.occupation}</p>
-                      <a href={`tel:${person.mobile}`} className="text-green-600 font-semibold text-sm">{person.mobile}</a>
-                    </div>
-                  </div>
-
-                  <div className="hidden md:block col-span-3">
-                    <h4 className="font-bold text-gray-800">{person.name}</h4>
-                  </div>
-                  <div className="hidden md:block col-span-2">
-                    <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                      {person.occupation}
-                    </span>
-                  </div>
-                  <div className="hidden md:block col-span-2">
-                    <a href={`tel:${person.mobile}`} className="text-green-600 font-bold hover:underline flex items-center gap-1">
-                      <Phone className="w-4 h-4" />
-                      {person.mobile}
-                    </a>
-                  </div>
-                  <div className="hidden md:block col-span-2 text-gray-600 text-sm" title={person.address}>
-                    {person.address}
-                  </div>
-                </div>
-              ))}
+          <div className="hidden md:block col-span-1">
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200">
+              <img 
+                src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                alt={person.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+              />
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Mobile View */}
+          <div className="md:hidden flex items-center gap-3">
+            <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-bold text-sm">
+              {index + 1}
+            </span>
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-200">
+              <img 
+                src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                alt={person.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+              />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-gray-800">{person.name}</h4>
+              <p className="text-blue-600 text-sm">{person.occupation}</p>
+              <a href={`tel:${person.mobile}`} className="text-green-600 font-semibold text-sm">{person.mobile}</a>
+            </div>
+          </div>
+
+          <div className="hidden md:block col-span-3">
+            <h4 className="font-semibold text-gray-800">{person.name}</h4>
+          </div>
+          <div className="hidden md:block col-span-2">
+            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+              {person.occupation}
+            </span>
+          </div>
+          <div className="hidden md:block col-span-2">
+            <a href={`tel:${person.mobile}`} className="text-green-600 font-semibold hover:underline flex items-center gap-1 text-sm">
+              <Phone className="w-3.5 h-3.5" />
+              {person.mobile}
+            </a>
+          </div>
+          <div className="hidden md:block col-span-2 text-gray-600 text-sm truncate" title={person.address}>
+            {person.address}
+          </div>
+        </div>
+      ))}
     </div>
-  );
-};
+  </div>
+)}
 
 export default ContactsList;
