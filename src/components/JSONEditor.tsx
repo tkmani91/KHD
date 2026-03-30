@@ -1603,7 +1603,7 @@ if (key === 'questions' && Array.isArray(value)) {
            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          💰 মোট বকেয়া
+          💰 মোট দায্যকৃত টাকা
           <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
         </label>
         <input 
@@ -1627,7 +1627,7 @@ if (key === 'questions' && Array.isArray(value)) {
       </div>
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ⏳ মোট অবশিষ্ট
+          ⏳ মোট বাকি
           <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
         </label>
         <input 
@@ -1748,7 +1748,7 @@ if (key === 'questions' && Array.isArray(value)) {
 
 <div>
   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ⏳ অবশিষ্ট
+    ⏳ বকেয়া
     <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
   </label>
   <input 
