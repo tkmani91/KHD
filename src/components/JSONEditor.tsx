@@ -645,6 +645,88 @@ const JSONEditor: React.FC = () => {
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
+// ============================================
+// AUTO CALCULATION FUNCTIONS (✅ NEW)
+// ============================================
+
+const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
+  setFundMembers(prev => prev.map(m => {
+    if (m.id === memberId) {
+      const updated = { ...m, [key]: value };
+      
+      // Auto calculate remaining when paidAmount changes
+      if (key === 'paidAmount') {
+        const dueAmount = updated.dueAmount || 0;
+        const paidAmount = parseFloat(value) || 0;
+        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+        
+        // Auto update status
+        if (paidAmount === 0) {
+          updated.status = 'unpaid';
+        } else if (paidAmount >= dueAmount) {
+          updated.status = 'paid';
+          updated.remainingAmount = 0;
+        } else {
+          updated.status = 'partial';
+        }
+      }
+      
+      // Auto calculate remaining when dueAmount changes
+      if (key === 'dueAmount') {
+        const dueAmount = parseFloat(value) || 0;
+        const paidAmount = updated.paidAmount || 0;
+        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+        
+        // Auto update status
+        if (paidAmount === 0) {
+          updated.status = 'unpaid';
+        } else if (paidAmount >= dueAmount) {
+          updated.status = 'paid';
+          updated.remainingAmount = 0;
+        } else {
+          updated.status = 'partial';
+        }
+      }
+      
+      return updated;
+    }
+    return m;
+  }));
+};
+
+const autoRecalculateTotals = () => {
+  const totalMembers = fundMembers.length;
+  const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
+  const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
+  const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
+  const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
+  const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
+  const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
+  const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+
+  setPaymentStats({
+    totalMembers,
+    paidMembers,
+    partialMembers,
+    unpaidMembers,
+    paymentPercentage
+  });
+
+  setFundSettings((prev: any) => ({
+    ...prev,
+    totalDue,
+    totalPaid,
+    totalRemaining
+  }));
+};
+
+// ✅ Auto recalculate when members change
+useEffect(() => {
+  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
+    autoRecalculateTotals();
+  }
+}, [fundMembers]);
+  
   // ============================================
   // HANDLERS
   // ============================================
@@ -1518,29 +1600,60 @@ if (key === 'questions' && Array.isArray(value)) {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
 
-            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">💰 মোট বকেয়া</label>
-                <input type="number" value={fundSettings.totalDue || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalDue', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">✅ মোট পরিশোধ</label>
-                <input type="number" value={fundSettings.totalPaid || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalPaid', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">⏳ মোট অবশিষ্ট</label>
-                <input type="number" value={fundSettings.totalRemaining || 0} 
-                  onChange={(e) => handleFundSettingsChange('totalRemaining', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-              </div>
-            </div>
-          </div>
-        )}
+           <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          💰 মোট বকেয়া
+          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
+        </label>
+        <input 
+          type="number" 
+          value={fundSettings.totalDue || 0} 
+          disabled
+          className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          ✅ মোট পরিশোধ
+          <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
+        </label>
+        <input 
+          type="number" 
+          value={fundSettings.totalPaid || 0} 
+          disabled
+          className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          ⏳ মোট অবশিষ্ট
+          <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
+        </label>
+        <input 
+          type="number" 
+          value={fundSettings.totalRemaining || 0} 
+          disabled
+          className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
+        />
+      </div>
+    </div>
 
+    {/* ✅ NEW: Auto Calculation Alert */}
+    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+      <div className="flex items-start gap-3">
+        <div className="text-3xl">💡</div>
+        <div className="flex-1">
+          <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
+          <p className="text-sm text-blue-700 leading-relaxed">
+            <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
+            Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
         {/* Members Sub-section */}
         {fundSubSection === 'members' && (
           <div className="space-y-4">
@@ -1604,27 +1717,51 @@ if (key === 'questions' && Array.isArray(value)) {
                     </select>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">দায্যকৃত টাকা</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+               <div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+    💰 দায্যকৃত টাকা
+  </label>
+  <input 
+    type="number" 
+    value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+    className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
+  />
+</div>
 
-                                          onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">অবশিষ্ট</label>
-                    <input type="number" value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
-                      onChange={(e) => handleMemberChange(getFilteredMembers()[selectedItemIndex].id, 'remainingAmount', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-                  </div>
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+    ✅ পরিশোধিত
+    <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
+  </label>
+  <input 
+    type="number" 
+    value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
+    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
+    className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
+  />
+  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+    <span className="text-lg">💡</span>
+    <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
+  </p>
+</div>
+
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+    ⏳ অবশিষ্ট
+    <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
+  </label>
+  <input 
+    type="number" 
+    value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
+    disabled
+    className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
+  />
+  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+    <span className="text-lg">🔒</span>
+    <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
+  </p>
+</div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
