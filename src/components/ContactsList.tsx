@@ -66,7 +66,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
   };
 
   // ============================================
-  // PRINT FUNCTION (✅ Same as MembersList)
+  // PRINT FUNCTION
   // ============================================
   const handlePrint = () => {
     window.print();
@@ -77,189 +77,184 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
       {/* ============================================ */}
       {/* PRINT STYLES */}
       {/* ============================================ */}
-    <style>{`
-  @media print {
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background: white !important;
-    }
-    
-    body * {
-      visibility: hidden;
-    }
-    
-    .print-section, .print-section * {
-      visibility: visible;
-    }
-    
-    .print-section {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-    }
-    
-    .no-print {
-      display: none !important;
-    }
-    
-    .print-only {
-      display: block !important;
-    }
-    
-    .print-container {
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-    }
-    
-    /* Header - Compact Single Line */
-    .print-header {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-      color: white !important;
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .print-header h1 {
-      font-size: 14px;
-      font-weight: 700;
-      margin: 0;
-    }
-    
-    .print-header .contact-count {
-      background: white !important;
-      color: #1d4ed8 !important;
-      padding: 2px 8px;
-      border-radius: 11px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    
-    .print-date {
-      text-align: right;
-      font-size: 10px;
-      color: #666;
-      margin-bottom: 4px;
-    }
-    
-    /* Table - Ultra Compact for Portrait (MembersList Style) */
-    .print-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-      border: 1px solid #374151;
-    }
-    
-    .print-table th {
-      background: #1f2937 !important;
-      color: white !important;
-      padding: 4px 2px;
-      font-weight: 700;
-      font-size: 11px;
-      text-transform: uppercase;
-      border: 1px solid #4b5563;
-    }
-    
-    .print-table td {
-      padding: 2px;
-      border: 1px solid #d1d5db;
-      vertical-align: middle;
-      font-size: 11px;
-      line-height: 1.1;
-    }
-    
-    .print-table tbody tr:nth-child(even) {
-      background: #f3f4f6 !important;
-    }
-    
-    .print-table .serial {
-      text-align: center;
-      font-weight: bold;
-      color: #2563eb;
-      font-size: 11px;
-      width: 8%;
-    }
-    
-    .print-table .name-cell {
-      font-weight: 600;
-      font-size: 11px;
-      color: #111827;
-      max-width: 80px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .print-table .occupation-cell {
-      text-align: center;
-    }
-    
-    .print-table .badge {
-      padding: 1px 3px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      display: inline-block;
-      white-space: nowrap;
-    }
-    
-    .print-table .badge-blue {
-      background: #dbeafe !important;
-      color: #1e40af !important;
-    }
-    
-    .print-table .phone-cell {
-      text-align: center;
-      font-family: monospace;
-      font-weight: 600;
-      color: #059669;
-      font-size: 11px;
-    }
-    
-    .print-table .address-cell {
-      color: #4b5563;
-      font-size: 10px;
-      line-height: 1.2;
-      max-width: 100px;
-    }
-    
-    .print-footer {
-      margin-top: 10px;
-      padding-top: 6px;
-      border-top: 2px solid #2563eb;
-      text-align: center;
-      font-size: 10px;
-      color: #666;
-    }
-    
-    @page {
-      size: A4 portrait;
-      margin: 3mm;
-    }
-    
-    tr {
-      page-break-inside: avoid;
-    }
-    
-    thead {
-      display: table-header-group;
-    }
-  }
-  
-  .print-only {
-    display: none;
-  }
-`}</style>
+      <style>{`
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+          }
+          
+          body * {
+            visibility: hidden;
+          }
+          
+          .print-section, .print-section * {
+            visibility: visible;
+          }
+          
+          .print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          
+          .no-print {
+            display: none !important;
+          }
+          
+          .print-only {
+            display: block !important;
+          }
+          
+          .print-container {
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+          }
+          
+          .print-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+            color: white !important;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          
+          .print-header h1 {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0;
+          }
+          
+          .print-header .contact-count {
+            background: white !important;
+            color: #1d4ed8 !important;
+            padding: 2px 8px;
+            border-radius: 11px;
+            font-size: 12px;
+            font-weight: 700;
+          }
+          
+          .print-date {
+            text-align: right;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 4px;
+          }
+          
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            border: 1px solid #374151;
+          }
+          
+          .print-table th {
+            background: #1f2937 !important;
+            color: white !important;
+            padding: 4px 2px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            border: 1px solid #4b5563;
+          }
+          
+          .print-table td {
+            padding: 2px;
+            border: 1px solid #d1d5db;
+            vertical-align: middle;
+            font-size: 11px;
+            line-height: 1.1;
+          }
+          
+          .print-table tbody tr:nth-child(even) {
+            background: #f3f4f6 !important;
+          }
+          
+          .print-table .serial {
+            text-align: center;
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 11px;
+            width: 8%;
+          }
+          
+          .print-table .name-cell {
+            font-weight: 600;
+            font-size: 11px;
+            color: #111827;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .print-table .occupation-cell {
+            text-align: center;
+          }
+          
+          .print-table .occupation-badge {
+            padding: 1px 3px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+            background: #dbeafe !important;
+            color: #1e40af !important;
+          }
+          
+          .print-table .phone-cell {
+            text-align: center;
+            font-family: monospace;
+            font-weight: 600;
+            color: #059669;
+            font-size: 11px;
+          }
+          
+          .print-table .address-cell {
+            color: #4b5563;
+            font-size: 10px;
+            line-height: 1.2;
+            max-width: 100px;
+          }
+          
+          .print-footer {
+            margin-top: 10px;
+            padding-top: 6px;
+            border-top: 2px solid #2563eb;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+          }
+          
+          @page {
+            size: A4 portrait;
+            margin: 3mm;
+          }
+          
+          tr {
+            page-break-inside: avoid;
+          }
+          
+          thead {
+            display: table-header-group;
+          }
+        }
+        
+        .print-only {
+          display: none;
+        }
+      `}</style>
 
       {/* ============================================ */}
       {/* HEADER - Screen Only */}
@@ -473,7 +468,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
         {viewMode === 'list' && filteredContacts.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
             {/* Table Header */}
-            <div className="hidden md:grid md:grid-cols-11 gap-2 p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold">
+            <div className="hidden md:grid md:grid-cols-11 gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold text-sm">
               <div className="col-span-1 text-center">ক্রম</div>
               <div className="col-span-1"></div>
               <div className="col-span-3">নাম</div>
@@ -486,21 +481,18 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
             <div className="divide-y divide-gray-100">
               {filteredContacts.map((person, index) => (
                 <div 
-                  <div 
-            <div 
-  key={person.id} 
-  className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2 hover:bg-blue-50 transition items-center"
->
-                  
+                  key={person.id} 
+                  className="grid grid-cols-1 md:grid-cols-11 gap-2 px-4 py-2 hover:bg-blue-50 transition items-center"
+                >
                   {/* Desktop View */}
                   <div className="hidden md:block col-span-1 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-bold">
+                    <span className="inline-flex items-center justify-center w-7 h-7 bg-blue-100 text-blue-600 rounded-full font-bold text-sm">
                       {index + 1}
                     </span>
                   </div>
 
                   <div className="hidden md:block col-span-1">
-                    <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-blue-200">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200">
                       <img 
                         src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
                         alt={person.name} 
@@ -515,7 +507,7 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-bold">
                       {index + 1}
                     </span>
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-200">
                       <img 
                         src={person.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
                         alt={person.name} 
@@ -524,27 +516,27 @@ const ContactsList: React.FC<ContactsListProps> = ({ contactsData, pdfLink }) =>
                       />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-800">{person.name}</h4>
-                      <p className="text-blue-600 text-sm">{person.occupation}</p>
-                      <a href={`tel:${person.mobile}`} className="text-green-600 font-semibold text-sm">{person.mobile}</a>
+                      <h4 className="font-bold text-gray-800 text-sm">{person.name}</h4>
+                      <p className="text-blue-600 text-xs">{person.occupation}</p>
+                      <a href={`tel:${person.mobile}`} className="text-green-600 font-semibold text-xs">{person.mobile}</a>
                     </div>
                   </div>
 
                   <div className="hidden md:block col-span-3">
-                    <h4 className="font-bold text-gray-800">{person.name}</h4>
+                    <h4 className="font-bold text-gray-800 text-sm">{person.name}</h4>
                   </div>
                   <div className="hidden md:block col-span-2">
-                    <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                    <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                       {person.occupation}
                     </span>
                   </div>
                   <div className="hidden md:block col-span-2">
-                    <a href={`tel:${person.mobile}`} className="text-green-600 font-bold hover:underline flex items-center gap-1">
-                      <Phone className="w-4 h-4" />
+                    <a href={`tel:${person.mobile}`} className="text-green-600 font-bold hover:underline flex items-center gap-1 text-sm">
+                      <Phone className="w-3.5 h-3.5" />
                       {person.mobile}
                     </a>
                   </div>
-                  <div className="hidden md:block col-span-2 text-gray-600 text-sm" title={person.address}>
+                  <div className="hidden md:block col-span-2 text-gray-600 text-xs leading-tight" title={person.address}>
                     {person.address}
                   </div>
                 </div>
