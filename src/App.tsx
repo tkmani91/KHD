@@ -1912,7 +1912,8 @@ function LoginPage() {
     };
     fetchLoginData();
   }, []);
-// Fresh permission সহ JSONEditor wrapper
+  
+// Fresh permission সহ JSONEditor wrapper - IMPROVED VERSION
 function JSONEditorWithFreshPermissions({ loggedInUser }: { loggedInUser: LoginUser }) {
   const [freshPermissions, setFreshPermissions] = useState(loggedInUser.editorPermissions);
   const [isLoadingPerms, setIsLoadingPerms] = useState(true);
@@ -1920,7 +1921,16 @@ function JSONEditorWithFreshPermissions({ loggedInUser }: { loggedInUser: LoginU
   useEffect(() => {
     const loadFreshPermissions = async () => {
       try {
-        const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
+        // Cache bypass করতে timestamp যোগ করি
+        const cacheBuster = `?t=${Date.now()}`;
+        const response = await fetch(GITHUB_LOGIN_URL + cacheBuster, { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
+        
         if (response.ok) {
           const data = await response.json();
           const allUsers = [...data.accountsMembers, ...data.normalMembers];
@@ -1931,12 +1941,16 @@ function JSONEditorWithFreshPermissions({ loggedInUser }: { loggedInUser: LoginU
             
             // localStorage ও আপডেট করুন
             const savedUser = JSON.parse(localStorage.getItem('khd_logged_in_user') || '{}');
-            savedUser.editorPermissions = currentUser.editorPermissions;
-            localStorage.setItem('khd_logged_in_user', JSON.stringify(savedUser));
+            if (savedUser.id === loggedInUser.id) {
+              savedUser.editorPermissions = currentUser.editorPermissions;
+              localStorage.setItem('khd_logged_in_user', JSON.stringify(savedUser));
+            }
           }
         }
       } catch (err) {
         console.log('Permission refresh failed:', err);
+        // Error হলেও existing permissions use করি
+        setFreshPermissions(loggedInUser.editorPermissions);
       } finally {
         setIsLoadingPerms(false);
       }
