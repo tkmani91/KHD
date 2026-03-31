@@ -169,6 +169,7 @@ interface LoginUser {
   accounts: { view: boolean; edit: boolean; delete: boolean };
   jsonEditor: { view: boolean; edit: boolean; delete: boolean };
   };
+  editorPermissions?: { [key: string]: boolean };
 }
 
 // Data URLs
@@ -2024,7 +2025,8 @@ const handleLogin = (e: React.FormEvent) => {
         password: '',
         role: userRole,
         photo: foundUser.photo || '',
-        permissions: foundUser.permissions  // ✅ এই line যোগ করুন!
+        permissions: foundUser.permissions,
+        editorPermissions: foundUser.editorPermissions
       };
 
       localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
@@ -2362,11 +2364,12 @@ return (
     )}
 
     {/* JSON Editor Tab */}
-    {activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="jsonEditor" action="view">
-        <JSONEditor />
-      </PermissionGate>
-    )}
+{activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
+  <JSONEditor 
+    userRole={loggedInUser.role}
+    editorPermissions={loggedInUser.editorPermissions}
+  />
+)}
 
     {/* Permission Manager Tab */}
     {activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && loggedInUser && (
