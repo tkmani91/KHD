@@ -120,7 +120,7 @@
         },
         "invitations": {
           "view": true,
-          "edit": false,
+          "edit": true,
           "delete": false
         },
         "fund": {
