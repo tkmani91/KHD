@@ -2430,12 +2430,21 @@ return (
 )}
 
     {/* Permission Manager Tab */}
-    {activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && loggedInUser && (
-      <PermissionManager currentUser={loggedInUser} />
-    )}
-  </div>
-);
-}
+   {activeTab === 'permissions' && 
+ !isDataLoading && 
+ loggedInUser?.role === 'Super Admin' && (
+  <PermissionManager 
+    currentUser={loggedInUser}
+    onUserUpdate={(updatedUser) => {
+      localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
+      localStorage.setItem('khd_user_photo', updatedUser.photo || '');
+      setLoggedInUser(updatedUser);
+      if (updatedUser.photo) {
+        setUserPhoto(updatedUser.photo);
+      }
+    }}
+  />
+)}
 
 // ==================== GLOBAL MINI PLAYERS ====================
 
