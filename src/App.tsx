@@ -265,8 +265,7 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
-  
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentIndexRef = useRef<number>(-1);
   const playlistRef = useRef<Song[]>([]);
 
