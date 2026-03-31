@@ -2267,7 +2267,7 @@ if (loggedInUser.role === 'Super Admin') {
     );
   }
 
-  // ===== DASHBOARD =====
+// ===== DASHBOARD =====
 return (
   <div className="space-y-6">
     {/* Header */}
@@ -2422,29 +2422,28 @@ return (
       </PermissionGate>
     )}
 
- {/* JSON Editor Tab */}
-{activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
-  <JSONEditorWithFreshPermissions 
-    loggedInUser={loggedInUser}
-  />
-)}
+    {/* JSON Editor Tab */}
+    {activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
+      <JSONEditorWithFreshPermissions loggedInUser={loggedInUser} />
+    )}
 
     {/* Permission Manager Tab */}
-   {activeTab === 'permissions' && 
- !isDataLoading && 
- loggedInUser?.role === 'Super Admin' && (
-  <PermissionManager 
-    currentUser={loggedInUser}
-    onUserUpdate={(updatedUser) => {
-      localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
-      localStorage.setItem('khd_user_photo', updatedUser.photo || '');
-      setLoggedInUser(updatedUser);
-      if (updatedUser.photo) {
-        setUserPhoto(updatedUser.photo);
-      }
-    }}
-  />
-)}
+    {activeTab === 'permissions' && !isDataLoading && loggedInUser?.role === 'Super Admin' && (
+      <PermissionManager 
+        currentUser={loggedInUser}
+        onUserUpdate={(updatedUser) => {
+          localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
+          localStorage.setItem('khd_user_photo', updatedUser.photo || '');
+          setLoggedInUser(updatedUser);
+          if (updatedUser.photo) {
+            setUserPhoto(updatedUser.photo);
+          }
+        }}
+      />
+    )}
+  </div>
+);
+}
 
 // ==================== GLOBAL MINI PLAYERS ====================
 
