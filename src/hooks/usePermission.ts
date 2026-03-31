@@ -26,10 +26,16 @@ export const usePermission = (user: LoginUser | null, section: Section) => {
     const sectionPerms = permissions[section];
 
     return {
-      canView: sectionPerms.view,
-      canEdit: sectionPerms.edit,
-      canDelete: sectionPerms.delete,
-      hasPermission: (act: PermissionAction) => sectionPerms[act]
+      canView: sectionPerms?.view ?? false,
+      canEdit: sectionPerms?.edit ?? false,
+      canDelete: sectionPerms?.delete ?? false,
+      hasPermission: (act: PermissionAction) => sectionPerms?.[act] ?? false
     };
-  }, [user, section]);
+  }, [
+    user?.id, 
+    user?.role, 
+    JSON.stringify(user?.permissions), // ✅ Deep check permissions
+    JSON.stringify(user?.editorPermissions), // ✅ Deep check editorPermissions
+    section
+  ]);
 };
