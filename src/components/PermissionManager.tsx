@@ -145,7 +145,8 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser, onUs
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDirectUpload = async () => {
+ // Direct GitHub Upload - FIXED VERSION
+const handleDirectUpload = async () => {
   const finalJSON = generateFinalJSON();
   if (!finalJSON) {
     alert('❌ কোন পরিবর্তন করা হয়নি!');
@@ -186,59 +187,50 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser, onUs
       throw new Error(data.error || 'Upload failed');
     }
 
-    setUploadSuccess(true);
-    setLoginData(finalJSON);
-    
-    // ✅ FIX 1: Update parent if callback exists
-    if (onUserUpdate && selectedUserId === currentUser.id) {
-      const updatedCurrentUser = finalJSON.accountsMembers.find(u => u.id === currentUser.id);
-      if (updatedCurrentUser) {
-        onUserUpdate(updatedCurrentUser);
-      }
-    }
-    
-    // ✅ FIX 2: Force refresh GitHub data এবং localStorage update
-    try {
-      const freshResponse = await fetch(GITHUB_LOGIN_URL, { 
-        cache: 'no-cache',
-        headers: { 'Cache-Control': 'no-cache' }
-      });
-      
-      if (freshResponse.ok) {
-        const freshData = await freshResponse.json();
-        setLoginData(freshData);
-        
-        // ✅ FIX 3: যদি current user এর permission update হয়ে থাকে
-        if (selectedUserId === currentUser.id) {
-          const updatedUser = freshData.accountsMembers.find((u: any) => u.id === currentUser.id);
-          if (updatedUser) {
-            // localStorage update
-            localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
-            
-            // Parent callback
-            if (onUserUpdate) {
-              onUserUpdate(updatedUser);
-            }
-          }
-        }
-      }
-    } catch (fetchErr) {
-      console.error('Fresh data fetch failed:', fetchErr);
-    }
-    
-    alert(
-      `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
-      `👤 ${selectedUser?.name}\n` +
-      `📁 ${enabledCount}টি section এ permission দেওয়া হয়েছে\n\n` +
-      (selectedUserId === currentUser.id 
-        ? `⚠️ পেজ রিলোড হচ্ছে নতুন permission apply করতে...` 
-        : `এই Admin এখন কন্ট্রোল প্যানেলে ঢুকে\nশুধু permitted sections edit করতে পারবে। 🎉`)
-    );
+    // ✅ SUCCESS - এখন সব জায়গায় update করি
 
-    // ✅ FIX 4: যদি নিজের permission update করা হয়, তাহলে page reload
-    if (selectedUserId === currentUser.id) {
-      setTimeout(() => window.location.reload(), 2000);
+    setUploadSuccess(true);
+    
+    // ✅ Step 1: Local state update (PermissionManager এ)
+    setLoginData(finalJSON);
+
+    // ✅ Step 2: যে Admin এর permission update হলো তার localStorage update
+    const updatedAdmin = finalJSON.accountsMembers.find((u: LoginUser) => u.id === selectedUserId);
+    
+    // ✅ Step 3: যদি currently logged in user এর permission update হয়
+    if (selectedUserId === currentUser.id && updatedAdmin) {
+      // localStorage immediately update
+      localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedAdmin));
+      
+      // Parent callback
+      if (onUserUpdate) {
+        onUserUpdate(updatedAdmin);
+      }
+      
+      alert(
+        `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
+        `👤 ${selectedUser?.name}\n` +
+        `📁 ${enabledCount}টি section এ permission দেওয়া হয়েছে\n\n` +
+        `⚠️ আপনার নিজের permission update হয়েছে।\n` +
+        `পেজ এখনই রিলোড হচ্ছে...`
+      );
+      
+      // Force reload after 1.5 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+      
     } else {
+      // অন্য Admin এর permission update
+      alert(
+        `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
+        `👤 ${selectedUser?.name}\n` +
+        `📁 ${enabledCount}টি section এ permission দেওয়া হয়েছে\n\n` +
+        `⚠️ এই Admin কে বলুন:\n` +
+        `• Logout করে আবার Login করতে\n` +
+        `• অথবা Browser Refresh (Ctrl+Shift+R) করতে`
+      );
+      
       setTimeout(() => setUploadSuccess(false), 5000);
     }
 
