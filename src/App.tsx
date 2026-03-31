@@ -2200,171 +2200,173 @@ useEffect(() => {
   }
 
   // ===== DASHBOARD =====
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-2xl p-4 shadow-lg">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
-              <img 
-                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                alt={loggedInUser?.name} 
-                className="w-full h-full object-cover"
-                onError={(e) => { 
-                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
-                }}
-              />
-            </div>
-            
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <p className="text-sm text-gray-500">
-                  স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
-                </p>
-                <span className={cn(
-                  "px-2 py-0.5 rounded-full text-xs font-medium",
-                  loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
-                  loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
-                  'bg-green-100 text-green-600'
-                )}>
-                  {loggedInUser?.role}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                <Phone className="w-3 h-3" />
-                {loggedInUser?.mobile}
-              </p>
-            </div>
+return (
+  <div className="space-y-6">
+    {/* Header */}
+    <div className="bg-white rounded-2xl p-4 shadow-lg">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+            <img 
+              src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+              alt={loggedInUser?.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => { 
+                (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+              }}
+            />
           </div>
           
-          <button 
-            onClick={handleLogout} 
-            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" /> লগআউট
-          </button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {getAvailableTabs().map((tab) => (
-          <button 
-            key={tab.id} 
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
-              activeTab === tab.id 
-                ? "bg-orange-500 text-white shadow-lg" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
-            )}
-          >
-            <tab.icon className="w-4 h-4" />{tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Loading */}
-      {isDataLoading && (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
-        </div>
-      )}
-
-      {/* Members Tab */}
-{activeTab === 'members' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="members" action="view">
-    <MembersList 
-      membersData={membersData} 
-      pdfLink={pdfLinks.membersList} 
-    />
-  </PermissionGate>
-)}
-
-{/* Contacts Tab */}
-{activeTab === 'contacts' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="contacts" action="view">
-    <ContactsList 
-      contactsData={contactsData} 
-      pdfLink={pdfLinks.contactsList} 
-    />
-  </PermissionGate>
-)}
-
-{/* Invitation Tab */}
-{activeTab === 'invitation' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="invitations" action="view">
-    <InvitationListComponent 
-      invitationData={invitationData} 
-      pdfLink={pdfLinks.invitationList} 
-    />
-  </PermissionGate>
-)}
-
-{/* Notice Tab */}
-{activeTab === 'notice' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="notice" action="view">
-    <NoticeBoard />
-  </PermissionGate>
-)}
-
-{/* Live Broadcasting Tab */}
-{activeTab === 'live' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="live" action="view">
-    <LiveBroadcasting />
-  </PermissionGate>
-)}
-
-{/* Fund Collection Tab */}
-{activeTab === 'fund' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="fund" action="view">
-    <FundCollection 
-      userRole={loggedInUser?.role || 'Member'} 
-      loggedInUserId={loggedInUser?.id || ''} 
-    />
-  </PermissionGate>
-)}
-
-{/* Accounts Tab */}
-{activeTab === 'accounts' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="accounts" action="view">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {Object.entries(accountsPDFs).map(([key, data]) => (
-        <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-              <FileText className="w-6 h-6 text-orange-600" />
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <p className="text-sm text-gray-500">
+                স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
+              </p>
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-medium",
+                loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
+                loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
+                'bg-green-100 text-green-600'
+              )}>
+                {loggedInUser?.role}
+              </span>
             </div>
-            <h3 className="font-bold text-lg">{data.title}</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(data.years).map(([year, url]) => (
-              <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
-                <Download className="w-4 h-4 text-orange-600" />
-                <span className="text-sm font-medium">{year}</span>
-              </a>
-            ))}
+            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+              <Phone className="w-3 h-3" />
+              {loggedInUser?.mobile}
+            </p>
           </div>
         </div>
+        
+        <button 
+          onClick={handleLogout} 
+          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+        >
+          <LogOut className="w-4 h-4" /> লগআউট
+        </button>
+      </div>
+    </div>
+
+    {/* Tabs */}
+    <div className="flex flex-wrap gap-2">
+      {getAvailableTabs().map((tab) => (
+        <button 
+          key={tab.id} 
+          onClick={() => setActiveTab(tab.id)}
+          className={cn(
+            "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
+            activeTab === tab.id 
+              ? "bg-orange-500 text-white shadow-lg" 
+              : "bg-white text-gray-700 hover:bg-orange-50"
+          )}
+        >
+          <tab.icon className="w-4 h-4" />{tab.label}
+        </button>
       ))}
     </div>
-  </PermissionGate>
-)}
 
-{/* JSON Editor Tab */}
-{activeTab === 'json-editor' && !isDataLoading && (
-  <PermissionGate user={loggedInUser} section="jsonEditor" action="view">
-    <JSONEditor />
-  </PermissionGate>
-)}
+    {/* Loading */}
+    {isDataLoading && (
+      <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
+      </div>
+    )}
 
-{/* ✅ NEW: Permission Manager Tab */}
-{activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && (
-  <PermissionManager currentUser={loggedInUser} />
-)}
+    {/* Members Tab */}
+    {activeTab === 'members' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="members" action="view">
+        <MembersList 
+          membersData={membersData} 
+          pdfLink={pdfLinks.membersList} 
+        />
+      </PermissionGate>
+    )}
+
+    {/* Contacts Tab */}
+    {activeTab === 'contacts' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="contacts" action="view">
+        <ContactsList 
+          contactsData={contactsData} 
+          pdfLink={pdfLinks.contactsList} 
+        />
+      </PermissionGate>
+    )}
+
+    {/* Invitation Tab */}
+    {activeTab === 'invitation' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="invitations" action="view">
+        <InvitationListComponent 
+          invitationData={invitationData} 
+          pdfLink={pdfLinks.invitationList} 
+        />
+      </PermissionGate>
+    )}
+
+    {/* Notice Tab */}
+    {activeTab === 'notice' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="notice" action="view">
+        <NoticeBoard />
+      </PermissionGate>
+    )}
+
+    {/* Live Broadcasting Tab */}
+    {activeTab === 'live' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="live" action="view">
+        <LiveBroadcasting />
+      </PermissionGate>
+    )}
+
+    {/* Fund Collection Tab */}
+    {activeTab === 'fund' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="fund" action="view">
+        <FundCollection 
+          userRole={loggedInUser.role || 'Member'} 
+          loggedInUserId={loggedInUser.id || ''} 
+        />
+      </PermissionGate>
+    )}
+
+    {/* Accounts Tab */}
+    {activeTab === 'accounts' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="accounts" action="view">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(accountsPDFs).map(([key, data]) => (
+            <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg">{data.title}</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(data.years).map(([year, url]) => (
+                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                    <Download className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium">{year}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </PermissionGate>
+    )}
+
+    {/* JSON Editor Tab */}
+    {activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
+      <PermissionGate user={loggedInUser} section="jsonEditor" action="view">
+        <JSONEditor />
+      </PermissionGate>
+    )}
+
+    {/* Permission Manager Tab */}
+    {activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && loggedInUser && (
+      <PermissionManager currentUser={loggedInUser} />
+    )}
+  </div>
+);
 
 // ==================== GLOBAL MINI PLAYERS ====================
 
