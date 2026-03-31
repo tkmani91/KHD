@@ -1989,7 +1989,7 @@ useEffect(() => {
   loadAccountsPDFs();
 }, [isLoggedIn, loggedInUser]);
   
- // ===== LOGIN HANDLER =====
+// ===== LOGIN HANDLER =====
 const handleLogin = (e: React.FormEvent) => {
   e.preventDefault();
   setLoginError('');
@@ -2008,7 +2008,7 @@ const handleLogin = (e: React.FormEvent) => {
     
     const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
     
-    const foundUser = allUsers.find((u: any) => 
+    const foundUser = allUsers.find((u: LoginUser) => 
       (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
       u.password === trimmedPassword
     );
@@ -2016,8 +2016,7 @@ const handleLogin = (e: React.FormEvent) => {
     if (foundUser) { 
       const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
 
-      // ✅ permissions সহ user object তৈরি
-      const userWithRole = {
+      const userWithRole: LoginUser = {
         id: foundUser.id,
         name: foundUser.name,
         mobile: foundUser.mobile || '',
@@ -2025,10 +2024,9 @@ const handleLogin = (e: React.FormEvent) => {
         password: '',
         role: userRole,
         photo: foundUser.photo || '',
-        permissions: foundUser.permissions || null  // ✅ এই line গুরুত্বপূর্ণ!
+        permissions: foundUser.permissions  // ✅ এই line যোগ করুন!
       };
 
-      // ✅ permissions সহ localStorage এ save
       localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
 
       if (foundUser.photo) {
@@ -2040,9 +2038,6 @@ const handleLogin = (e: React.FormEvent) => {
       setLoggedInUser(userWithRole);
       setUsernameInput(''); 
       setPasswordInput(''); 
-      
-      // ✅ Debug log
-      console.log('✅ Login successful with permissions:', userWithRole.permissions);
     }
     else { setLoginError('ভুল তথ্য দিয়েছেন'); }
     setIsLoading(false);
