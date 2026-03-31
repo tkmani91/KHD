@@ -29,7 +29,7 @@ export const usePermission = (user: LoginUser | null, section: Section) => {
       canView: sectionPerms.view,
       canEdit: sectionPerms.edit,
       canDelete: sectionPerms.delete,
-      hasPermission: (action: PermissionAction) => sectionPerms[action]
+      hasPermission: (act: PermissionAction) => sectionPerms[act]
     };
   }, [user, section]);
 };
