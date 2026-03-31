@@ -1,8 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { LoginUser, UserPermissions, DEFAULT_PERMISSIONS } from '../types/permissions';
-import { Shield, Users, Save, RotateCcw, AlertCircle } from 'lucide-react';
+import { Shield, Users, Save, RotateCcw, AlertCircle, Upload, Check, Copy } from 'lucide-react';
 
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
+
+interface SectionPermissions {
+  view: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+
+interface UserPermissions {
+  members: SectionPermissions;
+  contacts: SectionPermissions;
+  invitations: SectionPermissions;
+  fund: SectionPermissions;
+  notice: SectionPermissions;
+  live: SectionPermissions;
+  accounts: SectionPermissions;
+  jsonEditor: SectionPermissions;
+}
+
+interface LoginUser {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  password: string;
+  role: 'Member' | 'Admin' | 'Super Admin';
+  photo?: string;
+  permissions?: UserPermissions;
+}
+
+const DEFAULT_PERMISSIONS: Record<string, UserPermissions> = {
+  'Member': {
+    members: { view: true, edit: false, delete: false },
+    contacts: { view: true, edit: false, delete: false },
+    invitations: { view: true, edit: false, delete: false },
+    fund: { view: true, edit: false, delete: false },
+    notice: { view: true, edit: false, delete: false },
+    live: { view: true, edit: false, delete: false },
+    accounts: { view: false, edit: false, delete: false },
+    jsonEditor: { view: false, edit: false, delete: false }
+  },
+  'Admin': {
+    members: { view: true, edit: false, delete: false },
+    contacts: { view: true, edit: false, delete: false },
+    invitations: { view: true, edit: false, delete: false },
+    fund: { view: true, edit: false, delete: false },
+    notice: { view: true, edit: false, delete: false },
+    live: { view: true, edit: false, delete: false },
+    accounts: { view: true, edit: false, delete: false },
+    jsonEditor: { view: false, edit: false, delete: false }
+  },
+  'Super Admin': {
+    members: { view: true, edit: true, delete: true },
+    contacts: { view: true, edit: true, delete: true },
+    invitations: { view: true, edit: true, delete: true },
+    fund: { view: true, edit: true, delete: true },
+    notice: { view: true, edit: true, delete: true },
+    live: { view: true, edit: true, delete: true },
+    accounts: { view: true, edit: true, delete: true },
+    jsonEditor: { view: true, edit: true, delete: true }
+  }
+};
 
 const SECTION_LABELS: Record<string, string> = {
   members: '👥 সদস্য তালিকা',
@@ -23,7 +83,10 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [permissions, setPermissions] = useState<UserPermissions | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
 
   // Load login data
   useEffect(() => {
@@ -35,6 +98,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
         setLoginData(data);
       } catch (err) {
         console.error('Failed to load login data:', err);
+        setError('ডেটা লোড করতে সমস্যা হয়েছে');
       }
     };
     fetchLoginData();
@@ -81,9 +145,10 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
     });
   };
 
-  const handleSave = () => {
-    if (!permissions || !selectedUserId || !loginData) return;
-    
+  // Generate final JSON
+  const generateFinalJSON = () => {
+    if (!permissions || !selectedUserId || !loginData) return null;
+
     const updatedAccountsMembers = loginData.accountsMembers.map(user => {
       if (user.id === selectedUserId) {
         return { ...user, permissions };
@@ -91,25 +156,85 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
       return user;
     });
 
-    const finalJSON = {
+    return {
       accountsMembers: updatedAccountsMembers,
       normalMembers: loginData.normalMembers
     };
+  };
 
-    // Copy to clipboard
+  // Copy to clipboard
+  const handleCopyJSON = () => {
+    const finalJSON = generateFinalJSON();
+    if (!finalJSON) return;
+
     navigator.clipboard.writeText(JSON.stringify(finalJSON, null, 2));
-    
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-    
-    alert(
-      '✅ JSON কপি করা হয়েছে!\n\n' +
-      'এখন GitHub এ:\n' +
-      '1. members-login.json ওপেন করুন\n' +
-      '2. Edit → Paste করুন\n' +
-      '3. Commit করুন\n\n' +
-      '২-৩ মিনিট পর রিফ্রেশ করুন। 🔄'
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Direct GitHub Upload
+  const handleDirectUpload = async () => {
+    const finalJSON = generateFinalJSON();
+    if (!finalJSON) {
+      alert('❌ কোন পরিবর্তন করা হয়নি!');
+      return;
+    }
+
+    const confirmUpload = window.confirm(
+      `⚠️ নিশ্চিত করুন:\n\n` +
+      `ফাইল: members-login.json\n` +
+      `Admin: ${adminUsers.find(u => u.id === selectedUserId)?.name}\n\n` +
+      `সরাসরি GitHub এ আপলোড হবে।\n` +
+      `এগিয়ে যেতে চান?`
     );
+
+    if (!confirmUpload) return;
+
+    setIsUploading(true);
+    setError('');
+    setUploadSuccess(false);
+
+    try {
+      const response = await fetch('/api/github-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filePath: 'members-login.json',
+          content: JSON.stringify(finalJSON, null, 2),
+          commitMessage: `🔐 Update permissions for ${adminUsers.find(u => u.id === selectedUserId)?.name}`
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setUploadSuccess(true);
+      
+      // Update local state
+      setLoginData(finalJSON);
+      
+      alert(
+        `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
+        `📁 ফাইল: members-login.json\n` +
+        `🔗 Commit: ${data.commit?.sha?.substring(0, 7) || 'OK'}\n\n` +
+        `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+      );
+
+      setTimeout(() => setUploadSuccess(false), 5000);
+
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+      alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে JSON কপি করে manual আপলোড করুন।`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleReset = () => {
@@ -142,6 +267,13 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
+
       {/* Info */}
       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
         <div className="flex items-start gap-3">
@@ -171,7 +303,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
           <option value="">একজন Admin নির্বাচন করুন...</option>
           {adminUsers.map(user => (
             <option key={user.id} value={user.id}>
-              {user.name} ({user.mobile || user.email})
+              {user.name} ({user.mobile || user.email || 'No contact'})
             </option>
           ))}
         </select>
@@ -180,11 +312,11 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
       {/* Permissions Table */}
       {permissions && selectedUserId && (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-white font-bold">
               📋 {adminUsers.find(u => u.id === selectedUserId)?.name} এর Permissions
             </h3>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleReset}
                 className="flex items-center gap-1 px-3 py-1.5 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600"
@@ -192,15 +324,41 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
                 <RotateCcw className="w-4 h-4" /> রিসেট
               </button>
               <button
-                onClick={handleSave}
+                onClick={handleCopyJSON}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm ${
-                  saveSuccess 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                  copied ? 'bg-green-600 text-white' : 'bg-gray-600 text-white hover:bg-gray-700'
                 }`}
               >
-                <Save className="w-4 h-4" />
-                {saveSuccess ? '✅ সংরক্ষিত!' : '💾 সংরক্ষণ'}
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'কপি হয়েছে!' : 'JSON কপি'}
+              </button>
+              <button
+                onClick={handleDirectUpload}
+                disabled={isUploading}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium ${
+                  uploadSuccess 
+                    ? 'bg-green-600 text-white' 
+                    : isUploading 
+                      ? 'bg-gray-400 text-white cursor-not-allowed' 
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    আপলোড হচ্ছে...
+                  </>
+                ) : uploadSuccess ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    ✅ আপলোড হয়েছে!
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    🚀 সরাসরি আপলোড
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -224,7 +382,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
                     <td className="px-6 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={permissions[section as keyof UserPermissions].view}
+                        checked={permissions[section as keyof UserPermissions]?.view || false}
                         onChange={(e) => handlePermissionChange(
                           section as keyof UserPermissions, 
                           'view', 
@@ -236,7 +394,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
                     <td className="px-6 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={permissions[section as keyof UserPermissions].edit}
+                        checked={permissions[section as keyof UserPermissions]?.edit || false}
                         onChange={(e) => handlePermissionChange(
                           section as keyof UserPermissions, 
                           'edit', 
@@ -248,7 +406,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
                     <td className="px-6 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={permissions[section as keyof UserPermissions].delete}
+                        checked={permissions[section as keyof UserPermissions]?.delete || false}
                         onChange={(e) => handlePermissionChange(
                           section as keyof UserPermissions, 
                           'delete', 
@@ -265,11 +423,22 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
 
           {/* JSON Preview */}
           <div className="bg-gray-900 p-4">
-            <p className="text-xs text-gray-400 mb-2">📄 JSON Preview:</p>
-            <pre className="text-xs text-green-400 font-mono overflow-x-auto">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-400">📄 JSON Preview:</p>
+              <p className="text-xs text-gray-500">members-login.json</p>
+            </div>
+            <pre className="text-xs text-green-400 font-mono overflow-x-auto max-h-48">
               {JSON.stringify(permissions, null, 2)}
             </pre>
           </div>
+        </div>
+      )}
+
+      {/* Instructions */}
+      {!selectedUserId && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 text-center">
+          <Users className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+          <p className="text-gray-600">উপর থেকে একজন Admin নির্বাচন করুন</p>
         </div>
       )}
     </div>
