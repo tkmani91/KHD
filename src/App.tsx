@@ -6,6 +6,10 @@ import FundCollection from './components/FundCollection';
 import MembersList from './components/MembersList';
 import ContactsList from './components/ContactsList';
 import InvitationListComponent from './components/InvitationList';
+import { usePermission } from './hooks/usePermission';
+import PermissionGate from './components/PermissionGate';
+import PermissionManager from './components/PermissionManager';
+import { DEFAULT_PERMISSIONS } from './types/permissions';
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -156,6 +160,7 @@ interface LoginUser {
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
   photo?: string;
+  permissions?: UserPermissions;
 }
 
 // Data URLs
@@ -1837,10 +1842,6 @@ function AIChatbox() {
     </div>
   );
 }
-import { usePermission } from './hooks/usePermission';
-import PermissionGate from './components/PermissionGate';
-import PermissionManager from './components/PermissionManager';
-import { DEFAULT_PERMISSIONS } from './types/permissions';
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -2728,17 +2729,6 @@ function GlobalLiveTVPlayer() {
     </div>
   );
 }
-// ==================== MAIN APP COMPONENT ====================
-
-function App() {
-  return (
-    <MediaProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </MediaProvider>
-  );
-}
 
 // ============================================
 // APP CONTENT COMPONENT
@@ -2775,11 +2765,6 @@ function AppContent() {
     </>
   );
 }
-
-// ============================================
-// MAIN APP COMPONENT (এটি যোগ করুন)
-// ============================================
-// ... AppContent function এর পর ...
 
 // ============================================
 // MAIN APP COMPONENT
