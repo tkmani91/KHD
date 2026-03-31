@@ -2778,15 +2778,18 @@ function AppContent() {
 // ============================================
 // MAIN APP COMPONENT (এটি যোগ করুন)
 // ============================================
+// ... AppContent function এর পর ...
+
+// ============================================
+// MAIN APP COMPONENT
+// ============================================
 function App() {
   return (
-    <Router>
-      <MusicProvider>
-        <LiveTVProvider>
-          <AppContent />
-        </LiveTVProvider>
-      </MusicProvider>
-    </Router>
+    <MediaProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </MediaProvider>
   );
 }
 
