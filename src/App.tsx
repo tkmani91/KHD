@@ -6,9 +6,6 @@ import FundCollection from './components/FundCollection';
 import MembersList from './components/MembersList';
 import ContactsList from './components/ContactsList';
 import InvitationListComponent from './components/InvitationList';
-import PermissionGate from './components/PermissionGate';
-import PermissionManager from './components/PermissionManager';
-import { DEFAULT_PERMISSIONS } from './types/permissions';
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -38,7 +35,6 @@ import {
   ChevronDown,
   Bell,
   Send,
-  Shield,
   Settings,
   Check,
   LogOut,
@@ -159,17 +155,6 @@ interface LoginUser {
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
   photo?: string;
-  permissions?: {
-  members: { view: boolean; edit: boolean; delete: boolean };
-  contacts: { view: boolean; edit: boolean; delete: boolean };
-  invitations: { view: boolean; edit: boolean; delete: boolean };
-  fund: { view: boolean; edit: boolean; delete: boolean };
-  notice: { view: boolean; edit: boolean; delete: boolean };
-  live: { view: boolean; edit: boolean; delete: boolean };
-  accounts: { view: boolean; edit: boolean; delete: boolean };
-  jsonEditor: { view: boolean; edit: boolean; delete: boolean };
-  };
-  editorPermissions?: { [key: string]: boolean };
 }
 
 // Data URLs
@@ -265,7 +250,8 @@ function MediaProvider({ children }: { children: React.ReactNode }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentIndexRef = useRef<number>(-1);
   const playlistRef = useRef<Song[]>([]);
 
@@ -1912,69 +1898,7 @@ function LoginPage() {
     };
     fetchLoginData();
   }, []);
-  
-// Fresh permission সহ JSONEditor wrapper - IMPROVED VERSION
-function JSONEditorWithFreshPermissions({ loggedInUser }: { loggedInUser: LoginUser }) {
-  const [freshPermissions, setFreshPermissions] = useState(loggedInUser.editorPermissions);
-  const [isLoadingPerms, setIsLoadingPerms] = useState(true);
 
-  useEffect(() => {
-    const loadFreshPermissions = async () => {
-      try {
-        // Cache bypass করতে timestamp যোগ করি
-        const cacheBuster = `?t=${Date.now()}`;
-        const response = await fetch(GITHUB_LOGIN_URL + cacheBuster, { 
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const allUsers = [...data.accountsMembers, ...data.normalMembers];
-          const currentUser = allUsers.find((u: any) => u.id === loggedInUser.id);
-          
-          if (currentUser?.editorPermissions) {
-            setFreshPermissions(currentUser.editorPermissions);
-            
-            // localStorage ও আপডেট করুন
-            const savedUser = JSON.parse(localStorage.getItem('khd_logged_in_user') || '{}');
-            if (savedUser.id === loggedInUser.id) {
-              savedUser.editorPermissions = currentUser.editorPermissions;
-              localStorage.setItem('khd_logged_in_user', JSON.stringify(savedUser));
-            }
-          }
-        }
-      } catch (err) {
-        console.log('Permission refresh failed:', err);
-        // Error হলেও existing permissions use করি
-        setFreshPermissions(loggedInUser.editorPermissions);
-      } finally {
-        setIsLoadingPerms(false);
-      }
-    };
-
-    loadFreshPermissions();
-  }, [loggedInUser.id]);
-
-  if (isLoadingPerms) {
-    return (
-      <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">পারমিশন লোড হচ্ছে...</p>
-      </div>
-    );
-  }
-
-  return (
-    <JSONEditor 
-      userRole={loggedInUser.role}
-      editorPermissions={freshPermissions}
-    />
-  );
-}
  // Load member data after login (WITHOUT photo matching)
 // Load all data after login
 useEffect(() => {
@@ -2051,62 +1975,61 @@ useEffect(() => {
   loadAccountsPDFs();
 }, [isLoggedIn, loggedInUser]);
   
-// ===== LOGIN HANDLER =====
-const handleLogin = (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoginError('');
-  if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
-  if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
-  
-  if (!loginData) {
-    setLoginError('লগইন ডেটা লোড হয়নি');
-    return;
-  }
-
-  setIsLoading(true);
-  setTimeout(() => {
-    const trimmedUsername = usernameInput.trim().toLowerCase();
-    const trimmedPassword = passwordInput.trim();
+  // ===== LOGIN HANDLER =====
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
+    if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
     
-    const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
-    
-    const foundUser = allUsers.find((u: LoginUser) => 
-      (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
-      u.password === trimmedPassword
-    );
+    if (!loginData) {
+      setLoginError('লগইন ডেটা লোড হয়নি');
+      return;
+    }
 
-    if (foundUser) { 
-      const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
+    setIsLoading(true);
+    setTimeout(() => {
+      const trimmedUsername = usernameInput.trim().toLowerCase();
+      const trimmedPassword = passwordInput.trim();
+      
+      const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
+      
+      const foundUser = allUsers.find((u: LoginUser) => 
+        (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
+        u.password === trimmedPassword
+      );
 
-      const userWithRole: LoginUser = {
-        id: foundUser.id,
-        name: foundUser.name,
-        mobile: foundUser.mobile || '',
-        email: foundUser.email || '',
-        password: '',
-        role: userRole,
-        photo: foundUser.photo || '',
-        permissions: foundUser.permissions,
-        editorPermissions: foundUser.editorPermissions
-      };
+      if (foundUser) { 
+        const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
 
-      localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
+        const userWithRole: LoginUser = {
+          id: foundUser.id,
+          name: foundUser.name,
+          mobile: foundUser.mobile || '',
+          email: foundUser.email || '',
+          password: '',
+          role: userRole,
+          photo: foundUser.photo || ''
+        };
 
-      if (foundUser.photo) {
+        localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
+
+        if (foundUser.photo) {
         setUserPhoto(foundUser.photo);
         localStorage.setItem('khd_user_photo', foundUser.photo);
       }
 
-      setIsLoggedIn(true); 
-      setLoggedInUser(userWithRole);
-      setUsernameInput(''); 
-      setPasswordInput(''); 
-    }
-    else { setLoginError('ভুল তথ্য দিয়েছেন'); }
-    setIsLoading(false);
-  }, 800);
-};
-  
+
+        setIsLoggedIn(true); 
+        setLoggedInUser(userWithRole);
+        setUsernameInput(''); 
+        setPasswordInput(''); 
+      }
+      else { setLoginError('ভুল তথ্য দিয়েছেন'); }
+      setIsLoading(false);
+    }, 800);
+  };
+
   // ===== LOGOUT HANDLER =====
   const handleLogout = () => {
     localStorage.removeItem('khd_logged_in_user');
@@ -2117,67 +2040,27 @@ const handleLogin = (e: React.FormEvent) => {
     setUserPhoto('');
     setActiveTab('members');
   };
-const getAvailableTabs = () => {
-  if (!loggedInUser) return [];
 
-  // Type explicitly define করুন
-  type SectionType = 'members' | 'contacts' | 'invitations' | 'fund' | 'notice' | 'live' | 'accounts' | 'jsonEditor';
-  
-  const allTabs: Array<{
-    id: string;
-    label: string;
-    icon: any;
-    section: SectionType;
-  }> = [
-    { id: 'members', label: 'সদস্য তালিকা', icon: Users, section: 'members' },
-    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign, section: 'fund' },
-    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone, section: 'contacts' },
-    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText, section: 'invitations' },
-    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell, section: 'notice' },
-    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv, section: 'live' },
-    { id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText, section: 'accounts' },
-  ];
+  const getAvailableTabs = () => {
+    const baseTabs = [
+      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
+      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
+      { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
+      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
+      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+       ];
 
-  const userPermissions = loggedInUser.permissions || DEFAULT_PERMISSIONS[loggedInUser.role];
-  
-  const availableTabs = allTabs.filter(tab => {
-    const sectionPerms = userPermissions[tab.section];
-    return sectionPerms && sectionPerms.view;
-  });
+    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
+    }
 
- // Add JSON Editor for Super Admin or admins with editorPermissions
-if (loggedInUser.role === 'Super Admin') {
-  availableTabs.push({ 
-    id: 'json-editor', 
-    label: 'কন্ট্রোল প্যানেল', 
-    icon: Settings, 
-    section: 'jsonEditor' as const 
-  });
-} else if (loggedInUser.role === 'Admin' && loggedInUser.editorPermissions) {
-  // Check if Admin has any editor permission
-  const hasAnyPermission = Object.values(loggedInUser.editorPermissions).some(val => val === true);
-  if (hasAnyPermission) {
-    availableTabs.push({ 
-      id: 'json-editor', 
-      label: 'কন্ট্রোল প্যানেল', 
-      icon: Settings, 
-      section: 'jsonEditor' as const 
-    });
-  }
-}
+    if (loggedInUser?.role === 'Super Admin') {
+      baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
+    }
 
-  // Permission Manager for Super Admin only
-  if (loggedInUser.role === 'Super Admin') {
-    availableTabs.push({ 
-      id: 'permissions', 
-      label: 'পারমিশন সেটিংস', 
-      icon: Shield, 
-      section: 'jsonEditor'
-    });
-  }
-
-  return availableTabs;
-};
+    return baseTabs;
+  };
 
   // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
@@ -2280,138 +2163,122 @@ if (loggedInUser.role === 'Super Admin') {
     );
   }
 
-// ===== DASHBOARD =====
-return (
-  <div className="space-y-6">
-    {/* Header */}
-    <div className="bg-white rounded-2xl p-4 shadow-lg">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
-            <img 
-              src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-              alt={loggedInUser?.name} 
-              className="w-full h-full object-cover"
-              onError={(e) => { 
-                (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
-              }}
-            />
+  // ===== DASHBOARD =====
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-2xl p-4 shadow-lg">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+              <img 
+                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                alt={loggedInUser?.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => { 
+                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+                }}
+              />
+            </div>
+            
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p className="text-sm text-gray-500">
+                  স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
+                </p>
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                  loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
+                  loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
+                  'bg-green-100 text-green-600'
+                )}>
+                  {loggedInUser?.role}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                <Phone className="w-3 h-3" />
+                {loggedInUser?.mobile}
+              </p>
+            </div>
           </div>
           
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <p className="text-sm text-gray-500">
-                স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
-              </p>
-              <span className={cn(
-                "px-2 py-0.5 rounded-full text-xs font-medium",
-                loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
-                loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
-                'bg-green-100 text-green-600'
-              )}>
-                {loggedInUser?.role}
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-              <Phone className="w-3 h-3" />
-              {loggedInUser?.mobile}
-            </p>
-          </div>
+          <button 
+            onClick={handleLogout} 
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> লগআউট
+          </button>
         </div>
-        
-        <button 
-          onClick={handleLogout} 
-          className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
-        >
-          <LogOut className="w-4 h-4" /> লগআউট
-        </button>
       </div>
-    </div>
 
-    {/* Tabs */}
-    <div className="flex flex-wrap gap-2">
-      {getAvailableTabs().map((tab) => (
-        <button 
-          key={tab.id} 
-          onClick={() => setActiveTab(tab.id)}
-          className={cn(
-            "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
-            activeTab === tab.id 
-              ? "bg-orange-500 text-white shadow-lg" 
-              : "bg-white text-gray-700 hover:bg-orange-50"
-          )}
-        >
-          <tab.icon className="w-4 h-4" />{tab.label}
-        </button>
-      ))}
-    </div>
-
-    {/* Loading */}
-    {isDataLoading && (
-      <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {getAvailableTabs().map((tab) => (
+          <button 
+            key={tab.id} 
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
+              activeTab === tab.id 
+                ? "bg-orange-500 text-white shadow-lg" 
+                : "bg-white text-gray-700 hover:bg-orange-50"
+            )}
+          >
+            <tab.icon className="w-4 h-4" />{tab.label}
+          </button>
+        ))}
       </div>
-    )}
 
-    {/* Members Tab */}
-    {activeTab === 'members' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="members" action="view">
+      {/* Loading */}
+      {isDataLoading && (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* Members Tab */}
+      {activeTab === 'members' && !isDataLoading && (
         <MembersList 
           membersData={membersData} 
           pdfLink={pdfLinks.membersList} 
         />
-      </PermissionGate>
-    )}
+      )}
 
-    {/* Contacts Tab */}
-    {activeTab === 'contacts' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="contacts" action="view">
+      {/* Contacts Tab */}
+      {activeTab === 'contacts' && !isDataLoading && (
         <ContactsList 
           contactsData={contactsData} 
           pdfLink={pdfLinks.contactsList} 
         />
-      </PermissionGate>
-    )}
+      )}
 
-    {/* Invitation Tab */}
-    {activeTab === 'invitation' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="invitations" action="view">
+      {/* Invitation Tab */}
+      {activeTab === 'invitation' && !isDataLoading && (
         <InvitationListComponent 
           invitationData={invitationData} 
           pdfLink={pdfLinks.invitationList} 
         />
-      </PermissionGate>
-    )}
+      )}
 
-    {/* Notice Tab */}
-    {activeTab === 'notice' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="notice" action="view">
-        <NoticeBoard />
-      </PermissionGate>
-    )}
+      {/* Notice Tab */}
+      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
 
-    {/* Live Broadcasting Tab */}
-    {activeTab === 'live' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="live" action="view">
-        <LiveBroadcasting />
-      </PermissionGate>
-    )}
+      {/* Live Broadcasting Tab */}
+      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
 
-    {/* Fund Collection Tab */}
-    {activeTab === 'fund' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="fund" action="view">
+      {/* Fund Collection Tab */}
+      {activeTab === 'fund' && !isDataLoading && (
         <FundCollection 
-          userRole={loggedInUser.role || 'Member'} 
-          loggedInUserId={loggedInUser.id || ''} 
+          userRole={loggedInUser?.role || 'Member'} 
+          loggedInUserId={loggedInUser?.id || ''} 
         />
-      </PermissionGate>
-    )}
+      )}
 
-    {/* Accounts Tab */}
-    {activeTab === 'accounts' && !isDataLoading && loggedInUser && (
-      <PermissionGate user={loggedInUser} section="accounts" action="view">
+   
+      {/* Accounts Tab (Admin/Super Admin only) */}
+      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
             <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
@@ -2432,30 +2299,13 @@ return (
             </div>
           ))}
         </div>
-      </PermissionGate>
-    )}
+      )}
 
-    {/* JSON Editor Tab */}
-    {activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
-      <JSONEditorWithFreshPermissions loggedInUser={loggedInUser} />
-    )}
 
-    {/* Permission Manager Tab */}
-    {activeTab === 'permissions' && !isDataLoading && loggedInUser?.role === 'Super Admin' && (
-      <PermissionManager 
-        currentUser={loggedInUser}
-        onUserUpdate={(updatedUser) => {
-          localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
-          localStorage.setItem('khd_user_photo', updatedUser.photo || '');
-          setLoggedInUser(updatedUser);
-          if (updatedUser.photo) {
-            setUserPhoto(updatedUser.photo);
-          }
-        }}
-      />
-    )}
-  </div>
-);
+      {/* JSON Editor Tab (Super Admin only) */}
+      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
+   </div>
+  );
 }
 
 // ==================== GLOBAL MINI PLAYERS ====================
@@ -2817,10 +2667,18 @@ function GlobalLiveTVPlayer() {
     </div>
   );
 }
+// ==================== MAIN APP COMPONENT ====================
 
-// ============================================
-// APP CONTENT COMPONENT
-// ============================================
+function App() {
+  return (
+    <MediaProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </MediaProvider>
+  );
+}
+
 function AppContent() {
   return (
     <>
@@ -2851,19 +2709,6 @@ function AppContent() {
         <Footer />
       </div>
     </>
-  );
-}
-
-// ============================================
-// MAIN APP COMPONENT
-// ============================================
-function App() {
-  return (
-    <MediaProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </MediaProvider>
   );
 }
 
