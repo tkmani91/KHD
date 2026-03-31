@@ -41,6 +41,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { OptimizedImage } from './components/OptimizedImage';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 // cn function - classnames utility
 const cn = (...classes: (string | boolean | undefined | null)[]) => {
   return classes.filter(Boolean).join(' ');
@@ -2683,6 +2684,7 @@ function AppContent() {
   return (
     <>
       <InstallPrompt /> 
+      <SpeedInsights />
       <div className="min-h-screen sacred-pattern">
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
