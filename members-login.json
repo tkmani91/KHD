@@ -144,7 +144,7 @@
           "delete": false
         },
         "jsonEditor": {
-          "view": false,
+          "view": true,
           "edit": false,
           "delete": false
         }
