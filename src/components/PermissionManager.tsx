@@ -23,7 +23,6 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [permissions, setPermissions] = useState<UserPermissions | null>(null);
-  const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Load login data
