@@ -35,6 +35,7 @@ import {
   ChevronDown,
   Bell,
   Send,
+  Shield,
   Settings,
   Check,
   LogOut,
@@ -1836,6 +1837,10 @@ function AIChatbox() {
     </div>
   );
 }
+import { usePermission } from '../hooks/usePermission';
+import PermissionGate from '../components/PermissionGate';
+import PermissionManager from '../components/PermissionManager';
+import { DEFAULT_PERMISSIONS } from '../types/permissions';
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -2041,26 +2046,57 @@ useEffect(() => {
     setActiveTab('members');
   };
 
-  const getAvailableTabs = () => {
-    const baseTabs = [
-      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
-      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
-      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
-      { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
-      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
-      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
-       ];
+ const getAvailableTabs = () => {
+  if (!loggedInUser) return [];
 
-    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
-    }
+  const allTabs = [
+    { id: 'members', label: 'সদস্য তালিকা', icon: Users, section: 'members' as const },
+    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign, section: 'fund' as const },
+    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone, section: 'contacts' as const },
+    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText, section: 'invitations' as const },
+    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell, section: 'notice' as const },
+    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv, section: 'live' as const },
+    { id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText, section: 'accounts' as const },
+  ];
 
-    if (loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
-    }
+  // Get user permissions
+  const userPermissions = loggedInUser.permissions || DEFAULT_PERMISSIONS[loggedInUser.role];
 
-    return baseTabs;
-  };
+  // Filter tabs based on view permission
+  const availableTabs = allTabs.filter(tab => {
+    const sectionPerms = userPermissions[tab.section];
+    return sectionPerms && sectionPerms.view;
+  });
+
+  // Add JSON Editor for Super Admin or admins with permission
+  if (loggedInUser.role === 'Super Admin') {
+    availableTabs.push({ 
+      id: 'json-editor', 
+      label: 'কন্ট্রোল প্যানেল', 
+      icon: Settings, 
+      section: 'jsonEditor' as const 
+    });
+  } else if (userPermissions.jsonEditor?.view) {
+    availableTabs.push({ 
+      id: 'json-editor', 
+      label: 'কন্ট্রোল প্যানেল', 
+      icon: Settings, 
+      section: 'jsonEditor' as const 
+    });
+  }
+
+  // Add Permission Manager for Super Admin only
+  if (loggedInUser.role === 'Super Admin') {
+    availableTabs.push({ 
+      id: 'permissions', 
+      label: 'পারমিশন সেটিংস', 
+      icon: Shield, 
+      section: 'jsonEditor' as const 
+    });
+  }
+
+  return availableTabs;
+};
 
   // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
@@ -2239,74 +2275,96 @@ useEffect(() => {
       )}
 
       {/* Members Tab */}
-      {activeTab === 'members' && !isDataLoading && (
-        <MembersList 
-          membersData={membersData} 
-          pdfLink={pdfLinks.membersList} 
-        />
-      )}
+{activeTab === 'members' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="members" action="view">
+    <MembersList 
+      membersData={membersData} 
+      pdfLink={pdfLinks.membersList} 
+    />
+  </PermissionGate>
+)}
 
-      {/* Contacts Tab */}
-      {activeTab === 'contacts' && !isDataLoading && (
-        <ContactsList 
-          contactsData={contactsData} 
-          pdfLink={pdfLinks.contactsList} 
-        />
-      )}
+{/* Contacts Tab */}
+{activeTab === 'contacts' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="contacts" action="view">
+    <ContactsList 
+      contactsData={contactsData} 
+      pdfLink={pdfLinks.contactsList} 
+    />
+  </PermissionGate>
+)}
 
-      {/* Invitation Tab */}
-      {activeTab === 'invitation' && !isDataLoading && (
-        <InvitationListComponent 
-          invitationData={invitationData} 
-          pdfLink={pdfLinks.invitationList} 
-        />
-      )}
+{/* Invitation Tab */}
+{activeTab === 'invitation' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="invitations" action="view">
+    <InvitationListComponent 
+      invitationData={invitationData} 
+      pdfLink={pdfLinks.invitationList} 
+    />
+  </PermissionGate>
+)}
 
-      {/* Notice Tab */}
-      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+{/* Notice Tab */}
+{activeTab === 'notice' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="notice" action="view">
+    <NoticeBoard />
+  </PermissionGate>
+)}
 
-      {/* Live Broadcasting Tab */}
-      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
+{/* Live Broadcasting Tab */}
+{activeTab === 'live' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="live" action="view">
+    <LiveBroadcasting />
+  </PermissionGate>
+)}
 
-      {/* Fund Collection Tab */}
-      {activeTab === 'fund' && !isDataLoading && (
-        <FundCollection 
-          userRole={loggedInUser?.role || 'Member'} 
-          loggedInUserId={loggedInUser?.id || ''} 
-        />
-      )}
+{/* Fund Collection Tab */}
+{activeTab === 'fund' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="fund" action="view">
+    <FundCollection 
+      userRole={loggedInUser?.role || 'Member'} 
+      loggedInUserId={loggedInUser?.id || ''} 
+    />
+  </PermissionGate>
+)}
 
-   
-      {/* Accounts Tab (Admin/Super Admin only) */}
-      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(accountsPDFs).map(([key, data]) => (
-            <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
-                <h3 className="font-bold text-lg">{data.title}</h3>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {Object.entries(data.years).map(([year, url]) => (
-                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
-                    <Download className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm font-medium">{year}</span>
-                  </a>
-                ))}
-              </div>
+{/* Accounts Tab */}
+{activeTab === 'accounts' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="accounts" action="view">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {Object.entries(accountsPDFs).map(([key, data]) => (
+        <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+              <FileText className="w-6 h-6 text-orange-600" />
             </div>
-          ))}
+            <h3 className="font-bold text-lg">{data.title}</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {Object.entries(data.years).map(([year, url]) => (
+              <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                <Download className="w-4 h-4 text-orange-600" />
+                <span className="text-sm font-medium">{year}</span>
+              </a>
+            ))}
+          </div>
         </div>
-      )}
+      ))}
+    </div>
+  </PermissionGate>
+)}
 
+{/* JSON Editor Tab */}
+{activeTab === 'json-editor' && !isDataLoading && (
+  <PermissionGate user={loggedInUser} section="jsonEditor" action="view">
+    <JSONEditor />
+  </PermissionGate>
+)}
 
-      {/* JSON Editor Tab (Super Admin only) */}
-      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
-   </div>
-  );
-}
+{/* ✅ NEW: Permission Manager Tab */}
+{activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && (
+  <PermissionManager currentUser={loggedInUser} />
+)}
 
 // ==================== GLOBAL MINI PLAYERS ====================
 
