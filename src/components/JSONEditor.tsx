@@ -16,6 +16,16 @@ interface JSONFile {
   hasAudioPreview?: boolean;
 }
 
+
+// JSONEditor এর interface এ যোগ করুন
+interface JSONEditorProps {
+  userRole?: 'Member' | 'Admin' | 'Super Admin';
+  editorPermissions?: { [key: string]: boolean };
+}
+
+const JSONEditor: React.FC<JSONEditorProps> = ({ userRole = 'Super Admin', editorPermissions }) => {
+
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -185,6 +195,24 @@ const JSONEditor: React.FC = () => {
     }
   ];
 
+  // Filter files based on permissions
+const getAccessibleFiles = () => {
+  // Super Admin সব দেখতে পারবে
+  if (userRole === 'Super Admin') {
+    return JSON_FILES;
+  }
+  
+  // Admin শুধু permitted files দেখবে
+  if (userRole === 'Admin' && editorPermissions) {
+    return JSON_FILES.filter(file => editorPermissions[file.id] === true);
+  }
+  
+  // অন্যরা কিছু দেখবে না
+  return [];
+};
+
+const accessibleFiles = getAccessibleFiles();
+  
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
   // ============================================
@@ -2081,24 +2109,34 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-      {/* File Selector */}
-      <div className="bg-white rounded-xl p-4 shadow-lg">
-        <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {JSON_FILES.map(file => (
-            <button key={file.id} onClick={() => setSelectedFile(file.id)} 
-              className={btnClass(selectedFile === file.id)}>
-              {file.label}
-            </button>
-          ))}
-        </div>
-        {currentFile && (
-          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-            📂 <code>{currentFile.path}</code>
-          </div>
-        )}
+     {/* File Selector */}
+<div className="bg-white rounded-xl p-4 shadow-lg">
+  <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
+  
+  {accessibleFiles.length === 0 ? (
+    <div className="text-center py-8">
+      <p className="text-red-500 font-medium">❌ আপনার কোন section এ permission নেই</p>
+      <p className="text-gray-500 text-sm mt-2">Super Admin এর সাথে যোগাযোগ করুন</p>
+    </div>
+  ) : (
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        {accessibleFiles.map(file => (
+          <button key={file.id} onClick={() => setSelectedFile(file.id)} 
+            className={btnClass(selectedFile === file.id)}>
+            {file.label}
+          </button>
+        ))}
       </div>
-
+      {currentFile && (
+        <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+          📂 <code>{currentFile.path}</code>
+        </div>
+      )}
+    </>
+  )}
+</div>
+      
       {/* Section Selector */}
       {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
