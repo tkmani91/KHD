@@ -1913,7 +1913,55 @@ function LoginPage() {
     };
     fetchLoginData();
   }, []);
+// Fresh permission সহ JSONEditor wrapper
+function JSONEditorWithFreshPermissions({ loggedInUser }: { loggedInUser: LoginUser }) {
+  const [freshPermissions, setFreshPermissions] = useState(loggedInUser.editorPermissions);
+  const [isLoadingPerms, setIsLoadingPerms] = useState(true);
 
+  useEffect(() => {
+    const loadFreshPermissions = async () => {
+      try {
+        const response = await fetch(GITHUB_LOGIN_URL, { cache: 'no-cache' });
+        if (response.ok) {
+          const data = await response.json();
+          const allUsers = [...data.accountsMembers, ...data.normalMembers];
+          const currentUser = allUsers.find((u: any) => u.id === loggedInUser.id);
+          
+          if (currentUser?.editorPermissions) {
+            setFreshPermissions(currentUser.editorPermissions);
+            
+            // localStorage ও আপডেট করুন
+            const savedUser = JSON.parse(localStorage.getItem('khd_logged_in_user') || '{}');
+            savedUser.editorPermissions = currentUser.editorPermissions;
+            localStorage.setItem('khd_logged_in_user', JSON.stringify(savedUser));
+          }
+        }
+      } catch (err) {
+        console.log('Permission refresh failed:', err);
+      } finally {
+        setIsLoadingPerms(false);
+      }
+    };
+
+    loadFreshPermissions();
+  }, [loggedInUser.id]);
+
+  if (isLoadingPerms) {
+    return (
+      <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-500">পারমিশন লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
+  return (
+    <JSONEditor 
+      userRole={loggedInUser.role}
+      editorPermissions={freshPermissions}
+    />
+  );
+}
  // Load member data after login (WITHOUT photo matching)
 // Load all data after login
 useEffect(() => {
@@ -2374,11 +2422,10 @@ return (
       </PermissionGate>
     )}
 
-    {/* JSON Editor Tab */}
+ {/* JSON Editor Tab */}
 {activeTab === 'json-editor' && !isDataLoading && loggedInUser && (
-  <JSONEditor 
-    userRole={loggedInUser.role}
-    editorPermissions={loggedInUser.editorPermissions}
+  <JSONEditorWithFreshPermissions 
+    loggedInUser={loggedInUser}
   />
 )}
 
