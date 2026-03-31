@@ -38,9 +38,10 @@ interface LoginUser {
 
 interface PermissionManagerProps {
   currentUser: LoginUser;
+  onUserUpdate?: (updatedUser: LoginUser) => void;
 }
 
-const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) => {
+const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser, onUserUpdate }) => {
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [permissions, setPermissions] = useState<EditorPermissions>({});
@@ -188,6 +189,13 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser }) =>
 
       setUploadSuccess(true);
       setLoginData(finalJSON);
+// ✨ এই লাইনটা যোগ করুন:
+      if (onUserUpdate && selectedUserId === currentUser.id) {
+        const updatedCurrentUser = finalJSON.accountsMembers.find(u => u.id === currentUser.id);
+        if (updatedCurrentUser) {
+          onUserUpdate(updatedCurrentUser);
+        }
+      }
       
       alert(
         `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
