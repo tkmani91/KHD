@@ -106,65 +106,7 @@
       "email": "",
       "password": "01796069660",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
-      "permissions": {
-        "members": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        },
-        "contacts": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        },
-        "invitations": {
-          "view": true,
-          "edit": true,
-          "delete": false
-        },
-        "fund": {
-          "view": true,
-          "edit": true,
-          "delete": false
-        },
-        "notice": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        },
-        "live": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        },
-        "accounts": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        },
-        "jsonEditor": {
-          "view": true,
-          "edit": false,
-          "delete": false
-        }
-      },
-      "editorPermissions": {
-        "dynamicContent": false,
-        "membersData": false,
-        "contactsData": false,
-        "invitationsData": false,
-        "quizData": false,
-        "loginData": false,
-        "chatbotData": false,
-        "galleryImages": false,
-        "accountsPDFs": false,
-        "liveChannels": false,
-        "pdfFiles": false,
-        "pujaData": false,
-        "schedules": false,
-        "songs": false
-      }
+      "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png"
     },
     {
       "id": "15",
