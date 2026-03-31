@@ -11,7 +11,12 @@ type Section =
   | 'accounts' 
   | 'jsonEditor';
 
-export const usePermission = (user: LoginUser | null, section: Section) => {
+// Extended type for editorPermissions
+interface ExtendedLoginUser extends LoginUser {
+  editorPermissions?: { [key: string]: boolean };
+}
+
+export const usePermission = (user: ExtendedLoginUser | null, section: Section) => {
   return useMemo(() => {
     if (!user) {
       return {
@@ -34,8 +39,8 @@ export const usePermission = (user: LoginUser | null, section: Section) => {
   }, [
     user?.id, 
     user?.role, 
-    JSON.stringify(user?.permissions), // ✅ Deep check permissions
-    JSON.stringify(user?.editorPermissions), // ✅ Deep check editorPermissions
+    JSON.stringify(user?.permissions),
+    JSON.stringify((user as any)?.editorPermissions), // ✅ Type assertion
     section
   ]);
 };
