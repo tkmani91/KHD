@@ -20,15 +20,7 @@ interface JSONFile {
 // MAIN COMPONENT
 // ============================================
 
-interface JSONEditorProps {
-  userRole?: 'Member' | 'Admin' | 'Super Admin';
-  editorPermissions?: { [key: string]: boolean };
-}
-
-const JSONEditor: React.FC<JSONEditorProps> = ({ 
-  userRole = 'Super Admin', 
-  editorPermissions 
-}) => {
+const JSONEditor: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -66,6 +58,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
+    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -74,6 +67,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
+    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -83,6 +77,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
+    // 3. যোগাযোগ (🆕 নতুন)
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -92,6 +87,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
+    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -100,6 +96,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
+    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -107,6 +104,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
+    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -115,6 +113,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
+    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -123,6 +122,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
+    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -131,6 +131,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'gallery-special',
       hasImagePreview: true
     },
+    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -139,6 +140,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
+    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -146,6 +148,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
+    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -153,6 +156,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
+    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -161,6 +165,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'simple-array',
       hasImagePreview: true
     },
+    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -169,6 +174,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
+    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -179,24 +185,6 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
     }
   ];
 
-  // ============================================
-  // FILTER FILES BASED ON PERMISSIONS
-  // ============================================
-  
-  const getAccessibleFiles = () => {
-    if (userRole === 'Super Admin') {
-      return JSON_FILES;
-    }
-    
-    if (userRole === 'Admin' && editorPermissions) {
-      return JSON_FILES.filter(file => editorPermissions[file.id] === true);
-    }
-    
-    return [];
-  };
-
-  const accessibleFiles = getAccessibleFiles();
-  
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
   // ============================================
@@ -2093,34 +2081,24 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-     {/* File Selector */}
-<div className="bg-white rounded-xl p-4 shadow-lg">
-  <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-  
-  {accessibleFiles.length === 0 ? (
-    <div className="text-center py-8">
-      <p className="text-red-500 font-medium">❌ আপনার কোন section এ permission নেই</p>
-      <p className="text-gray-500 text-sm mt-2">Super Admin এর সাথে যোগাযোগ করুন</p>
-    </div>
-  ) : (
-    <>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-        {accessibleFiles.map(file => (
-          <button key={file.id} onClick={() => setSelectedFile(file.id)} 
-            className={btnClass(selectedFile === file.id)}>
-            {file.label}
-          </button>
-        ))}
-      </div>
-      {currentFile && (
-        <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-          📂 <code>{currentFile.path}</code>
+      {/* File Selector */}
+      <div className="bg-white rounded-xl p-4 shadow-lg">
+        <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+          {JSON_FILES.map(file => (
+            <button key={file.id} onClick={() => setSelectedFile(file.id)} 
+              className={btnClass(selectedFile === file.id)}>
+              {file.label}
+            </button>
+          ))}
         </div>
-      )}
-    </>
-  )}
-</div>
-      
+        {currentFile && (
+          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+            📂 <code>{currentFile.path}</code>
+          </div>
+        )}
+      </div>
+
       {/* Section Selector */}
       {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
