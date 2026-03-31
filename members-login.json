@@ -148,6 +148,22 @@
           "edit": false,
           "delete": false
         }
+      },
+      "editorPermissions": {
+        "dynamicContent": true,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false
       }
     },
     {
