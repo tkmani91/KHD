@@ -2084,15 +2084,26 @@ const getAvailableTabs = () => {
     return sectionPerms && sectionPerms.view;
   });
 
-  // JSON Editor for Super Admin or admins with permission
-  if (loggedInUser.role === 'Super Admin' || userPermissions.jsonEditor?.view) {
+ // Add JSON Editor for Super Admin or admins with editorPermissions
+if (loggedInUser.role === 'Super Admin') {
+  availableTabs.push({ 
+    id: 'json-editor', 
+    label: 'কন্ট্রোল প্যানেল', 
+    icon: Settings, 
+    section: 'jsonEditor' as const 
+  });
+} else if (loggedInUser.role === 'Admin' && loggedInUser.editorPermissions) {
+  // Check if Admin has any editor permission
+  const hasAnyPermission = Object.values(loggedInUser.editorPermissions).some(val => val === true);
+  if (hasAnyPermission) {
     availableTabs.push({ 
       id: 'json-editor', 
       label: 'কন্ট্রোল প্যানেল', 
       icon: Settings, 
-      section: 'jsonEditor'
+      section: 'jsonEditor' as const 
     });
   }
+}
 
   // Permission Manager for Super Admin only
   if (loggedInUser.role === 'Super Admin') {
