@@ -106,7 +106,23 @@
       "email": "",
       "password": "01796069660",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png"
+      "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
+      "editorPermissions": {
+        "dynamicContent": true,
+        "membersData": true,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false
+      }
     },
     {
       "id": "15",
