@@ -16,19 +16,19 @@ interface JSONFile {
   hasAudioPreview?: boolean;
 }
 
+// ============================================
+// MAIN COMPONENT
+// ============================================
 
-// JSONEditor এর interface এ যোগ করুন
 interface JSONEditorProps {
   userRole?: 'Member' | 'Admin' | 'Super Admin';
   editorPermissions?: { [key: string]: boolean };
 }
 
-
-// ============================================
-// MAIN COMPONENT
-// ============================================
-
-const JSONEditor: React.FC = () => {
+const JSONEditor: React.FC<JSONEditorProps> = ({ 
+  userRole = 'Super Admin', 
+  editorPermissions 
+}) => {
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -66,7 +66,6 @@ const JSONEditor: React.FC = () => {
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
-    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -75,7 +74,6 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
-    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -85,7 +83,6 @@ const JSONEditor: React.FC = () => {
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
-    // 3. যোগাযোগ (🆕 নতুন)
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -95,7 +92,6 @@ const JSONEditor: React.FC = () => {
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
-    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -104,7 +100,6 @@ const JSONEditor: React.FC = () => {
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
-    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -112,7 +107,6 @@ const JSONEditor: React.FC = () => {
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
-    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -121,7 +115,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
-    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -130,7 +123,6 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
-    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -139,7 +131,6 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
-    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -148,7 +139,6 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
-    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -156,7 +146,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
-    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -164,7 +153,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
-    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -173,7 +161,6 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
-    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -182,7 +169,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
-    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -193,23 +179,23 @@ const JSONEditor: React.FC = () => {
     }
   ];
 
-  // Filter files based on permissions
-const getAccessibleFiles = () => {
-  // Super Admin সব দেখতে পারবে
-  if (userRole === 'Super Admin') {
-    return JSON_FILES;
-  }
+  // ============================================
+  // FILTER FILES BASED ON PERMISSIONS
+  // ============================================
   
-  // Admin শুধু permitted files দেখবে
-  if (userRole === 'Admin' && editorPermissions) {
-    return JSON_FILES.filter(file => editorPermissions[file.id] === true);
-  }
-  
-  // অন্যরা কিছু দেখবে না
-  return [];
-};
+  const getAccessibleFiles = () => {
+    if (userRole === 'Super Admin') {
+      return JSON_FILES;
+    }
+    
+    if (userRole === 'Admin' && editorPermissions) {
+      return JSON_FILES.filter(file => editorPermissions[file.id] === true);
+    }
+    
+    return [];
+  };
 
-const accessibleFiles = getAccessibleFiles();
+  const accessibleFiles = getAccessibleFiles();
   
   const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
