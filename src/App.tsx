@@ -1837,10 +1837,10 @@ function AIChatbox() {
     </div>
   );
 }
-import { usePermission } from '../hooks/usePermission';
-import PermissionGate from '../components/PermissionGate';
-import PermissionManager from '../components/PermissionManager';
-import { DEFAULT_PERMISSIONS } from '../types/permissions';
+import { usePermission } from './hooks/usePermission';
+import PermissionGate from './components/PermissionGate';
+import PermissionManager from './components/PermissionManager';
+import { DEFAULT_PERMISSIONS } from './types/permissions';
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
