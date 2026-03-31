@@ -23,8 +23,6 @@ interface JSONEditorProps {
   editorPermissions?: { [key: string]: boolean };
 }
 
-const JSONEditor: React.FC<JSONEditorProps> = ({ userRole = 'Super Admin', editorPermissions }) => {
-
 
 // ============================================
 // MAIN COMPONENT
