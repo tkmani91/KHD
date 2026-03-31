@@ -112,7 +112,7 @@
         "membersData": false,
         "contactsData": false,
         "invitationsData": false,
-        "quizData": false,
+        "quizData": true,
         "loginData": false,
         "chatbotData": false,
         "galleryImages": false,
