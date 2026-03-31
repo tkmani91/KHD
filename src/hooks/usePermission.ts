@@ -18,11 +18,10 @@ export const usePermission = (user: LoginUser | null, section: Section) => {
         canView: false,
         canEdit: false,
         canDelete: false,
-        hasPermission: (action: PermissionAction) => false@
+        hasPermission: () => false
       };
     }
 
-    // Get user permissions (custom or default)
     const permissions = user.permissions || DEFAULT_PERMISSIONS[user.role];
     const sectionPerms = permissions[section];
 
