@@ -150,7 +150,7 @@
         }
       },
       "editorPermissions": {
-        "dynamicContent": true,
+        "dynamicContent": false,
         "membersData": false,
         "contactsData": false,
         "invitationsData": false,
