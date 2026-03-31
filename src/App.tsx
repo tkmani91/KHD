@@ -2739,6 +2739,9 @@ function App() {
   );
 }
 
+// ============================================
+// APP CONTENT COMPONENT
+// ============================================
 function AppContent() {
   return (
     <>
@@ -2769,6 +2772,21 @@ function AppContent() {
         <Footer />
       </div>
     </>
+  );
+}
+
+// ============================================
+// MAIN APP COMPONENT (এটি যোগ করুন)
+// ============================================
+function App() {
+  return (
+    <Router>
+      <MusicProvider>
+        <LiveTVProvider>
+          <AppContent />
+        </LiveTVProvider>
+      </MusicProvider>
+    </Router>
   );
 }
 
