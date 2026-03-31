@@ -108,7 +108,7 @@
       "role": "Admin",
       "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
       "editorPermissions": {
-        "dynamicContent": false,
+        "dynamicContent": true,
         "membersData": false,
         "contactsData": false,
         "invitationsData": false,
