@@ -18,7 +18,7 @@ export const usePermission = (user: LoginUser | null, section: Section) => {
         canView: false,
         canEdit: false,
         canDelete: false,
-        hasPermission: (action: PermissionAction) => false
+        hasPermission: (action: PermissionAction) => false@
       };
     }
 
