@@ -145,78 +145,112 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({ currentUser, onUs
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Direct GitHub Upload
   const handleDirectUpload = async () => {
-    const finalJSON = generateFinalJSON();
-    if (!finalJSON) {
-      alert('❌ কোন পরিবর্তন করা হয়নি!');
-      return;
+  const finalJSON = generateFinalJSON();
+  if (!finalJSON) {
+    alert('❌ কোন পরিবর্তন করা হয়নি!');
+    return;
+  }
+
+  const selectedUser = adminUsers.find(u => u.id === selectedUserId);
+  const enabledCount = Object.values(permissions).filter(Boolean).length;
+
+  const confirmUpload = window.confirm(
+    `⚠️ নিশ্চিত করুন:\n\n` +
+    `Admin: ${selectedUser?.name}\n` +
+    `Permission: ${enabledCount}টি section\n\n` +
+    `সরাসরি GitHub এ আপলোড হবে।\n` +
+    `এগিয়ে যেতে চান?`
+  );
+
+  if (!confirmUpload) return;
+
+  setIsUploading(true);
+  setError('');
+  setUploadSuccess(false);
+
+  try {
+    const response = await fetch('/api/github-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filePath: 'members-login.json',
+        content: JSON.stringify(finalJSON, null, 2),
+        commitMessage: `🔐 Update editor permissions for ${selectedUser?.name}`
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Upload failed');
     }
 
-    const selectedUser = adminUsers.find(u => u.id === selectedUserId);
-    const enabledCount = Object.values(permissions).filter(Boolean).length;
-
-    const confirmUpload = window.confirm(
-      `⚠️ নিশ্চিত করুন:\n\n` +
-      `Admin: ${selectedUser?.name}\n` +
-      `Permission: ${enabledCount}টি section\n\n` +
-      `সরাসরি GitHub এ আপলোড হবে।\n` +
-      `এগিয়ে যেতে চান?`
-    );
-
-    if (!confirmUpload) return;
-
-    setIsUploading(true);
-    setError('');
-    setUploadSuccess(false);
-
-    try {
-      const response = await fetch('/api/github-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: 'members-login.json',
-          content: JSON.stringify(finalJSON, null, 2),
-          commitMessage: `🔐 Update editor permissions for ${selectedUser?.name}`
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+    setUploadSuccess(true);
+    setLoginData(finalJSON);
+    
+    // ✅ FIX 1: Update parent if callback exists
+    if (onUserUpdate && selectedUserId === currentUser.id) {
+      const updatedCurrentUser = finalJSON.accountsMembers.find(u => u.id === currentUser.id);
+      if (updatedCurrentUser) {
+        onUserUpdate(updatedCurrentUser);
       }
-
-      setUploadSuccess(true);
-      setLoginData(finalJSON);
-// ✨ এই লাইনটা যোগ করুন:
-      if (onUserUpdate && selectedUserId === currentUser.id) {
-        const updatedCurrentUser = finalJSON.accountsMembers.find(u => u.id === currentUser.id);
-        if (updatedCurrentUser) {
-          onUserUpdate(updatedCurrentUser);
+    }
+    
+    // ✅ FIX 2: Force refresh GitHub data এবং localStorage update
+    try {
+      const freshResponse = await fetch(GITHUB_LOGIN_URL, { 
+        cache: 'no-cache',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      
+      if (freshResponse.ok) {
+        const freshData = await freshResponse.json();
+        setLoginData(freshData);
+        
+        // ✅ FIX 3: যদি current user এর permission update হয়ে থাকে
+        if (selectedUserId === currentUser.id) {
+          const updatedUser = freshData.accountsMembers.find((u: any) => u.id === currentUser.id);
+          if (updatedUser) {
+            // localStorage update
+            localStorage.setItem('khd_logged_in_user', JSON.stringify(updatedUser));
+            
+            // Parent callback
+            if (onUserUpdate) {
+              onUserUpdate(updatedUser);
+            }
+          }
         }
       }
-      
-      alert(
-        `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
-        `👤 ${selectedUser?.name}\n` +
-        `📁 ${enabledCount}টি section এ permission দেওয়া হয়েছে\n\n` +
-        `এই Admin এখন কন্ট্রোল প্যানেলে ঢুকে\n` +
-        `শুধু permitted sections edit করতে পারবে। 🎉`
-      );
-
-      setTimeout(() => setUploadSuccess(false), 5000);
-
-    } catch (err) {
-      console.error('Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
-      alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nJSON কপি করে manual আপলোড করুন।`);
-    } finally {
-      setIsUploading(false);
+    } catch (fetchErr) {
+      console.error('Fresh data fetch failed:', fetchErr);
     }
-  };
+    
+    alert(
+      `✅ সফলভাবে আপলোড হয়েছে!\n\n` +
+      `👤 ${selectedUser?.name}\n` +
+      `📁 ${enabledCount}টি section এ permission দেওয়া হয়েছে\n\n` +
+      (selectedUserId === currentUser.id 
+        ? `⚠️ পেজ রিলোড হচ্ছে নতুন permission apply করতে...` 
+        : `এই Admin এখন কন্ট্রোল প্যানেলে ঢুকে\nশুধু permitted sections edit করতে পারবে। 🎉`)
+    );
 
+    // ✅ FIX 4: যদি নিজের permission update করা হয়, তাহলে page reload
+    if (selectedUserId === currentUser.id) {
+      setTimeout(() => window.location.reload(), 2000);
+    } else {
+      setTimeout(() => setUploadSuccess(false), 5000);
+    }
+
+  } catch (err) {
+    console.error('Upload error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+    alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nJSON কপি করে manual আপলোড করুন।`);
+  } finally {
+    setIsUploading(false);
+  }
+};
   // Reset to default
   const handleReset = () => {
     if (window.confirm('⚠️ সব permission বাতিল করবেন?')) {
