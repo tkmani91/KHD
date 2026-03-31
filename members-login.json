@@ -117,6 +117,7 @@
         "accounts": { "view": true, "edit": false, "delete": false },
         "jsonEditor": { "view": false, "edit": false, "delete": false }
     },
+    }
     {
       "id": "15",
       "name": "পাপ্পু কুমার বিশ্বাস",
