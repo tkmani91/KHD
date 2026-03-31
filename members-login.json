@@ -107,17 +107,7 @@
       "password": "01796069660",
       "role": "Admin",
       "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png"
-      "permissions": {
-        "members": { "view": true, "edit": false, "delete": false },
-        "contacts": { "view": true, "edit": true, "delete": false },
-        "invitations": { "view": true, "edit": true, "delete": false },
-        "fund": { "view": true, "edit": false, "delete": false },
-        "notice": { "view": true, "edit": false, "delete": false },
-        "live": { "view": false, "edit": false, "delete": false },
-        "accounts": { "view": true, "edit": false, "delete": false },
-        "jsonEditor": { "view": false, "edit": false, "delete": false }
     },
-    }
     {
       "id": "15",
       "name": "পাপ্পু কুমার বিশ্বাস",
