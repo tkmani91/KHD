@@ -6,7 +6,6 @@ import FundCollection from './components/FundCollection';
 import MembersList from './components/MembersList';
 import ContactsList from './components/ContactsList';
 import InvitationListComponent from './components/InvitationList';
-import { usePermission } from './hooks/usePermission';
 import PermissionGate from './components/PermissionGate';
 import PermissionManager from './components/PermissionManager';
 import { DEFAULT_PERMISSIONS } from './types/permissions';
@@ -160,7 +159,16 @@ interface LoginUser {
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
   photo?: string;
-  permissions?: UserPermissions;
+  permissions?: {
+    members: { view: boolean; edit: boolean; delete: boolean };
+    contacts: { view: boolean; edit: boolean; delete: boolean };
+    invitations: { view: boolean; edit: boolean; delete: boolean };
+    fund: { view: boolean; edit: boolean; delete: boolean };
+    notice: { view: boolean; edit: boolean; delete: boolean };
+    live: { view: boolean; edit: boolean; delete: boolean };
+    accounts: { view: boolean; edit: boolean; delete: boolean };
+    jsonEditor: { view: boolean; edit: boolean; delete: boolean };
+  };
 }
 
 // Data URLs
@@ -2046,53 +2054,51 @@ useEffect(() => {
     setUserPhoto('');
     setActiveTab('members');
   };
-
- const getAvailableTabs = () => {
+const getAvailableTabs = () => {
   if (!loggedInUser) return [];
 
-  const allTabs = [
-    { id: 'members', label: 'সদস্য তালিকা', icon: Users, section: 'members' as const },
-    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign, section: 'fund' as const },
-    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone, section: 'contacts' as const },
-    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText, section: 'invitations' as const },
-    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell, section: 'notice' as const },
-    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv, section: 'live' as const },
-    { id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText, section: 'accounts' as const },
+  // Type explicitly define করুন
+  type SectionType = 'members' | 'contacts' | 'invitations' | 'fund' | 'notice' | 'live' | 'accounts' | 'jsonEditor';
+  
+  const allTabs: Array<{
+    id: string;
+    label: string;
+    icon: any;
+    section: SectionType;
+  }> = [
+    { id: 'members', label: 'সদস্য তালিকা', icon: Users, section: 'members' },
+    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign, section: 'fund' },
+    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone, section: 'contacts' },
+    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText, section: 'invitations' },
+    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell, section: 'notice' },
+    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv, section: 'live' },
+    { id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText, section: 'accounts' },
   ];
 
-  // Get user permissions
   const userPermissions = loggedInUser.permissions || DEFAULT_PERMISSIONS[loggedInUser.role];
-
-  // Filter tabs based on view permission
+  
   const availableTabs = allTabs.filter(tab => {
     const sectionPerms = userPermissions[tab.section];
     return sectionPerms && sectionPerms.view;
   });
 
-  // Add JSON Editor for Super Admin or admins with permission
-  if (loggedInUser.role === 'Super Admin') {
+  // JSON Editor for Super Admin or admins with permission
+  if (loggedInUser.role === 'Super Admin' || userPermissions.jsonEditor?.view) {
     availableTabs.push({ 
       id: 'json-editor', 
       label: 'কন্ট্রোল প্যানেল', 
       icon: Settings, 
-      section: 'jsonEditor' as const 
-    });
-  } else if (userPermissions.jsonEditor?.view) {
-    availableTabs.push({ 
-      id: 'json-editor', 
-      label: 'কন্ট্রোল প্যানেল', 
-      icon: Settings, 
-      section: 'jsonEditor' as const 
+      section: 'jsonEditor'
     });
   }
 
-  // Add Permission Manager for Super Admin only
+  // Permission Manager for Super Admin only
   if (loggedInUser.role === 'Super Admin') {
     availableTabs.push({ 
       id: 'permissions', 
       label: 'পারমিশন সেটিংস', 
       icon: Shield, 
-      section: 'jsonEditor' as const 
+      section: 'jsonEditor'
     });
   }
 
