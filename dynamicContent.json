@@ -45,17 +45,17 @@
       "💳 নগদ: 01612118313",
       "📞 পেমেন্টের পর SMS করুন: 01733118313"
     ],
-    "totalDue": 6000,
+    "totalDue": 0,
     "totalPaid": 0,
-    "totalRemaining": 6000,
+    "totalRemaining": 0,
     "lastUpdated": "২০২৬-০৯-২০",
     "members": [
       {
         "id": "3",
         "name": "ড. শ্যামল কুমার পাল",
-        "dueAmount": 6000,
+        "dueAmount": 0,
         "paidAmount": 0,
-        "remainingAmount": 6000,
+        "remainingAmount": 0,
         "lastPaymentDate": null,
         "paymentMethod": null,
         "status": "unpaid",
