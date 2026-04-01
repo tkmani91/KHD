@@ -14,16 +14,13 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  ChevronDown,
   Bell,
   Send,
   Settings,
-  Check,
   LogOut,
   DollarSign,
   ChevronRight,
-  Calendar,
-  Music
+  Calendar
 } from 'lucide-react';
 import JSONEditor from './JSONEditor';
 import FundCollection from './FundCollection';
