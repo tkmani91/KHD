@@ -24,6 +24,9 @@ import {
   SkipForward,
   Volume2, 
   ChevronDown,
+  Bell,
+  Eye,
+  EyeOff,
   Check
 } from 'lucide-react';
 import { OptimizedImage } from './components/OptimizedImage';
