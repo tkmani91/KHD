@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { InstallPrompt } from './components/InstallPrompt';
 import LoginPage, { AIChatbox } from './components/LoginPage';
@@ -1828,7 +1827,6 @@ function AppContent() {
   return (
     <>
       <InstallPrompt />
-      <SpeedInsights />
       <div className="min-h-screen sacred-pattern">
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
