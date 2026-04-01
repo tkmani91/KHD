@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { InstallPrompt } from './components/InstallPrompt';
 import LoginPage, { AIChatbox } from './components/LoginPage';
 import { 
