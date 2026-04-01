@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { InstallPrompt } from './components/InstallPrompt';
 import LoginPage, { AIChatbox } from './components/LoginPage';
 import { 
@@ -1819,6 +1820,7 @@ function App() {
       <Router>
         <AppContent />
       </Router>
+      <SpeedInsights />
     </MediaProvider>
   );
 }
