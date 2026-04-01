@@ -136,9 +136,11 @@ const deities: Deity[] = [
 
 const notices = [
   '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
+  '🎉 দুর্গাপূজা ২০২৬ এর সময়সূচী ঘোষণা',
   '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
   '🎉 মেম্বার তথ্য এবং  বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
   '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
+  
 ];
 
 // ==================== GLOBAL MEDIA CONTEXT ====================
