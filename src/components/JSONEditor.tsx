@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin, Crown } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -229,20 +229,7 @@ const JSONEditor: React.FC = () => {
     { id: 'other', label: '🙏 অন্যান্য', value: 'অন্যান্য' }
   ];
 
-  // 🆕 POSITION OPTIONS
-  const POSITION_OPTIONS = [
-    'সভাপতি',
-    'সহ-সভাপতি',
-    'সাধারণ সম্পাদক',
-    'যুগ্ম সাধারণ সম্পাদক',
-    'সাংগঠনিক সম্পাদক',
-    'প্রচার সম্পাদক',
-    'সাংস্কৃতিক সম্পাদক',
-    'অর্থ সম্পাদক / কোষাধ্যক্ষ',
-    'উপদেষ্টা',
-    'সদস্য'
-  ];
-
+ 
   // 🆕 MEETING CATEGORIES
   const MEETING_CATEGORIES = [
     'সাধারণ সভা',
@@ -861,17 +848,6 @@ const JSONEditor: React.FC = () => {
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  // 🆕 Handle member selection for organizational profile
-  const handleMemberSelect = (memberId: string) => {
-    const member = getMemberById(memberId);
-    setFormData(prev => ({
-      ...prev,
-      memberId: memberId,
-      // Position can be overridden, so don't auto-fill if already set
-      position: prev.position || member?.designation || ''
-    }));
-  };
-
   const handleFundSettingsChange = (key: string, value: any) => {
     setFundSettings((prev: any) => ({ ...prev, [key]: value }));
   };
@@ -1367,14 +1343,11 @@ const JSONEditor: React.FC = () => {
     source: 'উৎস'
   };
 
- // ============================================
-// 🆕 RENDER ORGANIZATIONAL PROFILE EDITOR (নতুন)
+// ============================================
+// 🆕 RENDER ORGANIZATIONAL PROFILE EDITOR
 // ============================================
 
 const renderOrganizationalEditor = () => {
-  // Get current committee data
-  const currentCommittee = jsonData[selectedItemIndex] || {};
-
   return (
     <div className="space-y-6">
       {/* Committee Tenure & Status */}
@@ -1458,6 +1431,62 @@ const renderOrganizationalEditor = () => {
   );
 };
 
+// Helper function for position selector
+const renderPositionSelector = (positionKey: string, positionLabel: string) => {
+  const positionData = formData[positionKey] || {};
+  const selectedMember = getMemberById(positionData.memberId);
+
+  return (
+    <div className="space-y-3">
+      {/* Member Dropdown */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">👤 সদস্য নির্বাচন করুন</label>
+        {membersLoading ? (
+          <div className="flex items-center gap-2 text-gray-500">
+            <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            সদস্য তালিকা লোড হচ্ছে...
+          </div>
+        ) : (
+          <select 
+            value={positionData.memberId || ''} 
+            onChange={(e) => {
+              handleFieldChange(positionKey, {
+                memberId: e.target.value,
+                position: positionLabel
+              });
+            }}
+            className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm bg-white"
+          >
+            <option value="">-- সদস্য নির্বাচন করুন --</option>
+            {membersDataList.map(member => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Photo Preview */}
+      {selectedMember && (
+        <div className="flex items-center gap-4 p-3 bg-white rounded-lg border">
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-purple-300 shadow">
+            <img 
+              src={selectedMember.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+              alt={selectedMember.name}
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+            />
+          </div>
+          <div>
+            <p className="font-bold text-gray-800">{selectedMember.name}</p>
+            <p className="text-sm text-purple-600 font-medium">{positionLabel}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 // Helper function for position selector
 const renderPositionSelector = (positionKey: string, positionLabel: string) => {
   const positionData = formData[positionKey] || {};
