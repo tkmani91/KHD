@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Calendar, Award, Printer, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Users, Printer } from 'lucide-react';
 
 interface Leader {
   id: number;
@@ -19,6 +19,7 @@ interface ProfileData {
 const OrganizationalProfile: React.FC = () => {
   const [data, setData] = useState<ProfileData>({ leaders: [] });
   const [loading, setLoading] = useState(true);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/data/organizationalProfile.json')
@@ -34,40 +35,165 @@ const OrganizationalProfile: React.FC = () => {
   }, []);
 
   const handlePrint = () => {
-    window.print();
-  };
+    const printContent = printRef.current;
+    if (!printContent) return;
 
-  // Group leaders by tenure
-  const groupedLeaders = data.leaders.reduce((acc, leader) => {
-    if (!acc[leader.tenure]) {
-      acc[leader.tenure] = [];
-    }
-    acc[leader.tenure].push(leader);
-    return acc;
-  }, {} as Record<string, Leader[]>);
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const title = 'সাংগঠনিক প্রোফাইল - নেতৃত্বের তালিকা';
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="bn">
+      <head>
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: 'Noto Sans Bengali', 'Kalpurush', sans-serif;
+            padding: 20px;
+            background: white;
+          }
+          .print-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px double #333;
+          }
+          .print-header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+          }
+          .print-header p {
+            font-size: 14px;
+            color: #666;
+          }
+          .print-date {
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+          }
+          th, td {
+            border: 1px solid #333;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 13px;
+          }
+          th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #333;
+          }
+          tr:nth-child(even) {
+            background-color: #fafafa;
+          }
+          .photo-cell img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+          }
+          .photo-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin: 0 auto;
+          }
+          .current-badge {
+            background: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+          }
+          .completed-badge {
+            color: #888;
+            font-size: 11px;
+          }
+          .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+          }
+          @media print {
+            body { padding: 10px; }
+            .print-header h1 { font-size: 20px; }
+            th, td { padding: 8px 5px; font-size: 11px; }
+            .photo-cell img, .photo-placeholder { width: 35px; height: 35px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="print-header">
+          <h1>🏛️ সাংগঠনিক প্রোফাইল</h1>
+          <p>নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
+        </div>
+        <div class="print-date">
+          প্রিন্ট তারিখ: ${new Date().toLocaleDateString('bn-BD')}
+        </div>
+        ${printContent.innerHTML}
+        <div class="footer">
+          © ${new Date().getFullYear()} - কলম হিন্দু ধর্মসভা
+        </div>
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    
+    // Wait for images to load before printing
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-t-lg print:bg-white print:text-black">
-        <div className="flex justify-between items-center">
+    <div className="max-w-6xl mx-auto p-4 md:p-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-t-lg">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Users className="w-8 h-8" />
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <Users className="w-7 h-7 md:w-8 md:h-8" />
               সাংগঠনিক প্রোফাইল
             </h1>
-            <p className="mt-2 opacity-90">নেতৃত্বের ধারাবাহিকতা ও ইতিহাস</p>
+            <p className="mt-2 opacity-90 text-sm md:text-base">নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
           </div>
           <button
             onClick={handlePrint}
-            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2 print:hidden"
+            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2 text-sm md:text-base"
           >
             <Printer className="w-5 h-5" />
             প্রিন্ট করুন
@@ -75,150 +201,110 @@ const OrganizationalProfile: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-b-lg shadow-lg p-6">
-        <div className="mb-8 print:mb-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            নেতৃত্বের কালক্রম
-          </h2>
-          <p className="text-gray-600">
-            প্রতিষ্ঠানের সভাপতি ও সম্পাদকদের পূর্ণাঙ্গ তালিকা
-          </p>
-        </div>
-
-        {/* Timeline View */}
-        <div className="relative">
-          {Object.entries(groupedLeaders).sort((a, b) => b[0].localeCompare(a[0])).map(([tenure, leaders], index) => {
-            const isCurrent = leaders.some(l => l.current);
-            
-            return (
-              <div key={tenure} className="mb-8 print:mb-6 print:break-inside-avoid">
-                {/* Tenure Header */}
-                <div className={`flex items-center gap-3 mb-4 ${isCurrent ? 'animate-pulse' : ''}`}>
-                  <div className={`w-3 h-3 rounded-full ${isCurrent ? 'bg-green-500' : 'bg-purple-400'}`}></div>
-                  <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    {tenure}
-                    {isCurrent && (
-                      <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold">
-                        বর্তমান
-                      </span>
-                    )}
-                  </h3>
-                </div>
-
-                {/* Leaders Cards */}
-                <div className="ml-6 border-l-2 border-purple-200 pl-6 space-y-4 print:border-gray-300">
-                  {leaders.map((leader) => (
-                    <div
-                      key={leader.id}
-                      className={`bg-gradient-to-r ${
-                        isCurrent
-                          ? 'from-green-50 to-emerald-50 border-green-200'
-                          : 'from-purple-50 to-indigo-50 border-purple-200'
-                      } border-2 rounded-lg p-5 print:border print:border-gray-300 print:bg-white`}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Photo */}
-                        {leader.photo && (
-                          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md flex-shrink-0">
-                            <img
-                              src={leader.photo}
-                              alt={leader.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64?text=👤';
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {/* Details */}
-                        <div className="flex-1">
-                          <h4 className="text-lg font-bold text-gray-800 mb-1">
-                            {leader.name}
-                          </h4>
-                          <div className="flex items-center gap-2 mb-2">
-                            <Award className="w-4 h-4 text-purple-600" />
-                            <span className="text-purple-700 font-semibold">
-                              {leader.position}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              {leader.startDate} থেকে {leader.endDate}
-                            </span>
-                          </div>
+      {/* Table Section */}
+      <div className="bg-white rounded-b-lg shadow-lg p-4 md:p-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          📋 সংক্ষিপ্ত তালিকা
+        </h3>
+        
+        {/* Printable Table */}
+        <div ref={printRef} className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300 min-w-[600px]">
+            <thead>
+              <tr className="bg-gradient-to-r from-purple-100 to-indigo-100">
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-16">ক্রমিক</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-20">ছবি</th>
+                <th className="border border-gray-300 px-3 py-3 text-left font-semibold">নাম</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold">পদবি</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold">মেয়াদকাল</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-24">অবস্থা</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.leaders.length > 0 ? (
+                data.leaders.map((leader, index) => (
+                  <tr key={leader.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="border border-gray-300 px-3 py-3 text-center font-medium">
+                      {index + 1}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-3 text-center photo-cell">
+                      {leader.photo ? (
+                        <img
+                          src={leader.photo}
+                          alt={leader.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 mx-auto"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'photo-placeholder';
+                            placeholder.textContent = '👤';
+                            (e.target as HTMLImageElement).parentNode?.appendChild(placeholder);
+                          }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mx-auto border-2 border-purple-200">
+                          <span className="text-xl">👤</span>
                         </div>
-
-                        {/* Arrow for succession */}
-                        {index < Object.entries(groupedLeaders).length - 1 && (
-                          <ChevronRight className="w-6 h-6 text-purple-300 print:hidden" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Summary Table */}
-        <div className="mt-12 print:mt-8 print:break-before-page">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">সংক্ষিপ্ত তালিকা</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-purple-100 print:bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">ক্রমিক</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">নাম</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">পদবি</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">মেয়াদকাল</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left font-semibold">অবস্থা</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.leaders.map((leader, index) => (
-                  <tr key={leader.id} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-3">{index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-3 font-medium">{leader.name}</td>
-                    <td className="border border-gray-300 px-4 py-3">{leader.position}</td>
-                    <td className="border border-gray-300 px-4 py-3">{leader.tenure}</td>
-                    <td className="border border-gray-300 px-4 py-3">
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-3 font-medium text-gray-800">
+                      {leader.name}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-3 text-center">
+                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                        {leader.position}
+                      </span>
+                    </td>
+                    <td className="border border-gray-300 px-3 py-3 text-center text-gray-600">
+                      {leader.tenure}
+                    </td>
+                    <td className="border border-gray-300 px-3 py-3 text-center">
                       {leader.current ? (
-                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold current-badge">
                           বর্তমান
                         </span>
                       ) : (
-                        <span className="text-gray-500 text-sm">সমাপ্ত</span>
+                        <span className="text-gray-400 text-sm completed-badge">সমাপ্ত</span>
                       )}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="border border-gray-300 px-3 py-12 text-center text-gray-500">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p>কোনো তথ্য পাওয়া যায়নি</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          body {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:break-before-page {
-            break-before: page;
-          }
-          .print\\:break-inside-avoid {
-            break-inside: avoid;
-          }
-        }
-      `}</style>
+        {/* Stats */}
+        {data.leaders.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-4 justify-center">
+            <div className="bg-purple-50 px-4 py-2 rounded-lg text-center">
+              <span className="text-2xl font-bold text-purple-600">
+                {data.leaders.length}
+              </span>
+              <p className="text-sm text-gray-600">মোট সদস্য</p>
+            </div>
+            <div className="bg-green-50 px-4 py-2 rounded-lg text-center">
+              <span className="text-2xl font-bold text-green-600">
+                {data.leaders.filter(l => l.current).length}
+              </span>
+              <p className="text-sm text-gray-600">বর্তমান</p>
+            </div>
+            <div className="bg-gray-50 px-4 py-2 rounded-lg text-center">
+              <span className="text-2xl font-bold text-gray-600">
+                {data.leaders.filter(l => !l.current).length}
+              </span>
+              <p className="text-sm text-gray-600">পূর্বতন</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
