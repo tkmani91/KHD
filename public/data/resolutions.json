@@ -5,14 +5,14 @@
       "title": "বার্ষিক সাধারণ সভার সিদ্ধান্ত ২০২৪",
       "date": "২০২৪-০১-১৫",
       "category": "সাধারণ সভা",
-      "pdfUrl": "/pdfs/meeting-2024-01.pdf"
+      "pdfUrl": "https://example.com/pdfs/meeting-2024-01.pdf"
     },
     {
       "id": 2,
       "title": "পূজা কমিটি গঠন সংক্রান্ত সিদ্ধান্ত",
       "date": "২০২৪-০৩-২০",
       "category": "কমিটি গঠন",
-      "pdfUrl": "/pdfs/committee-formation.pdf"
+      "pdfUrl": "https://example.com/pdfs/committee-formation.pdf"
     }
   ],
   "fundAllocations": [
@@ -22,7 +22,7 @@
       "amount": "৫০,০০০ টাকা",
       "date": "২০২৪-০৮-০১",
       "source": "জেলা প্রশাসন",
-      "pdfUrl": "/pdfs/fund-allocation-2024.pdf"
+      "pdfUrl": "https://example.com/pdfs/fund-2024.pdf"
     },
     {
       "id": 2,
@@ -30,7 +30,7 @@
       "amount": "১৫,০০০ টাকা",
       "date": "২০২৪-০১-১০",
       "source": "উপজেলা পরিষদ",
-      "pdfUrl": "/pdfs/saraswati-fund.pdf"
+      "pdfUrl": "https://example.com/pdfs/saraswati-fund.pdf"
     }
   ]
 }
