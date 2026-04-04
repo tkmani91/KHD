@@ -3,7 +3,7 @@ import { Users, Printer } from 'lucide-react';
 
 interface Leader {
   id: number;
-  memberId: string;      // 🆕 members-data থেকে reference
+  memberId: string;
   position: string;
   tenure: string;
   current?: boolean;
@@ -16,26 +16,18 @@ interface MemberData {
   photo: string;
 }
 
-interface ProfileData {
-  leaders: Leader[];
-}
-
-// 🆕 Merged Leader type (for display)
 interface MergedLeader extends Leader {
   name: string;
   photo: string;
 }
 
 const OrganizationalProfile: React.FC = () => {
-  const [data, setData] = useState<ProfileData>({ leaders: [] });
-  const [membersData, setMembersData] = useState<MemberData[]>([]);
   const [mergedLeaders, setMergedLeaders] = useState<MergedLeader[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 🆕 Fetch both JSON files
         const [profileRes, membersRes] = await Promise.all([
           fetch('/data/organizationalProfile.json'),
           fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json')
@@ -44,10 +36,6 @@ const OrganizationalProfile: React.FC = () => {
         const profileData = await profileRes.json();
         const membersJson = await membersRes.json();
 
-        setData(profileData);
-        setMembersData(membersJson.members || []);
-
-        // 🆕 Merge data
         const merged = (profileData.leaders || []).map((leader: Leader) => {
           const member = (membersJson.members || []).find(
             (m: MemberData) => m.id === leader.memberId
