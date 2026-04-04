@@ -27,6 +27,8 @@ import FundCollection from './FundCollection';
 import MembersList from './MembersList';
 import ContactsList from './ContactsList';
 import InvitationListComponent from './InvitationList';
+import Resolutions from './Resolutions';
+import OrganizationalProfile from './OrganizationalProfile';
 
 // ==================== TYPES ====================
 
@@ -655,9 +657,11 @@ function LoginPage() {
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+      { id: 'org-profile', label: 'সাংগঠনিক প্রোফাইল', icon: Users },
       { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
       { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
       { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
+      { id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText },
       { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
       { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
     ];
@@ -873,6 +877,12 @@ function LoginPage() {
         />
       )}
 
+      {/* Resolutions Tab - নতুন */}
+      {activeTab === 'resolutions' && !isDataLoading && <Resolutions />}
+
+      {/* Organizational Profile Tab - নতুন */}
+      {activeTab === 'org-profile' && !isDataLoading && <OrganizationalProfile />}
+      
       {/* Notice Tab */}
       {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
 
