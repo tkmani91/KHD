@@ -30,7 +30,7 @@ import InvitationListComponent from './InvitationList';
 import Resolutions from './Resolutions';
 import OrganizationalProfile from './OrganizationalProfile';
 
-// ==================== TYPES ====================
+//==================== TYPES ====================
 
 interface LoginUser {
   id: string;
