@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin, Building } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS 
@@ -882,9 +882,6 @@ const JSONEditor: React.FC = () => {
     ));
   };
 
-  const handlePaymentStatsChange = (key: string, value: any) => {
-    setPaymentStats((prev: any) => ({ ...prev, [key]: value }));
-  };
 
   const recalculateStats = () => {
     const totalMembers = fundMembers.length;
@@ -1513,33 +1510,38 @@ const JSONEditor: React.FC = () => {
       );
     }
 
-    // Area dropdown for invitations
-    if (key === 'area' && currentFile?.type === 'invitations-special') {
-      const areas = getInvitationAreas();
-      return (
-        <div key={key} className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-          <div className="flex gap-2">
-            <select value={String(formData[key] || '')} 
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-              <option value="">এলাকা নির্বাচন করুন</option>
-              {areas.map(area => (
-                <option key={area} value={area}>{area}</option>
-              ))}
-            </select>
-            <input 
-              type="text" 
-              placeholder="বা নতুন এলাকা লিখুন"
-              value={areas.includes(formData[key]) ? '' : formData[key] || ''}
-              onChange
-                            onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
-            />
-          </div>
-        </div>
-      );
-    }
+    // Area dropdown for invitations - Line ~1530-1550
+if (key === 'area' && currentFile?.type === 'invitations-special') {
+  const areas = getInvitationAreas();
+  return (
+    <div key={key} className="form-field">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <div className="flex gap-2">
+        <select 
+          value={String(formData[key] || '')} 
+          onChange={(e) => handleFieldChange(key, e.target.value)}
+          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+        >
+          <option value="">এলাকা নির্বাচন করুন</option>
+          {areas.map(area => (
+            <option key={area} value={area}>{area}</option>
+          ))}
+        </select>
+        <input 
+          type="text" 
+          placeholder="বা নতুন এলাকা লিখুন"
+          value={areas.includes(formData[key]) ? '' : formData[key] || ''}
+          onChange={(e) => {
+            if (e.target.value) {
+              handleFieldChange(key, e.target.value);
+            }
+          }}
+          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
+        />
+      </div>
+    </div>
+  );
+}
 
     // 🆕 Category dropdown for meeting decisions
     if (key === 'category' && selectedSection === 'meetingDecisions') {
