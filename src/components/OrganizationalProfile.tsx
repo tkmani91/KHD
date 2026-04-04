@@ -3,32 +3,71 @@ import { Users, Printer } from 'lucide-react';
 
 interface Leader {
   id: number;
-  name: string;
+  memberId: string;      // 🆕 members-data থেকে reference
   position: string;
   tenure: string;
-  photo?: string;
   current?: boolean;
+}
+
+interface MemberData {
+  id: string;
+  name: string;
+  designation: string;
+  photo: string;
 }
 
 interface ProfileData {
   leaders: Leader[];
 }
 
+// 🆕 Merged Leader type (for display)
+interface MergedLeader extends Leader {
+  name: string;
+  photo: string;
+}
+
 const OrganizationalProfile: React.FC = () => {
   const [data, setData] = useState<ProfileData>({ leaders: [] });
+  const [membersData, setMembersData] = useState<MemberData[]>([]);
+  const [mergedLeaders, setMergedLeaders] = useState<MergedLeader[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/data/organizationalProfile.json')
-      .then(res => res.json())
-      .then(jsonData => {
-        setData(jsonData);
+    const fetchData = async () => {
+      try {
+        // 🆕 Fetch both JSON files
+        const [profileRes, membersRes] = await Promise.all([
+          fetch('/data/organizationalProfile.json'),
+          fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json')
+        ]);
+
+        const profileData = await profileRes.json();
+        const membersJson = await membersRes.json();
+
+        setData(profileData);
+        setMembersData(membersJson.members || []);
+
+        // 🆕 Merge data
+        const merged = (profileData.leaders || []).map((leader: Leader) => {
+          const member = (membersJson.members || []).find(
+            (m: MemberData) => m.id === leader.memberId
+          );
+          return {
+            ...leader,
+            name: member?.name || 'নাম পাওয়া যায়নি',
+            photo: member?.photo || ''
+          };
+        });
+
+        setMergedLeaders(merged);
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error loading organizational profile:', error);
+      } catch (error) {
+        console.error('Error loading data:', error);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handlePrint = () => {
@@ -227,7 +266,7 @@ const OrganizationalProfile: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {data.leaders.map((leader, index) => (
+              {mergedLeaders.map((leader, index) => (
                 <tr key={leader.id}>
                   <td className="serial">{index + 1}</td>
                   <td className="photo-cell">
@@ -259,7 +298,7 @@ const OrganizationalProfile: React.FC = () => {
         </div>
 
         {/* NO DATA */}
-        {data.leaders.length === 0 && (
+        {mergedLeaders.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-lg no-print">
             <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 text-lg">কোনো তথ্য পাওয়া যায়নি</p>
@@ -267,7 +306,7 @@ const OrganizationalProfile: React.FC = () => {
         )}
 
         {/* LEADERS LIST */}
-        {data.leaders.length > 0 && (
+        {mergedLeaders.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
             <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-sm">
               <div className="col-span-1 text-center">ক্রম</div>
@@ -279,7 +318,7 @@ const OrganizationalProfile: React.FC = () => {
             </div>
 
             <div className="divide-y divide-gray-100">
-              {data.leaders.map((leader, index) => (
+              {mergedLeaders.map((leader, index) => (
                 <div key={leader.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center">
                   {/* Mobile View */}
                   <div className="md:hidden flex items-center gap-3">
