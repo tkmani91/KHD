@@ -2669,58 +2669,60 @@ const generatedJSON = (() => {
         </div>
 
         {/* Right: JSON Code */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              JSON কোড
-            </h3>
-            <div className="flex gap-2">
-              {/* Copy Button */}
-              <button onClick={handleCopyJSON} 
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? '✅ কপি' : '📋 কপি'}
-              </button>
-              
-              {/* Upload Button */}
-              <button 
-                onClick={handleDirectUpload} 
-                disabled={isUploading || loading}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  uploadSuccess 
-                    ? 'bg-green-600 text-white' 
-                    : isUploading 
-                      ? 'bg-gray-400 text-white cursor-not-allowed' 
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                }`}>
-                {isUploading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    আপলোড হচ্ছে...
-                  </>
-                ) : uploadSuccess ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    ✅ আপলোড হয়েছে!
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    🚀 সরাসরি আপলোড
-                  </>
-                )}
-              </button>
-            </div>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
+          <h3 className="text-white font-bold flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            JSON কোড
+          </h3>
+          <div className="flex gap-2">
+            {/* Copy Button */}
+            <button 
+              onClick={handleCopyJSON} 
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition"
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? '✅ কপি' : '📋 কপি'}
+            </button>
+            
+            {/* Upload Button */}
+            <button 
+              onClick={handleDirectUpload} 
+              disabled={isUploading || loading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                uploadSuccess 
+                  ? 'bg-green-600 text-white' 
+                  : isUploading 
+                    ? 'bg-gray-400 text-white cursor-not-allowed' 
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  আপলোড হচ্ছে...
+                </>
+              ) : uploadSuccess ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  ✅ আপলোড হয়েছে!
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  🚀 সরাসরি আপলোড
+                </>
+              )}
+            </button>
           </div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
-            <code>{generatedJSON}</code>
-          </pre>
-          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
-            <p className="text-xs text-yellow-800">
-              ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
-            </p>
-          </div>
+        </div>
+        <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
+          <code>{generatedJSON}</code>
+        </pre>
+        <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
+          <p className="text-xs text-yellow-800">
+            ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path || 'ফাইল'}</code> এ পেস্ট করুন
+          </p>
         </div>
       </div>
 
@@ -2731,14 +2733,20 @@ const generatedJSON = (() => {
         </h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-purple-900">
           <li>"🚀 সরাসরি আপলোড" বাটনে ক্লিক করুন (সবচেয়ে সহজ!)</li>
-          <li>অথবা "📋 কপি" বাটনে ক্লিক করে <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
-            className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
-          <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path}</code> ফাইলটি খুলুন</li>
+          <li>
+            অথবা "📋 কপি" বাটনে ক্লিক করে {" "}
+            <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
+               className="text-orange-600 underline font-semibold hover:text-orange-700">
+              GitHub Repository
+            </a> তে যান
+          </li>
+          <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path || 'ফাইল'}</code> ফাইলটি খুলুন</li>
           <li>✏️ Edit → পেস্ট → Commit</li>
           <li>২-৩ মিনিট পর সাইটে রিফ্রেশ করুন 🔄</li>
         </ol>
       </div>
-    </div>
+
+    </div> // ক্লোজিং মেইন কন্টেইনার
   );
 };
 
