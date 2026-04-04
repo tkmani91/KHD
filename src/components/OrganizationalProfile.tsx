@@ -50,99 +50,121 @@ const OrganizationalProfile: React.FC = () => {
         <meta charset="UTF-8">
         <title>${title}</title>
         <style>
+          @page {
+            size: A4 portrait;
+            margin: 10mm 8mm;
+          }
           * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
           }
           body {
-            font-family: 'Noto Sans Bengali', 'Kalpurush', sans-serif;
-            padding: 20px;
+            font-family: 'Noto Sans Bengali', 'Kalpurush', Arial, sans-serif;
             background: white;
+            font-size: 10px;
+            line-height: 1.2;
           }
           .print-header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 3px double #333;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #333;
           }
           .print-header h1 {
-            font-size: 24px;
+            font-size: 16px;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
           }
           .print-header p {
-            font-size: 14px;
+            font-size: 11px;
             color: #666;
           }
           .print-date {
             text-align: right;
-            font-size: 12px;
+            font-size: 9px;
             color: #888;
-            margin-bottom: 15px;
+            margin-bottom: 6px;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
           }
           th, td {
-            border: 1px solid #333;
-            padding: 10px 8px;
+            border: 1px solid #444;
+            padding: 4px 3px;
             text-align: center;
-            font-size: 13px;
+            font-size: 9px;
+            vertical-align: middle;
           }
           th {
-            background-color: #f5f5f5;
+            background-color: #e8e8e8;
             font-weight: bold;
             color: #333;
+            padding: 5px 3px;
           }
           tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: #f9f9f9;
+          }
+          .photo-cell {
+            width: 30px;
+            padding: 2px;
           }
           .photo-cell img {
-            width: 40px;
-            height: 40px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
           }
           .photo-placeholder {
-            width: 40px;
-            height: 40px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
-            background: #eee;
+            background: #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 12px;
             margin: 0 auto;
+          }
+          .serial-cell {
+            width: 25px;
+            font-weight: bold;
+          }
+          .name-cell {
+            text-align: left;
+            padding-left: 5px;
+            font-weight: 500;
+          }
+          .position-cell {
+            width: 60px;
+          }
+          .tenure-cell {
+            width: 70px;
+          }
+          .status-cell {
+            width: 45px;
           }
           .current-badge {
             background: #22c55e;
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 7px;
             font-weight: bold;
           }
           .completed-badge {
             color: #888;
-            font-size: 11px;
+            font-size: 8px;
           }
           .footer {
-            margin-top: 30px;
+            margin-top: 10px;
             text-align: center;
-            font-size: 11px;
+            font-size: 8px;
             color: #888;
             border-top: 1px solid #ddd;
-            padding-top: 15px;
-          }
-          @media print {
-            body { padding: 10px; }
-            .print-header h1 { font-size: 20px; }
-            th, td { padding: 8px 5px; font-size: 11px; }
-            .photo-cell img, .photo-placeholder { width: 35px; height: 35px; }
+            padding-top: 5px;
           }
         </style>
       </head>
@@ -164,7 +186,6 @@ const OrganizationalProfile: React.FC = () => {
 
     printWindow.document.close();
     
-    // Wait for images to load before printing
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
@@ -203,28 +224,24 @@ const OrganizationalProfile: React.FC = () => {
 
       {/* Table Section */}
       <div className="bg-white rounded-b-lg shadow-lg p-4 md:p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          📋 সংক্ষিপ্ত তালিকা
-        </h3>
-        
         {/* Printable Table */}
         <div ref={printRef} className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300 min-w-[600px]">
             <thead>
               <tr className="bg-gradient-to-r from-purple-100 to-indigo-100">
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-16">ক্রমিক</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-20">ছবি</th>
-                <th className="border border-gray-300 px-3 py-3 text-left font-semibold">নাম</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold">পদবি</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold">মেয়াদকাল</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-24">অবস্থা</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-16 serial-cell">ক্রমিক</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-20 photo-cell">ছবি</th>
+                <th className="border border-gray-300 px-3 py-3 text-left font-semibold name-cell">নাম</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold position-cell">পদবি</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold tenure-cell">মেয়াদকাল</th>
+                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-24 status-cell">অবস্থা</th>
               </tr>
             </thead>
             <tbody>
               {data.leaders.length > 0 ? (
                 data.leaders.map((leader, index) => (
                   <tr key={leader.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="border border-gray-300 px-3 py-3 text-center font-medium">
+                    <td className="border border-gray-300 px-3 py-3 text-center font-medium serial-cell">
                       {index + 1}
                     </td>
                     <td className="border border-gray-300 px-3 py-3 text-center photo-cell">
@@ -234,31 +251,27 @@ const OrganizationalProfile: React.FC = () => {
                           alt={leader.name}
                           className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 mx-auto"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'photo-placeholder';
-                            placeholder.textContent = '👤';
-                            (e.target as HTMLImageElement).parentNode?.appendChild(placeholder);
+                            (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                           }}
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mx-auto border-2 border-purple-200">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mx-auto border-2 border-purple-200 photo-placeholder">
                           <span className="text-xl">👤</span>
                         </div>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 font-medium text-gray-800">
+                    <td className="border border-gray-300 px-3 py-3 font-medium text-gray-800 name-cell">
                       {leader.name}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center">
+                    <td className="border border-gray-300 px-3 py-3 text-center position-cell">
                       <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
                         {leader.position}
                       </span>
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center text-gray-600">
+                    <td className="border border-gray-300 px-3 py-3 text-center text-gray-600 tenure-cell">
                       {leader.tenure}
                     </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center">
+                    <td className="border border-gray-300 px-3 py-3 text-center status-cell">
                       {leader.current ? (
                         <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold current-badge">
                           বর্তমান
@@ -280,30 +293,6 @@ const OrganizationalProfile: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Stats */}
-        {data.leaders.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-4 justify-center">
-            <div className="bg-purple-50 px-4 py-2 rounded-lg text-center">
-              <span className="text-2xl font-bold text-purple-600">
-                {data.leaders.length}
-              </span>
-              <p className="text-sm text-gray-600">মোট সদস্য</p>
-            </div>
-            <div className="bg-green-50 px-4 py-2 rounded-lg text-center">
-              <span className="text-2xl font-bold text-green-600">
-                {data.leaders.filter(l => l.current).length}
-              </span>
-              <p className="text-sm text-gray-600">বর্তমান</p>
-            </div>
-            <div className="bg-gray-50 px-4 py-2 rounded-lg text-center">
-              <span className="text-2xl font-bold text-gray-600">
-                {data.leaders.filter(l => !l.current).length}
-              </span>
-              <p className="text-sm text-gray-600">পূর্বতন</p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
