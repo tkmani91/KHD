@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin, Building } from 'lucide-react';
 
 // ============================================
-// TYPE DEFINITIONS
+// TYPE DEFINITIONS 
 // ============================================
 
 interface JSONFile {
