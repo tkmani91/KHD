@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Users, Printer, Search, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Printer } from 'lucide-react';
 
 interface Leader {
   id: number;
@@ -17,7 +17,6 @@ interface ProfileData {
 const OrganizationalProfile: React.FC = () => {
   const [data, setData] = useState<ProfileData>({ leaders: [] });
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch('/data/organizationalProfile.json')
@@ -31,16 +30,6 @@ const OrganizationalProfile: React.FC = () => {
         setLoading(false);
       });
   }, []);
-
-  const filteredLeaders = useMemo(() => {
-    if (!searchQuery.trim()) return data.leaders;
-    const query = searchQuery.toLowerCase().trim();
-    return data.leaders.filter(leader => 
-      leader.name.toLowerCase().includes(query) ||
-      leader.position.toLowerCase().includes(query) ||
-      leader.tenure.includes(query)
-    );
-  }, [data.leaders, searchQuery]);
 
   const handlePrint = () => {
     const originalTitle = document.title;
@@ -100,22 +89,12 @@ const OrganizationalProfile: React.FC = () => {
             padding: 6px 12px;
             border-radius: 6px;
             margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            text-align: center;
           }
           .print-header h1 {
             font-size: 14px;
             font-weight: 700;
             margin: 0;
-          }
-          .print-header .count {
-            background: white !important;
-            color: #6d28d9 !important;
-            padding: 2px 8px;
-            border-radius: 11px;
-            font-size: 12px;
-            font-weight: 700;
           }
           .print-date {
             text-align: right;
@@ -211,15 +190,12 @@ const OrganizationalProfile: React.FC = () => {
 
       {/* HEADER */}
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-4 shadow-lg no-print">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          <div className="text-white text-center lg:text-left">
-            <h3 className="font-bold text-lg flex items-center gap-2 justify-center lg:justify-start">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-white text-center sm:text-left">
+            <h3 className="font-bold text-lg flex items-center gap-2 justify-center sm:justify-start">
               <Users className="w-5 h-5" /> সাংগঠনিক প্রোফাইল
             </h3>
-            <p className="text-sm text-purple-100">
-              মোট {data.leaders.length} জন 
-              {searchQuery && ` | ফলাফল: ${filteredLeaders.length} জন`}
-            </p>
+            <p className="text-sm text-purple-100">নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
           </div>
           <button 
             onClick={handlePrint}
@@ -228,25 +204,6 @@ const OrganizationalProfile: React.FC = () => {
             <Printer className="w-4 h-4" /> প্রিন্ট
           </button>
         </div>
-
-        <div className="mt-4 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300" />
-          <input
-            type="text"
-            placeholder="নাম, পদবি বা মেয়াদকাল দিয়ে খুঁজুন..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-200 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-200 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* PRINT SECTION */}
@@ -254,7 +211,6 @@ const OrganizationalProfile: React.FC = () => {
         <div className="print-container print-only">
           <div className="print-header">
             <h1>🏛️ কলম হিন্দু ধর্মসভা - সাংগঠনিক প্রোফাইল</h1>
-            <span className="count">👥 মোট {filteredLeaders.length} জন</span>
           </div>
           <div className="print-date">
             প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}
@@ -271,7 +227,7 @@ const OrganizationalProfile: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredLeaders.map((leader, index) => (
+              {data.leaders.map((leader, index) => (
                 <tr key={leader.id}>
                   <td className="serial">{index + 1}</td>
                   <td className="photo-cell">
@@ -302,22 +258,16 @@ const OrganizationalProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* NO RESULTS */}
-        {filteredLeaders.length === 0 && (
+        {/* NO DATA */}
+        {data.leaders.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-lg no-print">
-            <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 text-lg">কোনো তথ্য পাওয়া যায়নি</p>
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-            >
-              সব দেখুন
-            </button>
           </div>
         )}
 
         {/* LEADERS LIST */}
-        {filteredLeaders.length > 0 && (
+        {data.leaders.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
             <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-sm">
               <div className="col-span-1 text-center">ক্রম</div>
@@ -329,7 +279,7 @@ const OrganizationalProfile: React.FC = () => {
             </div>
 
             <div className="divide-y divide-gray-100">
-              {filteredLeaders.map((leader, index) => (
+              {data.leaders.map((leader, index) => (
                 <div key={leader.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center">
                   {/* Mobile View */}
                   <div className="md:hidden flex items-center gap-3">
