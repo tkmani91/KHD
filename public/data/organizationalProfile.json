@@ -1,0 +1,42 @@
+{
+  "leaders": [
+    {
+      "id": 1,
+      "name": "শ্রী রাজেশ কুমার দাস",
+      "position": "সভাপতি",
+      "startDate": "২০২০-০১-০১",
+      "endDate": "২০২২-১২-৩১",
+      "tenure": "২০২০-২০২২",
+      "photo": "/images/leaders/rajesh.jpg"
+    },
+    {
+      "id": 2,
+      "name": "শ্রী অমিত চক্রবর্তী",
+      "position": "সম্পাদক",
+      "startDate": "২০২০-০১-০১",
+      "endDate": "২০২২-১২-৩১",
+      "tenure": "২০২০-২০২২",
+      "photo": "/images/leaders/amit.jpg"
+    },
+    {
+      "id": 3,
+      "name": "শ্রী সুজিত বর্মন",
+      "position": "সভাপতি",
+      "startDate": "২০২৩-০১-০১",
+      "endDate": "২০২৫-১২-৩১",
+      "tenure": "২০২৩-২০২৫",
+      "photo": "/images/leaders/sujit.jpg",
+      "current": true
+    },
+    {
+      "id": 4,
+      "name": "শ্রী প্রদীপ সরকার",
+      "position": "সম্পাদক",
+      "startDate": "২০২৩-০১-০১",
+      "endDate": "২০২৫-১২-৩১",
+      "tenure": "২০২৩-২০২৫",
+      "photo": "/images/leaders/pradip.jpg",
+      "current": true
+    }
+  ]
+}
