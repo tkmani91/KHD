@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Users, Printer } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Users, Printer, Search, X } from 'lucide-react';
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
+}
 
 interface Leader {
   id: number;
   name: string;
   position: string;
-  startDate: string;
-  endDate: string;
   tenure: string;
   photo?: string;
   current?: boolean;
@@ -19,13 +21,13 @@ interface ProfileData {
 const OrganizationalProfile: React.FC = () => {
   const [data, setData] = useState<ProfileData>({ leaders: [] });
   const [loading, setLoading] = useState(true);
-  const printRef = useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch('/data/organizationalProfile.json')
       .then(res => res.json())
-      .then(data => {
-        setData(data);
+      .then(jsonData => {
+        setData(jsonData);
         setLoading(false);
       })
       .catch(error => {
@@ -34,265 +36,449 @@ const OrganizationalProfile: React.FC = () => {
       });
   }, []);
 
+  // ============================================
+  // SEARCH FILTER
+  // ============================================
+  const filteredLeaders = useMemo(() => {
+    if (!searchQuery.trim()) return data.leaders;
+    const query = searchQuery.toLowerCase().trim();
+    return data.leaders.filter(leader => 
+      leader.name.toLowerCase().includes(query) ||
+      leader.position.toLowerCase().includes(query) ||
+      leader.tenure.includes(query)
+    );
+  }, [data.leaders, searchQuery]);
+
+  // ============================================
+  // PRINT FUNCTION
+  // ============================================
   const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const title = 'সাংগঠনিক প্রোফাইল - নেতৃত্বের তালিকা';
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="bn">
-      <head>
-        <meta charset="UTF-8">
-        <title>${title}</title>
-        <style>
-          @page {
-            size: A4 portrait;
-            margin: 10mm 8mm;
-          }
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            font-family: 'Noto Sans Bengali', 'Kalpurush', Arial, sans-serif;
-            background: white;
-            font-size: 10px;
-            line-height: 1.2;
-          }
-          .print-header {
-            text-align: center;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #333;
-          }
-          .print-header h1 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 2px;
-          }
-          .print-header p {
-            font-size: 11px;
-            color: #666;
-          }
-          .print-date {
-            text-align: right;
-            font-size: 9px;
-            color: #888;
-            margin-bottom: 6px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          th, td {
-            border: 1px solid #444;
-            padding: 4px 3px;
-            text-align: center;
-            font-size: 9px;
-            vertical-align: middle;
-          }
-          th {
-            background-color: #e8e8e8;
-            font-weight: bold;
-            color: #333;
-            padding: 5px 3px;
-          }
-          tr:nth-child(even) {
-            background-color: #f9f9f9;
-          }
-          .photo-cell {
-            width: 30px;
-            padding: 2px;
-          }
-          .photo-cell img {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid #ccc;
-          }
-          .photo-placeholder {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            margin: 0 auto;
-          }
-          .serial-cell {
-            width: 25px;
-            font-weight: bold;
-          }
-          .name-cell {
-            text-align: left;
-            padding-left: 5px;
-            font-weight: 500;
-          }
-          .position-cell {
-            width: 60px;
-          }
-          .tenure-cell {
-            width: 70px;
-          }
-          .status-cell {
-            width: 45px;
-          }
-          .current-badge {
-            background: #22c55e;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 8px;
-            font-size: 7px;
-            font-weight: bold;
-          }
-          .completed-badge {
-            color: #888;
-            font-size: 8px;
-          }
-          .footer {
-            margin-top: 10px;
-            text-align: center;
-            font-size: 8px;
-            color: #888;
-            border-top: 1px solid #ddd;
-            padding-top: 5px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="print-header">
-          <h1>🏛️ সাংগঠনিক প্রোফাইল</h1>
-          <p>নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
-        </div>
-        <div class="print-date">
-          প্রিন্ট তারিখ: ${new Date().toLocaleDateString('bn-BD')}
-        </div>
-        ${printContent.innerHTML}
-        <div class="footer">
-          © ${new Date().getFullYear()} - কলম হিন্দু ধর্মসভা
-        </div>
-      </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    
+    const originalTitle = document.title;
+    document.title = 'সাংগঠনিক-প্রোফাইল-কলম-হিন্দু-ধর্মসভা';
+    window.print();
     setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
+      document.title = originalTitle;
+    }, 1000);
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-t-lg">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <Users className="w-7 h-7 md:w-8 md:h-8" />
-              সাংগঠনিক প্রোফাইল
-            </h1>
-            <p className="mt-2 opacity-90 text-sm md:text-base">নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
+    <div className="space-y-4">
+      {/* ============================================ */}
+      {/* PRINT STYLES */}
+      {/* ============================================ */}
+      <style>{`
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+          }
+          
+          body * {
+            visibility: hidden;
+          }
+          
+          .print-section, .print-section * {
+            visibility: visible;
+          }
+          
+          .print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          
+          .no-print {
+            display: none !important;
+          }
+          
+          .print-only {
+            display: block !important;
+          }
+          
+          .print-container {
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+          }
+          
+          .print-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+            color: white !important;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          
+          .print-header h1 {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0;
+          }
+          
+          .print-header .count {
+            background: white !important;
+            color: #6d28d9 !important;
+            padding: 2px 8px;
+            border-radius: 11px;
+            font-size: 12px;
+            font-weight: 700;
+          }
+          
+          .print-date {
+            text-align: right;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 4px;
+          }
+          
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            border: 1px solid #374151;
+          }
+          
+          .print-table th {
+            background: #1f2937 !important;
+            color: white !important;
+            padding: 4px 2px;
+            font-weight: 700;
+            font-size: 10px;
+            border: 1px solid #4b5563;
+          }
+          
+          .print-table td {
+            padding: 2px;
+            border: 1px solid #d1d5db;
+            vertical-align: middle;
+            font-size: 10px;
+            line-height: 1.1;
+          }
+          
+          .print-table tbody tr:nth-child(even) {
+            background: #f3f4f6 !important;
+          }
+          
+          .print-table .serial {
+            text-align: center;
+            font-weight: bold;
+            color: #7c3aed;
+            width: 6%;
+          }
+          
+          .print-table .photo-cell {
+            width: 8%;
+            text-align: center;
+          }
+          
+          .print-table .photo-cell img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+          }
+          
+          .print-table .name-cell {
+            font-weight: 600;
+            text-align: left;
+            padding-left: 4px;
+          }
+          
+          .print-table .position-cell {
+            text-align: center;
+          }
+          
+          .print-table .position-badge {
+            background: #e9d5ff !important;
+            color: #6b21a8 !important;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+          }
+          
+          .print-table .tenure-cell {
+            text-align: center;
+          }
+          
+          .print-table .status-cell {
+            text-align: center;
+          }
+          
+          .print-table .current-badge {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 8px;
+            font-weight: 700;
+          }
+          
+          .print-footer {
+            margin-top: 8px;
+            padding-top: 4px;
+            border-top: 2px solid #7c3aed;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+          }
+          
+          @page {
+            size: A4 portrait;
+            margin: 3mm;
+          }
+          
+          tr {
+            page-break-inside: avoid;
+          }
+          
+          thead {
+            display: table-header-group;
+          }
+        }
+        
+        .print-only {
+          display: none;
+        }
+      `}</style>
+
+      {/* ============================================ */}
+      {/* HEADER - Screen Only */}
+      {/* ============================================ */}
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-4 shadow-lg no-print">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          {/* Title */}
+          <div className="text-white text-center lg:text-left">
+            <h3 className="font-bold text-lg flex items-center gap-2 justify-center lg:justify-start">
+              <Users className="w-5 h-5" /> সাংগঠনিক প্রোফাইল
+            </h3>
+            <p className="text-sm text-purple-100">
+              মোট {data.leaders.length} জন 
+              {searchQuery && ` | ফলাফল: ${filteredLeaders.length} জন`}
+            </p>
           </div>
-          <button
+
+          {/* Print Button */}
+          <button 
             onClick={handlePrint}
-            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2 text-sm md:text-base"
+            className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium flex items-center gap-2 hover:bg-purple-50 transition shadow"
           >
-            <Printer className="w-5 h-5" />
-            প্রিন্ট করুন
+            <Printer className="w-4 h-4" /> প্রিন্ট
           </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mt-4 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300" />
+          <input
+            type="text"
+            placeholder="নাম, পদবি বা মেয়াদকাল দিয়ে খুঁজুন..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-2.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-200 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-200 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Table Section */}
-      <div className="bg-white rounded-b-lg shadow-lg p-4 md:p-6">
-        {/* Printable Table */}
-        <div ref={printRef} className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300 min-w-[600px]">
+      {/* ============================================ */}
+      {/* PRINT SECTION */}
+      {/* ============================================ */}
+      <div className="print-section">
+        {/* Print Only Content */}
+        <div className="print-container print-only">
+          <div className="print-header">
+            <h1>🏛️ কলম হিন্দু ধর্মসভা - সাংগঠনিক প্রোফাইল</h1>
+            <span className="count">👥 মোট {filteredLeaders.length} জন</span>
+          </div>
+          
+          <div className="print-date">
+            প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}
+          </div>
+
+          <table className="print-table">
             <thead>
-              <tr className="bg-gradient-to-r from-purple-100 to-indigo-100">
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-16 serial-cell">ক্রমিক</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-20 photo-cell">ছবি</th>
-                <th className="border border-gray-300 px-3 py-3 text-left font-semibold name-cell">নাম</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold position-cell">পদবি</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold tenure-cell">মেয়াদকাল</th>
-                <th className="border border-gray-300 px-3 py-3 text-center font-semibold w-24 status-cell">অবস্থা</th>
+              <tr>
+                <th>ক্রম</th>
+                <th>ছবি</th>
+                <th>নাম</th>
+                <th>পদবি</th>
+                <th>মেয়াদকাল</th>
+                <th>অবস্থা</th>
               </tr>
             </thead>
             <tbody>
-              {data.leaders.length > 0 ? (
-                data.leaders.map((leader, index) => (
-                  <tr key={leader.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="border border-gray-300 px-3 py-3 text-center font-medium serial-cell">
-                      {index + 1}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center photo-cell">
-                      {leader.photo ? (
-                        <img
-                          src={leader.photo}
-                          alt={leader.name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 mx-auto"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mx-auto border-2 border-purple-200 photo-placeholder">
-                          <span className="text-xl">👤</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-3 font-medium text-gray-800 name-cell">
-                      {leader.name}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center position-cell">
-                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-                        {leader.position}
-                      </span>
-                    </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center text-gray-600 tenure-cell">
-                      {leader.tenure}
-                    </td>
-                    <td className="border border-gray-300 px-3 py-3 text-center status-cell">
-                      {leader.current ? (
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold current-badge">
-                          বর্তমান
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-sm completed-badge">সমাপ্ত</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="border border-gray-300 px-3 py-12 text-center text-gray-500">
-                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p>কোনো তথ্য পাওয়া যায়নি</p>
+              {filteredLeaders.map((leader, index) => (
+                <tr key={leader.id}>
+                  <td className="serial">{index + 1}</td>
+                  <td className="photo-cell">
+                    <img 
+                      src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                      alt={leader.name}
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                    />
+                  </td>
+                  <td className="name-cell">{leader.name}</td>
+                  <td className="position-cell">
+                    <span className="position-badge">{leader.position}</span>
+                  </td>
+                  <td className="tenure-cell">{leader.tenure}</td>
+                  <td className="status-cell">
+                    {leader.current ? (
+                      <span className="current-badge">বর্তমান</span>
+                    ) : (
+                      <span style={{ color: '#888', fontSize: '8px' }}>সমাপ্ত</span>
+                    )}
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
+          
+          <div className="print-footer">
+            <p>© {new Date().getFullYear()} কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
+          </div>
         </div>
+
+        {/* ============================================ */}
+        {/* NO RESULTS - Screen Only */}
+        {/* ============================================ */}
+        {filteredLeaders.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-xl shadow-lg no-print">
+            <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-500 text-lg">কোনো তথ্য পাওয়া যায়নি</p>
+            <p className="text-gray-400 text-sm mt-1">অন্য কীওয়ার্ড দিয়ে খুঁজুন</p>
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+            >
+              সব দেখুন
+            </button>
+          </div>
+        )}
+
+        {/* ============================================ */}
+        {/* LEADERS LIST - Screen Only */}
+        {/* ============================================ */}
+        {filteredLeaders.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
+            {/* Table Header - Desktop Only */}
+            <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-sm">
+              <div className="col-span-1 text-center">ক্রম</div>
+              <div className="col-span-1 text-center">ছবি</div>
+              <div className="col-span-4">নাম</div>
+              <div className="col-span-2 text-center">পদবি</div>
+              <div className="col-span-2 text-center">মেয়াদকাল</div>
+              <div className="col-span-2 text-center">অবস্থা</div>
+            </div>
+
+            {/* Table Body */}
+            <div className="divide-y divide-gray-100">
+              {filteredLeaders.map((leader, index) => (
+                <div 
+                  key={leader.id} 
+                  className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center"
+                >
+                  {/* Mobile View */}
+                  <div className="md:hidden flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold flex-shrink-0">
+                      {index + 1}
+                    </span>
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-200 flex-shrink-0">
+                      <img 
+                        src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                        alt={leader.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-800 text-sm truncate">{leader.name}</h4>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                          {leader.position}
+                        </span>
+                        <span className="text-gray-500 text-xs">{leader.tenure}</span>
+                      </div>
+                      {leader.current && (
+                        <span className="inline-block mt-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                          বর্তমান
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Desktop View */}
+                  <div className="hidden md:block col-span-1 text-center">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold text-sm">
+                      {index + 1}
+                    </span>
+                  </div>
+
+                  <div className="hidden md:block col-span-1 text-center">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 mx-auto">
+                      <img 
+                        src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                        alt={leader.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="hidden md:block col-span-4">
+                    <h4 className="font-bold text-gray-800 text-sm">{leader.name}</h4>
+                  </div>
+
+                  <div className="hidden md:block col-span-2 text-center">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                      {leader.position}
+                    </span>
+                  </div>
+
+                  <div className="hidden md:block col-span-2 text-center text-gray-600 text-sm">
+                    {leader.tenure}
+                  </div>
+
+                  <div className="hidden md:block col-span-2 text-center">
+                    {leader.current ? (
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                        বর্তমান
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">সমাপ্ত</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
