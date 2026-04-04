@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Users, Printer, Search, X } from 'lucide-react';
 
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
 interface Leader {
   id: number;
   name: string;
@@ -36,9 +32,6 @@ const OrganizationalProfile: React.FC = () => {
       });
   }, []);
 
-  // ============================================
-  // SEARCH FILTER
-  // ============================================
   const filteredLeaders = useMemo(() => {
     if (!searchQuery.trim()) return data.leaders;
     const query = searchQuery.toLowerCase().trim();
@@ -49,9 +42,6 @@ const OrganizationalProfile: React.FC = () => {
     );
   }, [data.leaders, searchQuery]);
 
-  // ============================================
-  // PRINT FUNCTION
-  // ============================================
   const handlePrint = () => {
     const originalTitle = document.title;
     document.title = 'সাংগঠনিক-প্রোফাইল-কলম-হিন্দু-ধর্মসভা';
@@ -71,50 +61,39 @@ const OrganizationalProfile: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* ============================================ */}
-      {/* PRINT STYLES */}
-      {/* ============================================ */}
       <style>{`
         @media print {
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
           }
-          
           body * {
             visibility: hidden;
           }
-          
           .print-section, .print-section * {
             visibility: visible;
           }
-          
           .print-section {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
           }
-          
           .no-print {
             display: none !important;
           }
-          
           .print-only {
             display: block !important;
           }
-          
           .print-container {
             padding: 0;
             font-family: 'Segoe UI', Tahoma, sans-serif;
           }
-          
           .print-header {
             background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
             color: white !important;
@@ -125,13 +104,11 @@ const OrganizationalProfile: React.FC = () => {
             align-items: center;
             justify-content: space-between;
           }
-          
           .print-header h1 {
             font-size: 14px;
             font-weight: 700;
             margin: 0;
           }
-          
           .print-header .count {
             background: white !important;
             color: #6d28d9 !important;
@@ -140,21 +117,18 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 12px;
             font-weight: 700;
           }
-          
           .print-date {
             text-align: right;
             font-size: 10px;
             color: #666;
             margin-bottom: 4px;
           }
-          
           .print-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
             border: 1px solid #374151;
           }
-          
           .print-table th {
             background: #1f2937 !important;
             color: white !important;
@@ -163,7 +137,6 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 10px;
             border: 1px solid #4b5563;
           }
-          
           .print-table td {
             padding: 2px;
             border: 1px solid #d1d5db;
@@ -171,23 +144,19 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 10px;
             line-height: 1.1;
           }
-          
           .print-table tbody tr:nth-child(even) {
             background: #f3f4f6 !important;
           }
-          
           .print-table .serial {
             text-align: center;
             font-weight: bold;
             color: #7c3aed;
             width: 6%;
           }
-          
           .print-table .photo-cell {
             width: 8%;
             text-align: center;
           }
-          
           .print-table .photo-cell img {
             width: 22px;
             height: 22px;
@@ -195,17 +164,11 @@ const OrganizationalProfile: React.FC = () => {
             object-fit: cover;
             border: 1px solid #ccc;
           }
-          
           .print-table .name-cell {
             font-weight: 600;
             text-align: left;
             padding-left: 4px;
           }
-          
-          .print-table .position-cell {
-            text-align: center;
-          }
-          
           .print-table .position-badge {
             background: #e9d5ff !important;
             color: #6b21a8 !important;
@@ -214,15 +177,6 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 9px;
             font-weight: 600;
           }
-          
-          .print-table .tenure-cell {
-            text-align: center;
-          }
-          
-          .print-table .status-cell {
-            text-align: center;
-          }
-          
           .print-table .current-badge {
             background: #dcfce7 !important;
             color: #166534 !important;
@@ -231,7 +185,6 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 8px;
             font-weight: 700;
           }
-          
           .print-footer {
             margin-top: 8px;
             padding-top: 4px;
@@ -240,32 +193,25 @@ const OrganizationalProfile: React.FC = () => {
             font-size: 9px;
             color: #666;
           }
-          
           @page {
             size: A4 portrait;
             margin: 3mm;
           }
-          
           tr {
             page-break-inside: avoid;
           }
-          
           thead {
             display: table-header-group;
           }
         }
-        
         .print-only {
           display: none;
         }
       `}</style>
 
-      {/* ============================================ */}
-      {/* HEADER - Screen Only */}
-      {/* ============================================ */}
+      {/* HEADER */}
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-4 shadow-lg no-print">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-          {/* Title */}
           <div className="text-white text-center lg:text-left">
             <h3 className="font-bold text-lg flex items-center gap-2 justify-center lg:justify-start">
               <Users className="w-5 h-5" /> সাংগঠনিক প্রোফাইল
@@ -275,8 +221,6 @@ const OrganizationalProfile: React.FC = () => {
               {searchQuery && ` | ফলাফল: ${filteredLeaders.length} জন`}
             </p>
           </div>
-
-          {/* Print Button */}
           <button 
             onClick={handlePrint}
             className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium flex items-center gap-2 hover:bg-purple-50 transition shadow"
@@ -285,7 +229,6 @@ const OrganizationalProfile: React.FC = () => {
           </button>
         </div>
 
-        {/* Search Bar */}
         <div className="mt-4 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300" />
           <input
@@ -306,21 +249,16 @@ const OrganizationalProfile: React.FC = () => {
         </div>
       </div>
 
-      {/* ============================================ */}
       {/* PRINT SECTION */}
-      {/* ============================================ */}
       <div className="print-section">
-        {/* Print Only Content */}
         <div className="print-container print-only">
           <div className="print-header">
             <h1>🏛️ কলম হিন্দু ধর্মসভা - সাংগঠনিক প্রোফাইল</h1>
             <span className="count">👥 মোট {filteredLeaders.length} জন</span>
           </div>
-          
           <div className="print-date">
             প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}
           </div>
-
           <table className="print-table">
             <thead>
               <tr>
@@ -344,11 +282,11 @@ const OrganizationalProfile: React.FC = () => {
                     />
                   </td>
                   <td className="name-cell">{leader.name}</td>
-                  <td className="position-cell">
+                  <td style={{ textAlign: 'center' }}>
                     <span className="position-badge">{leader.position}</span>
                   </td>
-                  <td className="tenure-cell">{leader.tenure}</td>
-                  <td className="status-cell">
+                  <td style={{ textAlign: 'center' }}>{leader.tenure}</td>
+                  <td style={{ textAlign: 'center' }}>
                     {leader.current ? (
                       <span className="current-badge">বর্তমান</span>
                     ) : (
@@ -359,20 +297,16 @@ const OrganizationalProfile: React.FC = () => {
               ))}
             </tbody>
           </table>
-          
           <div className="print-footer">
             <p>© {new Date().getFullYear()} কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
           </div>
         </div>
 
-        {/* ============================================ */}
-        {/* NO RESULTS - Screen Only */}
-        {/* ============================================ */}
+        {/* NO RESULTS */}
         {filteredLeaders.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-lg no-print">
             <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 text-lg">কোনো তথ্য পাওয়া যায়নি</p>
-            <p className="text-gray-400 text-sm mt-1">অন্য কীওয়ার্ড দিয়ে খুঁজুন</p>
             <button 
               onClick={() => setSearchQuery('')}
               className="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
@@ -382,12 +316,9 @@ const OrganizationalProfile: React.FC = () => {
           </div>
         )}
 
-        {/* ============================================ */}
-        {/* LEADERS LIST - Screen Only */}
-        {/* ============================================ */}
+        {/* LEADERS LIST */}
         {filteredLeaders.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
-            {/* Table Header - Desktop Only */}
             <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-sm">
               <div className="col-span-1 text-center">ক্রম</div>
               <div className="col-span-1 text-center">ছবি</div>
@@ -397,13 +328,9 @@ const OrganizationalProfile: React.FC = () => {
               <div className="col-span-2 text-center">অবস্থা</div>
             </div>
 
-            {/* Table Body */}
             <div className="divide-y divide-gray-100">
               {filteredLeaders.map((leader, index) => (
-                <div 
-                  key={leader.id} 
-                  className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center"
-                >
+                <div key={leader.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center">
                   {/* Mobile View */}
                   <div className="md:hidden flex items-center gap-3">
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold flex-shrink-0">
@@ -439,7 +366,6 @@ const OrganizationalProfile: React.FC = () => {
                       {index + 1}
                     </span>
                   </div>
-
                   <div className="hidden md:block col-span-1 text-center">
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 mx-auto">
                       <img 
@@ -450,21 +376,17 @@ const OrganizationalProfile: React.FC = () => {
                       />
                     </div>
                   </div>
-
                   <div className="hidden md:block col-span-4">
                     <h4 className="font-bold text-gray-800 text-sm">{leader.name}</h4>
                   </div>
-
                   <div className="hidden md:block col-span-2 text-center">
                     <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                       {leader.position}
                     </span>
                   </div>
-
                   <div className="hidden md:block col-span-2 text-center text-gray-600 text-sm">
                     {leader.tenure}
                   </div>
-
                   <div className="hidden md:block col-span-2 text-center">
                     {leader.current ? (
                       <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
