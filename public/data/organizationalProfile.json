@@ -2,33 +2,66 @@
   "leaders": [
     {
       "id": 1,
-      "name": "শ্রী রাজেশ কুমার দাস",
+      "memberId": "14",
       "position": "সভাপতি",
-      "tenure": "২০২০-২০২২",
-      "photo": "https://example.com/photos/rajesh.jpg"
+      "tenure": "২০২৩-২০২৫",
+      "current": true
     },
     {
       "id": 2,
-      "name": "শ্রী অমিত চক্রবর্তী",
-      "position": "সম্পাদক",
-      "tenure": "২০২০-২০২২",
-      "photo": "https://example.com/photos/amit.jpg"
+      "memberId": "15",
+      "position": "সহ-সভাপতি",
+      "tenure": "২০২৩-২০২৫",
+      "current": true
     },
     {
       "id": 3,
-      "name": "শ্রী সুজিত বর্মন",
-      "position": "সভাপতি",
+      "memberId": "16",
+      "position": "সাধারণ সম্পাদক",
       "tenure": "২০২৩-২০২৫",
-      "photo": "https://example.com/photos/sujit.jpg",
       "current": true
     },
     {
       "id": 4,
-      "name": "শ্রী প্রদীপ সরকার",
-      "position": "সম্পাদক",
+      "memberId": "17",
+      "position": "যুগ্ম সাধারণ সম্পাদক",
       "tenure": "২০২৩-২০২৫",
-      "photo": "https://example.com/photos/pradip.jpg",
       "current": true
+    },
+    {
+      "id": 5,
+      "memberId": "21",
+      "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
+      "tenure": "২০২৩-২০২৫",
+      "current": true
+    },
+    {
+      "id": 6,
+      "memberId": "3",
+      "position": "উপদেষ্টা",
+      "tenure": "২০২৩-২০২৫",
+      "current": true
+    },
+    {
+      "id": 7,
+      "memberId": "4",
+      "position": "উপদেষ্টা",
+      "tenure": "২০২৩-২০২৫",
+      "current": true
+    },
+    {
+      "id": 8,
+      "memberId": "9",
+      "position": "সভাপতি",
+      "tenure": "২০২০-২০২২",
+      "current": false
+    },
+    {
+      "id": 9,
+      "memberId": "10",
+      "position": "সম্পাদক",
+      "tenure": "২০২০-২০২২",
+      "current": false
     }
   ]
 }
