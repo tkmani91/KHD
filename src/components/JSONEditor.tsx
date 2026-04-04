@@ -196,14 +196,14 @@ const JSONEditor: React.FC = () => {
     },
     // 15. 🆕 সাংগঠনিক প্রোফাইল
     {
-      id: 'organizationalProfile',
-      label: '🏛️ সাংগঠনিক প্রোফাইল',
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
-      path: 'public/data/organizationalProfile.json',
-      type: 'organizational-special',
-      sections: ['leaders'],
-      hasImagePreview: true
-    },
+  id: 'organizationalProfile',
+  label: '🏛️ সাংগঠনিক প্রোফাইল',
+  url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
+  path: 'public/data/organizationalProfile.json',
+  type: 'organizational-special',
+  sections: ['committees'],
+  hasImagePreview: true
+},
     // 16. 🆕 রেজুলেশন সমূহ
     {
       id: 'resolutionsData',
@@ -410,17 +410,17 @@ const JSONEditor: React.FC = () => {
   // ============================================
 
   const handleOrganizationalData = (data: any) => {
-    if (!data || !data.leaders || !Array.isArray(data.leaders)) {
-      setJsonData([]);
-      setFormData({});
-      return;
-    }
+  if (!data || !data.committees || !Array.isArray(data.committees)) {
+    setJsonData([]);
+    setFormData({});
+    return;
+  }
 
-    const leaders = data.leaders;
-    setJsonData(leaders);
-    setSelectedItemIndex(0);
-    setFormData(leaders[0] || {});
-  };
+  const committees = data.committees;
+  setJsonData(committees);
+  setSelectedItemIndex(0);
+  setFormData(committees[0] || {});
+};
 
   // ============================================
   // HANDLE INVITATIONS DATA
@@ -1367,123 +1367,153 @@ const JSONEditor: React.FC = () => {
     source: 'উৎস'
   };
 
-  // ============================================
-  // 🆕 RENDER ORGANIZATIONAL PROFILE EDITOR
-  // ============================================
+ // ============================================
+// 🆕 RENDER ORGANIZATIONAL PROFILE EDITOR (নতুন)
+// ============================================
 
-  const renderOrganizationalEditor = () => {
-    const selectedMember = getMemberById(formData.memberId);
+const renderOrganizationalEditor = () => {
+  // Get current committee data
+  const currentCommittee = jsonData[selectedItemIndex] || {};
 
-    return (
-      <div className="space-y-4">
-        {/* Member Selection Dropdown */}
-        <div className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            👤 সদস্য নির্বাচন করুন
-          </label>
-          {membersLoading ? (
-            <div className="flex items-center gap-2 text-gray-500">
-              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-              সদস্য তালিকা লোড হচ্ছে...
-            </div>
-          ) : (
+  return (
+    <div className="space-y-6">
+      {/* Committee Tenure & Status */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+        <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          কমিটির তথ্য
+        </h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Tenure */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">📅 মেয়াদকাল</label>
             <select 
-              value={formData.memberId || ''} 
-              onChange={(e) => handleMemberSelect(e.target.value)}
-              className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm bg-orange-50"
+              value={formData.tenure || ''} 
+              onChange={(e) => handleFieldChange('tenure', e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
             >
-              <option value="">-- সদস্য নির্বাচন করুন --</option>
-              {membersDataList.map(member => (
-                <option key={member.id} value={member.id}>
-                  {member.name} {member.designation ? `(${member.designation})` : ''}
-                </option>
-              ))}
+              <option value="">মেয়াদকাল নির্বাচন করুন</option>
+              <option value="২০২৩-২০২৫">২০২৩-২০২৫</option>
+              <option value="২০২০-২০২২">২০২০-২০২২</option>
+              <option value="২০১৭-২০১৯">২০১৭-২০১৯</option>
+              <option value="২০১৪-২০১৬">২০১৪-২০১৬</option>
+              <option value="২০১১-২০১৩">২০১১-২০১৩</option>
             </select>
-          )}
-        </div>
-
-        {/* Photo Preview (auto from members-data) */}
-        {selectedMember && (
-          <div className="form-field">
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" />
-              🖼️ ছবি (members-data থেকে)
-            </label>
-            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-300">
-                <img 
-                  src={selectedMember.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                  alt={selectedMember.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
-                />
-              </div>
-              <div>
-                <p className="font-bold text-gray-800">{selectedMember.name}</p>
-                <p className="text-sm text-gray-500">{selectedMember.designation || 'পদবী নেই'}</p>
-              </div>
-            </div>
           </div>
-        )}
 
-        {/* Position Dropdown */}
-        <div className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            📝 পদবী (এই কমিটিতে)
-          </label>
-          <select 
-            value={formData.position || ''} 
-            onChange={(e) => handleFieldChange('position', e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-          >
-            <option value="">পদবী নির্বাচন করুন</option>
-            {POSITION_OPTIONS.map(pos => (
-              <option key={pos} value={pos}>{pos}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Tenure Input */}
-        <div className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            📅 কার্যকাল
-          </label>
-          <input 
-            type="text" 
-            value={formData.tenure || ''} 
-            onChange={(e) => handleFieldChange('tenure', e.target.value)}
-            placeholder="যেমন: ২০২৩-২০২৫"
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
-          />
-        </div>
-
-        {/* Current Checkbox */}
-        <div className="form-field flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-          <input 
-            type="checkbox" 
-            checked={Boolean(formData.current)} 
-            onChange={(e) => handleFieldChange('current', e.target.checked)}
-            className="w-5 h-5 text-green-500 rounded" 
-          />
-          <label className="font-semibold text-gray-700 text-sm">
-            ✅ বর্তমান কমিটির সদস্য?
-          </label>
-        </div>
-
-        {/* ID (readonly) */}
-        <div className="form-field">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">আইডি</label>
-          <input 
-            type="text" 
-            value={String(formData.id || '')} 
-            disabled 
-            className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" 
-          />
+          {/* Current Status */}
+          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <input 
+              type="checkbox" 
+              checked={Boolean(formData.current)} 
+              onChange={(e) => handleFieldChange('current', e.target.checked)}
+              className="w-5 h-5 text-green-500 rounded" 
+            />
+            <label className="font-semibold text-gray-700 text-sm">
+              ✅ বর্তমান কমিটি?
+            </label>
+          </div>
         </div>
       </div>
-    );
-  };
+
+      {/* President */}
+      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-yellow-200">
+        <h4 className="font-bold text-yellow-800 mb-4 flex items-center gap-2">
+          <Crown className="w-5 h-5 text-yellow-500" />
+          সভাপতি
+        </h4>
+        {renderPositionSelector('president', 'সভাপতি')}
+      </div>
+
+      {/* Secretary */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+        <h4 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-blue-500" />
+          সাধারণ সম্পাদক
+        </h4>
+        {renderPositionSelector('secretary', 'সাধারণ সম্পাদক')}
+      </div>
+
+      {/* Treasurer */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+        <h4 className="font-bold text-green-800 mb-4 flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-green-500" />
+          অর্থ সম্পাদক / কোষাধ্যক্ষ
+        </h4>
+        {renderPositionSelector('treasurer', 'অর্থ সম্পাদক / কোষাধ্যক্ষ')}
+      </div>
+
+      {/* ID (readonly) */}
+      <div className="form-field">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">কমিটি ID</label>
+        <input 
+          type="text" 
+          value={String(formData.id || '')} 
+          disabled 
+          className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" 
+        />
+      </div>
+    </div>
+  );
+};
+
+// Helper function for position selector
+const renderPositionSelector = (positionKey: string, positionLabel: string) => {
+  const positionData = formData[positionKey] || {};
+  const selectedMember = getMemberById(positionData.memberId);
+
+  return (
+    <div className="space-y-3">
+      {/* Member Dropdown */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">👤 সদস্য নির্বাচন করুন</label>
+        {membersLoading ? (
+          <div className="flex items-center gap-2 text-gray-500">
+            <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            সদস্য তালিকা লোড হচ্ছে...
+          </div>
+        ) : (
+          <select 
+            value={positionData.memberId || ''} 
+            onChange={(e) => {
+              handleFieldChange(positionKey, {
+                memberId: e.target.value,
+                position: positionLabel
+              });
+            }}
+            className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm bg-white"
+          >
+            <option value="">-- সদস্য নির্বাচন করুন --</option>
+            {membersDataList.map(member => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Photo Preview */}
+      {selectedMember && (
+        <div className="flex items-center gap-4 p-3 bg-white rounded-lg border">
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-purple-300 shadow">
+            <img 
+              src={selectedMember.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+              alt={selectedMember.name}
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+            />
+          </div>
+          <div>
+            <p className="font-bold text-gray-800">{selectedMember.name}</p>
+            <p className="text-sm text-purple-600 font-medium">{positionLabel}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
   // ============================================
   // RENDER FORM FIELD
@@ -2286,77 +2316,77 @@ if (key === 'area' && currentFile?.type === 'invitations-special') {
     );
   };
 
-  // ============================================
-  // GENERATE JSON
-  // ============================================
+ // ============================================
+// GENERATE JSON
+// ============================================
 
-  const generatedJSON = (() => {
-    let finalData: any;
+const generatedJSON = (() => {
+  let finalData: any;
 
-    if (currentFile?.type === 'simple-array') {
-      const updated = [...jsonData];
-      if (updated.length > 0) updated[selectedItemIndex] = formData;
-      finalData = updated;
-    } else if (currentFile?.type === 'gallery-special') {
-      finalData = rawData;
-    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
-      finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
+  if (currentFile?.type === 'simple-array') {
+    const updated = [...jsonData];
+    if (updated.length > 0) updated[selectedItemIndex] = formData;
+    finalData = updated;
+  } else if (currentFile?.type === 'gallery-special') {
+    finalData = rawData;
+  } else if (currentFile?.type === 'fund-collection-special' && rawData) {
+    finalData = { ...rawData };
+    finalData.fundCollection = {
+      ...fundSettings,
+      members: fundMembers,
+      paymentStats: paymentStats
+    };
+  } else if (currentFile?.type === 'organizational-special' && rawData) {
+    // ✅ নতুন committees structure
+    finalData = { ...rawData };
+    const updated = [...jsonData];
+    if (updated.length > 0) updated[selectedItemIndex] = formData;
+    finalData.committees = updated;
+  } else if (currentFile?.type === 'invitations-special' && rawData) {
+    finalData = { ...rawData };
+  } else if (currentFile?.type === 'quiz-special' && rawData) {
+    finalData = rawData;
+  } else if (currentFile?.type === 'accounts-special' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection && rawData[selectedSection]) {
+      const yearsObj: Record<string, string> = {};
+      jsonData.forEach(item => {
+        yearsObj[item.year] = item.url;
+      });
+      if (formData.year && formData.url) {
+        yearsObj[formData.year] = formData.url;
+      }
+      finalData[selectedSection] = { 
+        title: formData.title || rawData[selectedSection]?.title || '',
+        years: yearsObj 
       };
-    } else if (currentFile?.type === 'organizational-special' && rawData) {
-      // 🆕 Organizational profile
-      finalData = { ...rawData };
-      const updated = [...jsonData];
-      if (updated.length > 0) updated[selectedItemIndex] = formData;
-      finalData.leaders = updated;
-    } else if (currentFile?.type === 'invitations-special' && rawData) {
-      finalData = { ...rawData };
-    } else if (currentFile?.type === 'quiz-special' && rawData) {
-      finalData = rawData;
-    } else if (currentFile?.type === 'accounts-special' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection && rawData[selectedSection]) {
-        const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
-        }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
-      }
-    } else if (currentFile?.type === 'nested-sections' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'pdfLink') {
-          finalData.pdfLink = formData.pdfLink || '';
-        } else {
-          const updated = [...jsonData];
-          if (updated.length > 0) updated[selectedItemIndex] = formData;
-          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
-        }
-      }
-    } else if (currentFile?.type === 'complex-object' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
+    }
+  } else if (currentFile?.type === 'nested-sections' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection) {
+      if (selectedSection === 'pdfLink') {
+        finalData.pdfLink = formData.pdfLink || '';
+      } else {
+        const updated = [...jsonData];
+        if (updated.length > 0) updated[selectedItemIndex] = formData;
+        finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
       }
     }
+  } else if (currentFile?.type === 'complex-object' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection) {
+      if (selectedSection === 'welcomeMessage') {
+        finalData[selectedSection] = formData.value || '';
+      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+        finalData[selectedSection] = jsonData.map(item => item.text);
+      } else {
+        finalData[selectedSection] = jsonData;
+      }
+    }
+  }
 
-    return JSON.stringify(finalData, null, 2);
-  })();
+  return JSON.stringify(finalData, null, 2);
+})();
 
   const btnClass = (active: boolean) => 
     `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
