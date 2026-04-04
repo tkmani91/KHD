@@ -1487,10 +1487,7 @@ const renderPositionSelector = (positionKey: string, positionLabel: string) => {
     </div>
   );
 };
-// Helper function for position selector
-const renderPositionSelector = (positionKey: string, positionLabel: string) => {
-  const positionData = formData[positionKey] || {};
-  const selectedMember = getMemberById(positionData.memberId);
+
 
   return (
     <div className="space-y-3">
