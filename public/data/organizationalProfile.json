@@ -4,63 +4,63 @@
       "id": 1,
       "memberId": "14",
       "position": "সভাপতি",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৫-",
       "current": true
     },
     {
       "id": 2,
       "memberId": "15",
       "position": "সহ-সভাপতি",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৫-",
       "current": true
     },
     {
       "id": 3,
       "memberId": "16",
       "position": "সাধারণ সম্পাদক",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৫",
       "current": true
     },
     {
       "id": 4,
       "memberId": "17",
       "position": "যুগ্ম সাধারণ সম্পাদক",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৫-",
       "current": true
     },
     {
       "id": 5,
       "memberId": "21",
       "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০১৭-",
       "current": true
     },
     {
       "id": 6,
       "memberId": "3",
       "position": "উপদেষ্টা",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৩-",
       "current": true
     },
     {
       "id": 7,
       "memberId": "4",
       "position": "উপদেষ্টা",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২০-",
       "current": true
     },
     {
       "id": 8,
       "memberId": "9",
-      "position": "সভাপতি",
+      "position": "উপদেষ্টা",
       "tenure": "২০২০-২০২২",
       "current": false
     },
     {
       "id": 9,
       "memberId": "10",
-      "position": "সম্পাদক",
-      "tenure": "২০২০-২০২২",
+      "position": "উপদেষ্টা",
+      "tenure": "২০২২-",
       "current": false
     }
   ]
