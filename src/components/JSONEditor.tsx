@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin, Building } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -10,10 +10,17 @@ interface JSONFile {
   label: string;
   url: string;
   path: string;
-  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special' | 'fund-collection-special' | 'invitations-special' | 'quiz-special';
+  type: 'simple-array' | 'complex-object' | 'nested-sections' | 'gallery-special' | 'accounts-special' | 'fund-collection-special' | 'invitations-special' | 'quiz-special' | 'organizational-special';
   sections?: string[];
   hasImagePreview?: boolean;
   hasAudioPreview?: boolean;
+}
+
+interface MemberData {
+  id: string;
+  name: string;
+  designation: string;
+  photo: string;
 }
 
 // ============================================
@@ -47,18 +54,22 @@ const JSONEditor: React.FC = () => {
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
 
-  // Invitations special states (এলাকা ভিত্তিক ফিল্টার)
+  // Invitations special states
   const [selectedArea, setSelectedArea] = useState<string>('');
   
-  // Quiz special states (বছর ভিত্তিক ফিল্টার)
+  // Quiz special states
   const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
 
+  // 🆕 Organizational Profile special states
+  const [membersDataList, setMembersDataList] = useState<MemberData[]>([]);
+  const [membersLoading, setMembersLoading] = useState<boolean>(false);
+
   // ============================================
-  // JSON FILES CONFIGURATION (১৪টি ফাইল)
+  // JSON FILES CONFIGURATION (১৬টি ফাইল)
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
-    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
+    // 1. সদস্য আয় হিসাব
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -67,7 +78,7 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
-    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
+    // 2. সদস্য তথ্য
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -77,7 +88,7 @@ const JSONEditor: React.FC = () => {
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
-    // 3. যোগাযোগ (🆕 নতুন)
+    // 3. যোগাযোগ
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -87,7 +98,7 @@ const JSONEditor: React.FC = () => {
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
-    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
+    // 4. নিমন্ত্রণ
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -96,7 +107,7 @@ const JSONEditor: React.FC = () => {
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
-    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
+    // 5. কুইজ
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -104,7 +115,7 @@ const JSONEditor: React.FC = () => {
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
-    // 6. লগইন ডেটা (OK)
+    // 6. লগইন ডেটা
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -113,7 +124,7 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
-    // 7. চ্যাটবট (OK)
+    // 7. চ্যাটবট
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -122,7 +133,7 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
-    // 8. গ্যালারি (OK)
+    // 8. গ্যালারি
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -131,7 +142,7 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
-    // 9. বাৎসরিক হিসাব (OK)
+    // 9. বাৎসরিক হিসাব
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -140,7 +151,7 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
-    // 10. লাইভ চ্যানেল (OK)
+    // 10. লাইভ চ্যানেল
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -148,7 +159,7 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
-    // 11. পূজাদ্রব্যের তালিকা (OK)
+    // 11. পূজাদ্রব্যের তালিকা
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -156,7 +167,7 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
-    // 12. পূজা তথ্য (OK)
+    // 12. পূজা তথ্য
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -165,7 +176,7 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
-    // 13. সময়সূচী (OK)
+    // 13. সময়সূচী
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -174,7 +185,7 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
-    // 14. গান (OK)
+    // 14. গান
     {
       id: 'songs',
       label: '🎵 গান',
@@ -182,6 +193,25 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/songs.json',
       type: 'simple-array',
       hasAudioPreview: true
+    },
+    // 15. 🆕 সাংগঠনিক প্রোফাইল
+    {
+      id: 'organizationalProfile',
+      label: '🏛️ সাংগঠনিক প্রোফাইল',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
+      path: 'public/data/organizationalProfile.json',
+      type: 'organizational-special',
+      sections: ['leaders'],
+      hasImagePreview: true
+    },
+    // 16. 🆕 রেজুলেশন সমূহ
+    {
+      id: 'resolutionsData',
+      label: '📜 রেজুলেশন সমূহ',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
+      path: 'public/data/resolutions.json',
+      type: 'nested-sections',
+      sections: ['meetingDecisions', 'fundAllocations']
     }
   ];
 
@@ -197,6 +227,30 @@ const JSONEditor: React.FC = () => {
     { id: 'saraswati', label: '📚 সরস্বতী পূজা', value: 'সরস্বতী পূজা' },
     { id: 'rath', label: '🎪 রথযাত্রা', value: 'রথযাত্রা' },
     { id: 'other', label: '🙏 অন্যান্য', value: 'অন্যান্য' }
+  ];
+
+  // 🆕 POSITION OPTIONS
+  const POSITION_OPTIONS = [
+    'সভাপতি',
+    'সহ-সভাপতি',
+    'সাধারণ সম্পাদক',
+    'যুগ্ম সাধারণ সম্পাদক',
+    'সাংগঠনিক সম্পাদক',
+    'প্রচার সম্পাদক',
+    'সাংস্কৃতিক সম্পাদক',
+    'অর্থ সম্পাদক / কোষাধ্যক্ষ',
+    'উপদেষ্টা',
+    'সদস্য'
+  ];
+
+  // 🆕 MEETING CATEGORIES
+  const MEETING_CATEGORIES = [
+    'সাধারণ সভা',
+    'কমিটি গঠন',
+    'জরুরি সভা',
+    'বাজেট সভা',
+    'বিশেষ সভা',
+    'বার্ষিক সভা'
   ];
 
   // ============================================
@@ -225,7 +279,11 @@ const JSONEditor: React.FC = () => {
     durga: '🎉 দুর্গাপূজা',
     shyama: '🔱 শ্যামাপূজা',
     saraswati: '📚 সরস্বতী পূজা',
-    rath: '🎪 রথযাত্রা'
+    rath: '🎪 রথযাত্রা',
+    // 🆕 নতুন sections
+    leaders: '👥 নেতৃত্ব',
+    meetingDecisions: '📋 মিটিং সিদ্ধান্ত',
+    fundAllocations: '💰 অনুদান বরাদ্ধ'
   };
 
   // Schedule day labels
@@ -237,6 +295,43 @@ const JSONEditor: React.FC = () => {
     'ashtami': 'অষ্টমী',
     'navami': 'নবমী',
     'dashami': 'দশমী'
+  };
+
+  // ============================================
+  // 🆕 LOAD MEMBERS DATA (for organizational profile)
+  // ============================================
+
+  const loadMembersData = async () => {
+    if (membersDataList.length > 0) return; // already loaded
+    
+    setMembersLoading(true);
+    try {
+      const response = await fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json', { cache: 'no-cache' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.members && Array.isArray(data.members)) {
+          setMembersDataList(data.members);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading members data:', err);
+    }
+    setMembersLoading(false);
+  };
+
+  // Load members data when organizational profile is selected
+  useEffect(() => {
+    if (selectedFile === 'organizationalProfile') {
+      loadMembersData();
+    }
+  }, [selectedFile]);
+
+  // ============================================
+  // GET MEMBER INFO BY ID
+  // ============================================
+
+  const getMemberById = (memberId: string): MemberData | undefined => {
+    return membersDataList.find(m => m.id === memberId);
   };
 
   // ============================================
@@ -287,6 +382,10 @@ const JSONEditor: React.FC = () => {
           handleInvitationsData(data);
         } else if (file.type === 'quiz-special') {
           handleQuizData(data);
+        } else if (file.type === 'organizational-special') {
+          // 🆕 Handle organizational profile
+          setSelectedSection('leaders');
+          handleOrganizationalData(data);
         } else if (file.type === 'nested-sections' && file.sections) {
           setSelectedSection(file.sections[0]);
           processSection(data, file.sections[0]);
@@ -307,7 +406,24 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   // ============================================
-  // HANDLE INVITATIONS DATA (এলাকা ভিত্তিক ফিল্টার)
+  // 🆕 HANDLE ORGANIZATIONAL DATA
+  // ============================================
+
+  const handleOrganizationalData = (data: any) => {
+    if (!data || !data.leaders || !Array.isArray(data.leaders)) {
+      setJsonData([]);
+      setFormData({});
+      return;
+    }
+
+    const leaders = data.leaders;
+    setJsonData(leaders);
+    setSelectedItemIndex(0);
+    setFormData(leaders[0] || {});
+  };
+
+  // ============================================
+  // HANDLE INVITATIONS DATA
   // ============================================
 
   const handleInvitationsData = (data: any) => {
@@ -334,7 +450,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার - Array format)
+  // HANDLE QUIZ DATA
   // ============================================
 
   const handleQuizData = (data: any) => {
@@ -404,7 +520,7 @@ const JSONEditor: React.FC = () => {
   }, [selectedQuizYear]);
 
   // ============================================
-  // PROCESS FUND COLLECTION FILE (dynamicContent.json)
+  // PROCESS FUND COLLECTION FILE
   // ============================================
 
   const processFundCollectionFile = (data: any, section: string) => {
@@ -568,6 +684,8 @@ const JSONEditor: React.FC = () => {
         } else {
           processSection(rawData, selectedSection);
         }
+      } else if (currentFile?.type === 'organizational-special') {
+        handleOrganizationalData(rawData);
       } else if (currentFile?.type !== 'simple-array' && currentFile?.type !== 'gallery-special' && currentFile?.type !== 'quiz-special') {
         processSection(rawData, selectedSection);
       }
@@ -634,8 +752,21 @@ const JSONEditor: React.FC = () => {
       return item.title || `${item.year} সালের কুইজ` || `কুইজ ${index + 1}`;
     }
 
+    // 🆕 Organizational Profile - show member name from membersDataList
+    if (currentFile?.type === 'organizational-special') {
+      const member = getMemberById(item.memberId);
+      const name = member?.name || item.name || '';
+      const position = item.position || '';
+      return name ? `${name} (${position})` : `নেতা ${index + 1}`;
+    }
+
     if (selectedSection === 'contacts') {
       return item.name || item.designation || `যোগাযোগ ${index + 1}`;
+    }
+
+    // 🆕 Resolutions sections
+    if (selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations') {
+      return item.title || `আইটেম ${index + 1}`;
     }
     
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
@@ -645,87 +776,82 @@ const JSONEditor: React.FC = () => {
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
-// ============================================
-// AUTO CALCULATION FUNCTIONS (✅ NEW)
-// ============================================
+  // ============================================
+  // AUTO CALCULATION FUNCTIONS
+  // ============================================
 
-const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
-  setFundMembers(prev => prev.map(m => {
-    if (m.id === memberId) {
-      const updated = { ...m, [key]: value };
-      
-      // Auto calculate remaining when paidAmount changes
-      if (key === 'paidAmount') {
-        const dueAmount = updated.dueAmount || 0;
-        const paidAmount = parseFloat(value) || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+  const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
+    setFundMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        const updated = { ...m, [key]: value };
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'paidAmount') {
+          const dueAmount = updated.dueAmount || 0;
+          const paidAmount = parseFloat(value) || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
-      }
-      
-      // Auto calculate remaining when dueAmount changes
-      if (key === 'dueAmount') {
-        const dueAmount = parseFloat(value) || 0;
-        const paidAmount = updated.paidAmount || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'dueAmount') {
+          const dueAmount = parseFloat(value) || 0;
+          const paidAmount = updated.paidAmount || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
+        
+        return updated;
       }
-      
-      return updated;
+      return m;
+    }));
+  };
+
+  const autoRecalculateTotals = () => {
+    const totalMembers = fundMembers.length;
+    const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
+    const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
+    const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
+    const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
+    const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
+    const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
+    const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+
+    setPaymentStats({
+      totalMembers,
+      paidMembers,
+      partialMembers,
+      unpaidMembers,
+      paymentPercentage
+    });
+
+    setFundSettings((prev: any) => ({
+      ...prev,
+      totalDue,
+      totalPaid,
+      totalRemaining
+    }));
+  };
+
+  useEffect(() => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
+      autoRecalculateTotals();
     }
-    return m;
-  }));
-};
-
-const autoRecalculateTotals = () => {
-  const totalMembers = fundMembers.length;
-  const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
-  const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
-  const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
-  const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
-  const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
-  const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
-  const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
-
-  setPaymentStats({
-    totalMembers,
-    paidMembers,
-    partialMembers,
-    unpaidMembers,
-    paymentPercentage
-  });
-
-  setFundSettings((prev: any) => ({
-    ...prev,
-    totalDue,
-    totalPaid,
-    totalRemaining
-  }));
-};
-
-// ✅ Auto recalculate when members change
-useEffect(() => {
-  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
-    autoRecalculateTotals();
-  }
-}, [fundMembers]);
+  }, [fundMembers]);
   
   // ============================================
   // HANDLERS
@@ -733,6 +859,17 @@ useEffect(() => {
 
   const handleFieldChange = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+  };
+
+  // 🆕 Handle member selection for organizational profile
+  const handleMemberSelect = (memberId: string) => {
+    const member = getMemberById(memberId);
+    setFormData(prev => ({
+      ...prev,
+      memberId: memberId,
+      // Position can be overridden, so don't auto-fill if already set
+      position: prev.position || member?.designation || ''
+    }));
   };
 
   const handleFundSettingsChange = (key: string, value: any) => {
@@ -795,6 +932,11 @@ useEffect(() => {
         return item;
       });
       setRawData(newRawData);
+    } else if (currentFile?.type === 'organizational-special' && rawData) {
+      // 🆕 Update organizational profile
+      const newRawData = { ...rawData };
+      newRawData.leaders = updatedData;
+      setRawData(newRawData);
     } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
       const newRawData = { ...rawData };
       newRawData.invitations = rawData.invitations.map((item: any) => {
@@ -856,6 +998,30 @@ useEffect(() => {
 
     if (!Array.isArray(jsonData)) return;
     
+    // 🆕 Organizational Profile - add new leader
+    if (currentFile?.type === 'organizational-special') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = {
+        id: maxId + 1,
+        memberId: '',
+        position: '',
+        tenure: '',
+        current: false
+      };
+      
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      const newRawData = { ...rawData };
+      newRawData.leaders = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন নেতা যোগ হয়েছে!');
+      return;
+    }
+
     if (currentFile?.type === 'gallery-special') {
       const newId = `img_${Date.now()}`;
       const template = {
@@ -962,12 +1128,58 @@ useEffect(() => {
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
       
-      // Update rawData
       const newRawData = { ...rawData };
       newRawData.contacts = updatedData;
       setRawData(newRawData);
       
       alert('➕ নতুন যোগাযোগ যোগ হয়েছে!');
+      return;
+    }
+
+    // 🆕 Resolutions - meetingDecisions
+    if (selectedSection === 'meetingDecisions') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = {
+        id: maxId + 1,
+        title: '',
+        date: '',
+        category: '',
+        pdfUrl: ''
+      };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      const newRawData = { ...rawData };
+      newRawData.meetingDecisions = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন সিদ্ধান্ত যোগ হয়েছে!');
+      return;
+    }
+
+    // 🆕 Resolutions - fundAllocations
+    if (selectedSection === 'fundAllocations') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = {
+        id: maxId + 1,
+        title: '',
+        amount: '',
+        date: '',
+        source: '',
+        pdfUrl: ''
+      };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      const newRawData = { ...rawData };
+      newRawData.fundAllocations = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন অনুদান যোগ হয়েছে!');
       return;
     }
     
@@ -1017,6 +1229,11 @@ useEffect(() => {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = rawData.filter((item: any) => item.id !== itemToDelete.id);
       setRawData(newRawData);
+    } else if (currentFile?.type === 'organizational-special' && rawData) {
+      // 🆕 Delete from organizational profile
+      const newRawData = { ...rawData };
+      newRawData.leaders = jsonData.filter((_, i) => i !== selectedItemIndex);
+      setRawData(newRawData);
     } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
       const itemToDelete = jsonData[selectedItemIndex];
       const newRawData = { ...rawData };
@@ -1030,6 +1247,11 @@ useEffect(() => {
       const newRawData = { ...rawData };
       newRawData.contacts = jsonData.filter((_, i) => i !== selectedItemIndex);
       setRawData(newRawData);
+    } else if ((selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations') && rawData) {
+      // 🆕 Delete from resolutions
+      const newRawData = { ...rawData };
+      newRawData[selectedSection] = jsonData.filter((_, i) => i !== selectedItemIndex);
+      setRawData(newRawData);
     }
     
     const updatedData = jsonData.filter((_, i) => i !== selectedItemIndex);
@@ -1041,134 +1263,73 @@ useEffect(() => {
   };
 
   const handleCopyJSON = () => {
-    let finalData: any;
-
-    if (currentFile?.type === 'simple-array') {
-      const updated = [...jsonData];
-      if (updated.length > 0) updated[selectedItemIndex] = formData;
-      finalData = updated;
-    } else if (currentFile?.type === 'gallery-special') {
-      finalData = rawData;
-    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
-      finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
-      };
-    } else if (currentFile?.type === 'invitations-special' && rawData) {
-      finalData = { ...rawData };
-    } else if (currentFile?.type === 'quiz-special' && rawData) {
-      finalData = rawData;
-    } else if (currentFile?.type === 'accounts-special' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection && rawData[selectedSection]) {
-        const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
-        }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
-      }
-    } else if (currentFile?.type === 'nested-sections' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'pdfLink') {
-          finalData.pdfLink = formData.pdfLink || '';
-        } else {
-          const updated = [...jsonData];
-          if (updated.length > 0) updated[selectedItemIndex] = formData;
-          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
-        }
-      }
-    } else if (currentFile?.type === 'complex-object' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
-      }
-    }
-
-    navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
+    navigator.clipboard.writeText(generatedJSON);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
   
-// ============================================
-// DIRECT GITHUB UPLOAD
-// ============================================
+  // ============================================
+  // DIRECT GITHUB UPLOAD
+  // ============================================
 
-const handleDirectUpload = async () => {
-  if (!currentFile) {
-    alert('❌ কোন ফাইল নির্বাচন করা নেই!');
-    return;
-  }
-
-  const confirmUpload = window.confirm(
-    `⚠️ নিশ্চিত করুন:\n\n` +
-    `ফাইল: ${currentFile.path}\n` +
-    `লেবেল: ${currentFile.label}\n\n` +
-    `সরাসরি GitHub এ আপলোড হবে।\n` +
-    `এগিয়ে যেতে চান?`
-  );
-
-  if (!confirmUpload) return;
-
-  setIsUploading(true);
-  setError('');
-  setUploadSuccess(false);
-
-  try {
-    // Call our backend API
-    const response = await fetch('/api/github-upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        filePath: currentFile.path,
-        content: generatedJSON,
-        commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Upload failed');
+  const handleDirectUpload = async () => {
+    if (!currentFile) {
+      alert('❌ কোন ফাইল নির্বাচন করা নেই!');
+      return;
     }
 
-    // Success!
-    setUploadSuccess(true);
-    alert(
-      `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
-      `📁 ফাইল: ${currentFile.label}\n` +
-      `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
-      `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+    const confirmUpload = window.confirm(
+      `⚠️ নিশ্চিত করুন:\n\n` +
+      `ফাইল: ${currentFile.path}\n` +
+      `লেবেল: ${currentFile.label}\n\n` +
+      `সরাসরি GitHub এ আপলোড হবে।\n` +
+      `এগিয়ে যেতে চান?`
     );
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setUploadSuccess(false), 5000);
+    if (!confirmUpload) return;
 
-  } catch (err) {
-    console.error('Upload error:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
-    alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
-  } finally {
-    setIsUploading(false);
-  }
-};
+    setIsUploading(true);
+    setError('');
+    setUploadSuccess(false);
+
+    try {
+      const response = await fetch('/api/github-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filePath: currentFile.path,
+          content: generatedJSON,
+          commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setUploadSuccess(true);
+      alert(
+        `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
+        `📁 ফাইল: ${currentFile.label}\n` +
+        `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
+        `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+      );
+
+      setTimeout(() => setUploadSuccess(false), 5000);
+
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+      alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   // ============================================
   // LABEL MAPPING
@@ -1199,7 +1360,132 @@ const handleDirectUpload = async () => {
     message: 'মেসেজ', instructions: 'নির্দেশনা',
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
-    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট',
+    // 🆕 নতুন fields
+    position: 'পদবী',
+    tenure: 'কার্যকাল',
+    current: 'বর্তমান?',
+    memberId: 'সদস্য নির্বাচন',
+    amount: 'পরিমাণ',
+    source: 'উৎস'
+  };
+
+  // ============================================
+  // 🆕 RENDER ORGANIZATIONAL PROFILE EDITOR
+  // ============================================
+
+  const renderOrganizationalEditor = () => {
+    const selectedMember = getMemberById(formData.memberId);
+
+    return (
+      <div className="space-y-4">
+        {/* Member Selection Dropdown */}
+        <div className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            👤 সদস্য নির্বাচন করুন
+          </label>
+          {membersLoading ? (
+            <div className="flex items-center gap-2 text-gray-500">
+              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              সদস্য তালিকা লোড হচ্ছে...
+            </div>
+          ) : (
+            <select 
+              value={formData.memberId || ''} 
+              onChange={(e) => handleMemberSelect(e.target.value)}
+              className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm bg-orange-50"
+            >
+              <option value="">-- সদস্য নির্বাচন করুন --</option>
+              {membersDataList.map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.name} {member.designation ? `(${member.designation})` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Photo Preview (auto from members-data) */}
+        {selectedMember && (
+          <div className="form-field">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <ImageIcon className="w-4 h-4" />
+              🖼️ ছবি (members-data থেকে)
+            </label>
+            <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-300">
+                <img 
+                  src={selectedMember.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                  alt={selectedMember.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                />
+              </div>
+              <div>
+                <p className="font-bold text-gray-800">{selectedMember.name}</p>
+                <p className="text-sm text-gray-500">{selectedMember.designation || 'পদবী নেই'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Position Dropdown */}
+        <div className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            📝 পদবী (এই কমিটিতে)
+          </label>
+          <select 
+            value={formData.position || ''} 
+            onChange={(e) => handleFieldChange('position', e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+          >
+            <option value="">পদবী নির্বাচন করুন</option>
+            {POSITION_OPTIONS.map(pos => (
+              <option key={pos} value={pos}>{pos}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tenure Input */}
+        <div className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            📅 কার্যকাল
+          </label>
+          <input 
+            type="text" 
+            value={formData.tenure || ''} 
+            onChange={(e) => handleFieldChange('tenure', e.target.value)}
+            placeholder="যেমন: ২০২৩-২০২৫"
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
+          />
+        </div>
+
+        {/* Current Checkbox */}
+        <div className="form-field flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+          <input 
+            type="checkbox" 
+            checked={Boolean(formData.current)} 
+            onChange={(e) => handleFieldChange('current', e.target.checked)}
+            className="w-5 h-5 text-green-500 rounded" 
+          />
+          <label className="font-semibold text-gray-700 text-sm">
+            ✅ বর্তমান কমিটির সদস্য?
+          </label>
+        </div>
+
+        {/* ID (readonly) */}
+        <div className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">আইডি</label>
+          <input 
+            type="text" 
+            value={String(formData.id || '')} 
+            disabled 
+            className="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed text-sm" 
+          />
+        </div>
+      </div>
+    );
   };
 
   // ============================================
@@ -1211,6 +1497,11 @@ const handleDirectUpload = async () => {
     
     const label = labelMap[key] || key;
     const fileConfig = currentFile;
+
+    // 🆕 Skip memberId for organizational-special (handled separately)
+    if (currentFile?.type === 'organizational-special' && ['memberId', 'position', 'tenure', 'current', 'id'].includes(key)) {
+      return null;
+    }
 
     if (key === 'id') {
       return (
@@ -1241,6 +1532,35 @@ const handleDirectUpload = async () => {
               type="text" 
               placeholder="বা নতুন এলাকা লিখুন"
               value={areas.includes(formData[key]) ? '' : formData[key] || ''}
+              onChange
+                            onChange={(e) => handleFieldChange(key, e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // 🆕 Category dropdown for meeting decisions
+    if (key === 'category' && selectedSection === 'meetingDecisions') {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+          <div className="flex gap-2">
+            <select 
+              value={MEETING_CATEGORIES.includes(formData[key]) ? formData[key] : ''} 
+              onChange={(e) => handleFieldChange(key, e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+            >
+              <option value="">ক্যাটাগরি নির্বাচন</option>
+              {MEETING_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <input 
+              type="text" 
+              placeholder="বা নতুন ক্যাটাগরি"
+              value={MEETING_CATEGORIES.includes(formData[key]) ? '' : formData[key] || ''}
               onChange={(e) => handleFieldChange(key, e.target.value)}
               className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
             />
@@ -1248,113 +1568,130 @@ const handleDirectUpload = async () => {
         </div>
       );
     }
-    
-    // ============================================
-// QUESTIONS EDITOR (প্রশ্ন/উত্তর এডিট)
-// ============================================
 
-if (key === 'questions' && Array.isArray(value)) {
-  return (
-    <div key={key} className="form-field">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
-        <span>{label} ({value.length} টি প্রশ্ন)</span>
-        <button
-          onClick={() => {
-            const newQuestion = {
-              id: value.length + 1,
-              question: '',
-              answer: '',
-              options: ['', '', '', '']
-            };
-            handleFieldChange(key, [...value, newQuestion]);
-          }}
-          className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-        >
-          <Plus className="w-3 h-3" /> প্রশ্ন যোগ
-        </button>
-      </label>
-      
-      <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
-        {value.map((q: any, idx: number) => (
-          <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
-            <div className="flex items-center justify-between">
-              <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
-              <button
-                onClick={() => {
-                  if (value.length <= 1) {
-                    alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
-                    return;
-                  }
-                  if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
-                    handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
-                  }
-                }}
-                className="text-red-500 hover:bg-red-50 p-1 rounded"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {/* প্রশ্ন */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
-              <textarea
-                value={q.question || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], question: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                rows={2}
-                placeholder="প্রশ্ন লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            {/* উত্তর */}
-            <div>
-              <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
-              <input
-                type="text"
-                value={q.answer || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], answer: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                placeholder="সঠিক উত্তর লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            
-            {/* অপশন (যদি থাকে) */}
-            {q.options && Array.isArray(q.options) && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {q.options.map((opt: string, optIdx: number) => (
-                    <input
-                      key={optIdx}
-                      type="text"
-                      value={opt || ''}
-                      onChange={(e) => {
-                        const updated = [...value];
-                        updated[idx].options[optIdx] = e.target.value;
-                        handleFieldChange(key, updated);
-                      }}
-                      placeholder={`অপশন ${optIdx + 1}`}
-                      className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
-                    />
-                  ))}
+    // 🆕 PDF URL with preview link
+    if (key === 'pdfUrl') {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            {label}
+          </label>
+          <input type="text" value={String(formData[key] || '')} 
+            onChange={(e) => handleFieldChange(key, e.target.value)}
+            placeholder="/pdfs/example.pdf বা https://..."
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+          {formData[key] && (
+            <a href={formData[key]} target="_blank" rel="noopener noreferrer" 
+              className="inline-flex items-center gap-2 text-blue-600 text-sm hover:underline mt-2">
+              <FileText className="w-4 h-4" /> PDF দেখুন →
+            </a>
+          )}
+        </div>
+      );
+    }
+
+    // Questions editor for quiz
+    if (key === 'questions' && Array.isArray(value)) {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
+            <span>{label} ({value.length} টি প্রশ্ন)</span>
+            <button
+              onClick={() => {
+                const newQuestion = {
+                  id: value.length + 1,
+                  question: '',
+                  answer: '',
+                  options: ['', '', '', '']
+                };
+                handleFieldChange(key, [...value, newQuestion]);
+              }}
+              className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+            >
+              <Plus className="w-3 h-3" /> প্রশ্ন যোগ
+            </button>
+          </label>
+          
+          <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+            {value.map((q: any, idx: number) => (
+              <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
+                <div className="flex items-center justify-between">
+                  <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
+                  <button
+                    onClick={() => {
+                      if (value.length <= 1) {
+                        alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
+                        return;
+                      }
+                      if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
+                        handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
+                      }
+                    }}
+                    className="text-red-500 hover:bg-red-50 p-1 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
+                  <textarea
+                    value={q.question || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], question: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    rows={2}
+                    placeholder="প্রশ্ন লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
+                  <input
+                    type="text"
+                    value={q.answer || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], answer: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    placeholder="সঠিক উত্তর লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                
+                {q.options && Array.isArray(q.options) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {q.options.map((opt: string, optIdx: number) => (
+                        <input
+                          key={optIdx}
+                          type="text"
+                          value={opt || ''}
+                          onChange={(e) => {
+                            const updated = [...value];
+                            updated[idx].options[optIdx] = e.target.value;
+                            handleFieldChange(key, updated);
+                          }}
+                          placeholder={`অপশন ${optIdx + 1}`}
+                          className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }
+
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
@@ -1600,60 +1937,59 @@ if (key === 'questions' && Array.isArray(value)) {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
 
-           <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          💰 মোট দায্যকৃত টাকা
-          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalDue || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ✅ মোট পরিশোধ
-          <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalPaid || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ⏳ মোট বাকি
-          <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalRemaining || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-    </div>
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  💰 মোট দায্যকৃত টাকা
+                  <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalDue || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ✅ মোট পরিশোধ
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalPaid || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ⏳ মোট বাকি
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalRemaining || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+            </div>
 
-    {/* ✅ NEW: Auto Calculation Alert */}
-    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
-      <div className="flex items-start gap-3">
-        <div className="text-3xl">💡</div>
-        <div className="flex-1">
-          <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
-          <p className="text-sm text-blue-700 leading-relaxed">
-            <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
-            Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">💡</div>
+                <div className="flex-1">
+                  <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
+                  <p className="text-sm text-blue-700 leading-relaxed">
+                    <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে।
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Members Sub-section */}
         {fundSubSection === 'members' && (
           <div className="space-y-4">
@@ -1717,51 +2053,43 @@ if (key === 'questions' && Array.isArray(value)) {
                     </select>
                   </div>
                   
-               <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    💰 দায্যকৃত টাকা
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
-  />
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      💰 দায্যকৃত টাকা
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
+                    />
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ✅ পরিশোধিত
-    <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
-  />
-  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">💡</span>
-    <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ✅ পরিশোধিত
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
+                    />
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ⏳ বকেয়া
-    <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
-    disabled
-    className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
-  />
-  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">🔒</span>
-    <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ⏳ বকেয়া
+                      <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
+                      disabled
+                      className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
+                    />
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
@@ -1773,7 +2101,7 @@ if (key === 'questions' && Array.isArray(value)) {
                       <option value="নগদ">💵 নগদ</option>
                       <option value="রকেট">🚀 রকেট</option>
                       <option value="ব্যাংক">🏦 ব্যাংক</option>
-                      <option value="ব্যাংক">💲 নগদ অর্থ </option>
+                      <option value="নগদ অর্থ">💲 নগদ অর্থ</option>
                     </select>
                   </div>
                   
@@ -1834,39 +2162,6 @@ if (key === 'questions' && Array.isArray(value)) {
                   <div className="bg-purple-500 h-2 rounded-full transition-all" 
                     style={{ width: `${paymentStats.paymentPercentage || 0}%` }}></div>
                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">মোট সদস্য</label>
-                <input type="number" value={paymentStats.totalMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('totalMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">পরিশোধিত সদস্য</label>
-                <input type="number" value={paymentStats.paidMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('paidMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">আংশিক সদস্য</label>
-                <input type="number" value={paymentStats.partialMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('partialMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">বকেয়া সদস্য</label>
-                <input type="number" value={paymentStats.unpaidMembers || 0} 
-                  onChange={(e) => handlePaymentStatsChange('unpaidMembers', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট শতাংশ</label>
-                <input type="number" value={paymentStats.paymentPercentage || 0} 
-                  onChange={(e) => handlePaymentStatsChange('paymentPercentage', parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" />
               </div>
             </div>
           </div>
@@ -1992,6 +2287,7 @@ if (key === 'questions' && Array.isArray(value)) {
   // ============================================
   // GENERATE JSON
   // ============================================
+
   const generatedJSON = (() => {
     let finalData: any;
 
@@ -2008,6 +2304,12 @@ if (key === 'questions' && Array.isArray(value)) {
         members: fundMembers,
         paymentStats: paymentStats
       };
+    } else if (currentFile?.type === 'organizational-special' && rawData) {
+      // 🆕 Organizational profile
+      finalData = { ...rawData };
+      const updated = [...jsonData];
+      if (updated.length > 0) updated[selectedItemIndex] = formData;
+      finalData.leaders = updated;
     } else if (currentFile?.type === 'invitations-special' && rawData) {
       finalData = { ...rawData };
     } else if (currentFile?.type === 'quiz-special' && rawData) {
@@ -2072,7 +2374,7 @@ if (key === 'questions' && Array.isArray(value)) {
       {/* Info */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
         <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
+        <p className="text-sm text-blue-700">১৬টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
       </div>
 
       {error && (
@@ -2084,7 +2386,7 @@ if (key === 'questions' && Array.isArray(value)) {
       {/* File Selector */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
           {JSON_FILES.map(file => (
             <button key={file.id} onClick={() => setSelectedFile(file.id)} 
               className={btnClass(selectedFile === file.id)}>
@@ -2100,7 +2402,7 @@ if (key === 'questions' && Array.isArray(value)) {
       </div>
 
       {/* Section Selector */}
-      {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
+      {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && currentFile.type !== 'organizational-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <label className="block text-sm font-bold text-gray-700 mb-3">📂 সেকশন নির্বাচন:</label>
           <div className="flex flex-wrap gap-2">
@@ -2114,7 +2416,7 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-      {/* Invitations Special Filters (এলাকা ভিত্তিক) */}
+      {/* Invitations Special Filters */}
       {currentFile?.type === 'invitations-special' && selectedSection === 'invitations' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2140,7 +2442,7 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-      {/* Quiz Special Filters (বছর ভিত্তিক) */}
+      {/* Quiz Special Filters */}
       {currentFile?.type === 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2226,6 +2528,43 @@ if (key === 'questions' && Array.isArray(value)) {
               renderFundCollectionEditor()
             ) : currentFile?.type === 'accounts-special' ? (
               renderAccountsPdfEditor()
+            ) : currentFile?.type === 'organizational-special' ? (
+              // 🆕 Organizational Profile Special Editor
+              <>
+                {/* Item Selector */}
+                {Array.isArray(jsonData) && jsonData.length > 0 && (
+                  <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                      <label className="text-sm font-bold text-purple-700 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        👥 নেতৃত্ব তালিকা ({jsonData.length} জন):
+                      </label>
+                      <div className="flex gap-2">
+                        <button onClick={handleAddItem} 
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                          <Plus className="w-4 h-4" /> নতুন যোগ
+                        </button>
+                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                          <Trash2 className="w-4 h-4" /> মুছুন
+                        </button>
+                      </div>
+                    </div>
+                    {jsonData.length > 1 && (
+                      <select value={selectedItemIndex} 
+                        onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+                        className="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm bg-white">
+                        {jsonData.map((item: any, i: number) => (
+                          <option key={i} value={i}>
+                            #{i + 1} - {getItemDisplayName(item, i)} {item.current ? '✅ বর্তমান' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+                {renderOrganizationalEditor()}
+              </>
             ) : (
               <>
                 {/* Item Selector for other types */}
@@ -2274,48 +2613,48 @@ if (key === 'questions' && Array.isArray(value)) {
         {/* Right: JSON Code */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-  <h3 className="text-white font-bold flex items-center gap-2">
-    <FileText className="w-5 h-5" />
-    JSON কোড
-  </h3>
-  <div className="flex gap-2">
-    {/* Copy Button */}
-    <button onClick={handleCopyJSON} 
-      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-      {copied ? '✅ কপি' : '📋 কপি'}
-    </button>
-    
-    {/* Upload Button */}
-    <button 
-      onClick={handleDirectUpload} 
-      disabled={isUploading || loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-        uploadSuccess 
-          ? 'bg-green-600 text-white' 
-          : isUploading 
-            ? 'bg-gray-400 text-white cursor-not-allowed' 
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-      }`}>
-      {isUploading ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          আপলোড হচ্ছে...
-        </>
-      ) : uploadSuccess ? (
-        <>
-          <Check className="w-4 h-4" />
-          ✅ আপলোড হয়েছে!
-        </>
-      ) : (
-        <>
-          <Upload className="w-4 h-4" />
-          🚀 সরাসরি আপলোড
-        </>
-      )}
-    </button>
-  </div>
-</div>
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              JSON কোড
+            </h3>
+            <div className="flex gap-2">
+              {/* Copy Button */}
+              <button onClick={handleCopyJSON} 
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? '✅ কপি' : '📋 কপি'}
+              </button>
+              
+              {/* Upload Button */}
+              <button 
+                onClick={handleDirectUpload} 
+                disabled={isUploading || loading}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  uploadSuccess 
+                    ? 'bg-green-600 text-white' 
+                    : isUploading 
+                      ? 'bg-gray-400 text-white cursor-not-allowed' 
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}>
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    আপলোড হচ্ছে...
+                  </>
+                ) : uploadSuccess ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    ✅ আপলোড হয়েছে!
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    🚀 সরাসরি আপলোড
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
           <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
             <code>{generatedJSON}</code>
           </pre>
@@ -2333,8 +2672,8 @@ if (key === 'questions' && Array.isArray(value)) {
           <span className="text-lg">📝</span> GitHub এ আপডেট করার পদ্ধতি:
         </h3>
         <ol className="list-decimal list-inside space-y-2 text-sm text-purple-900">
-          <li>"📋 কপি" বাটনে ক্লিক করুন</li>
-          <li><a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
+          <li>"🚀 সরাসরি আপলোড" বাটনে ক্লিক করুন (সবচেয়ে সহজ!)</li>
+          <li>অথবা "📋 কপি" বাটনে ক্লিক করে <a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
             className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
           <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path}</code> ফাইলটি খুলুন</li>
           <li>✏️ Edit → পেস্ট → Commit</li>
