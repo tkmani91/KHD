@@ -1,59 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Printer, Crown, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Users, Printer } from 'lucide-react';
 
-interface CommitteeMember {
-  memberId: string;
-  position: string;
-}
-
-interface Committee {
+interface Leader {
   id: number;
-  tenure: string;
-  current: boolean;
-  members: CommitteeMember[];
-}
-
-interface Member {
-  id: string;
   name: string;
+  position: string;
+  tenure: string;
   photo?: string;
+  current?: boolean;
 }
 
-interface MembersData {
-  members: Member[];
+interface ProfileData {
+  leaders: Leader[];
 }
 
 const OrganizationalProfile: React.FC = () => {
-  const [committees, setCommittees] = useState<Committee[]>([]);
-  const [membersData, setMembersData] = useState<MembersData>({ members: [] });
+  const [data, setData] = useState<ProfileData>({ leaders: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/data/organizationalProfile.json').then(res => res.json()),
-      fetch('/members-data.json').then(res => res.json())
-    ])
-      .then(([profileData, members]) => {
-        // ✅ বর্তমান কমিটি উপরে, বিগত কমিটি নিচে
-        const sortedCommittees = [...profileData.committees].sort((a, b) => {
+    fetch('/data/organizationalProfile.json')
+      .then(res => res.json())
+      .then(jsonData => {
+        // ✅ বর্তমান উপরে, বিগত নিচে
+        const sortedLeaders = [...jsonData.leaders].sort((a, b) => {
           if (a.current && !b.current) return -1;
           if (!a.current && b.current) return 1;
           return 0;
         });
-        setCommittees(sortedCommittees);
-        setMembersData(members);
+        setData({ leaders: sortedLeaders });
         setLoading(false);
       })
       .catch(error => {
-        console.error('Error loading data:', error);
+        console.error('Error loading organizational profile:', error);
         setLoading(false);
       });
   }, []);
-
-  // মেম্বার আইডি থেকে মেম্বার তথ্য খুঁজে বের করা
-  const getMemberById = (memberId: string): Member | undefined => {
-    return membersData.members.find(m => m.id === memberId);
-  };
 
   const handlePrint = () => {
     const originalTitle = document.title;
@@ -63,8 +45,6 @@ const OrganizationalProfile: React.FC = () => {
       document.title = originalTitle;
     }, 1000);
   };
-
-  const defaultPhoto = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
   if (loading) {
     return (
@@ -106,19 +86,19 @@ const OrganizationalProfile: React.FC = () => {
             display: block !important;
           }
           .print-container {
-            padding: 10px;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, sans-serif;
           }
           .print-header {
             background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
             color: white !important;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: 6px;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             text-align: center;
           }
           .print-header h1 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             margin: 0;
           }
@@ -126,56 +106,73 @@ const OrganizationalProfile: React.FC = () => {
             text-align: right;
             font-size: 10px;
             color: #666;
-            margin-bottom: 8px;
-          }
-          .print-committee {
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            overflow: hidden;
-          }
-          .print-committee-header {
-            background: #f3f4f6 !important;
-            padding: 6px 10px;
-            font-weight: 700;
-            font-size: 12px;
-            border-bottom: 1px solid #ddd;
-          }
-          .print-committee-header.current {
-            background: #dcfce7 !important;
-            color: #166534 !important;
+            margin-bottom: 4px;
           }
           .print-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
+            border: 1px solid #374151;
           }
           .print-table th {
             background: #1f2937 !important;
             color: white !important;
-            padding: 4px 6px;
-            font-weight: 600;
+            padding: 4px 2px;
+            font-weight: 700;
             font-size: 10px;
-            text-align: left;
+            border: 1px solid #4b5563;
           }
           .print-table td {
-            padding: 4px 6px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 2px;
+            border: 1px solid #d1d5db;
             vertical-align: middle;
             font-size: 10px;
+            line-height: 1.1;
           }
           .print-table tbody tr:nth-child(even) {
-            background: #f9fafb !important;
+            background: #f3f4f6 !important;
+          }
+          .print-table .serial {
+            text-align: center;
+            font-weight: bold;
+            color: #7c3aed;
+            width: 6%;
+          }
+          .print-table .photo-cell {
+            width: 8%;
+            text-align: center;
           }
           .print-table .photo-cell img {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             object-fit: cover;
+            border: 1px solid #ccc;
+          }
+          .print-table .name-cell {
+            font-weight: 600;
+            text-align: left;
+            padding-left: 4px;
+          }
+          .print-table .position-badge {
+            background: #e9d5ff !important;
+            color: #6b21a8 !important;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+          }
+          .print-table .current-badge {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            padding: 1px 4px;
+            border-radius: 8px;
+            font-size: 8px;
+            font-weight: 700;
           }
           .print-footer {
-            margin-top: 15px;
-            padding-top: 8px;
+            margin-top: 8px;
+            padding-top: 4px;
             border-top: 2px solid #7c3aed;
             text-align: center;
             font-size: 9px;
@@ -183,7 +180,13 @@ const OrganizationalProfile: React.FC = () => {
           }
           @page {
             size: A4 portrait;
-            margin: 5mm;
+            margin: 3mm;
+          }
+          tr {
+            page-break-inside: avoid;
+          }
+          thead {
+            display: table-header-group;
           }
         }
         .print-only {
@@ -198,7 +201,7 @@ const OrganizationalProfile: React.FC = () => {
             <h3 className="font-bold text-lg flex items-center gap-2 justify-center sm:justify-start">
               <Users className="w-5 h-5" /> সাংগঠনিক প্রোফাইল
             </h3>
-            <p className="text-sm text-purple-100">কমিটি ভিত্তিক নেতৃত্বের তালিকা</p>
+            <p className="text-sm text-purple-100">নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
           </div>
           <button 
             onClick={handlePrint}
@@ -211,7 +214,6 @@ const OrganizationalProfile: React.FC = () => {
 
       {/* PRINT SECTION */}
       <div className="print-section">
-        {/* PRINT ONLY CONTENT */}
         <div className="print-container print-only">
           <div className="print-header">
             <h1>🏛️ কলম হিন্দু ধর্মসভা - সাংগঠনিক প্রোফাইল</h1>
@@ -219,174 +221,140 @@ const OrganizationalProfile: React.FC = () => {
           <div className="print-date">
             প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}
           </div>
-          
-          {committees.map((committee) => (
-            <div key={committee.id} className="print-committee">
-              <div className={`print-committee-header ${committee.current ? 'current' : ''}`}>
-                📋 কমিটি: {committee.tenure} {committee.current ? '(বর্তমান)' : '(বিগত)'}
-              </div>
-              <table className="print-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '8%' }}>ক্রম</th>
-                    <th style={{ width: '10%' }}>ছবি</th>
-                    <th style={{ width: '40%' }}>নাম</th>
-                    <th style={{ width: '42%' }}>পদবি</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {committee.members.map((cm, index) => {
-                    const member = getMemberById(cm.memberId);
-                    return (
-                      <tr key={cm.memberId}>
-                        <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{index + 1}</td>
-                        <td className="photo-cell">
-                          <img 
-                            src={member?.photo || defaultPhoto} 
-                            alt={member?.name || 'Member'}
-                            onError={(e) => { (e.target as HTMLImageElement).src = defaultPhoto; }}
-                          />
-                        </td>
-                        <td style={{ fontWeight: '600' }}>{member?.name || 'অজানা'}</td>
-                        <td>{cm.position}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ))}
-          
+          <table className="print-table">
+            <thead>
+              <tr>
+                <th>ক্রম</th>
+                <th>ছবি</th>
+                <th>নাম</th>
+                <th>পদবি</th>
+                <th>মেয়াদকাল</th>
+                <th>অবস্থা</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.leaders.map((leader, index) => (
+                <tr key={leader.id}>
+                  <td className="serial">{index + 1}</td>
+                  <td className="photo-cell">
+                    <img 
+                      src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                      alt={leader.name}
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                    />
+                  </td>
+                  <td className="name-cell">{leader.name}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className="position-badge">{leader.position}</span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>{leader.tenure}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    {leader.current ? (
+                      <span className="current-badge">বর্তমান</span>
+                    ) : (
+                      <span style={{ color: '#888', fontSize: '8px' }}>সমাপ্ত</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
           <div className="print-footer">
             <p>© {new Date().getFullYear()} কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
           </div>
         </div>
 
         {/* NO DATA */}
-        {committees.length === 0 && (
+        {data.leaders.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-lg no-print">
             <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 text-lg">কোনো কমিটির তথ্য পাওয়া যায়নি</p>
+            <p className="text-gray-500 text-lg">কোনো তথ্য পাওয়া যায়নি</p>
           </div>
         )}
 
-        {/* COMMITTEES LIST - WEB VIEW */}
-        {committees.length > 0 && (
-          <div className="space-y-6 no-print">
-            {committees.map((committee) => (
-              <div 
-                key={committee.id} 
-                className={`bg-white rounded-xl shadow-lg overflow-hidden border-2 ${
-                  committee.current ? 'border-green-400' : 'border-gray-200'
-                }`}
-              >
-                {/* Committee Header */}
-                <div className={`p-4 ${
-                  committee.current 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                    : 'bg-gradient-to-r from-gray-400 to-gray-500'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-white">
-                      <Crown className="w-6 h-6" />
-                      <div>
-                        <h4 className="font-bold text-lg">কমিটি: {committee.tenure}</h4>
-                        <div className="flex items-center gap-2 text-sm opacity-90">
-                          <Calendar className="w-4 h-4" />
-                          <span>মেয়াদকাল: {committee.tenure}</span>
-                        </div>
-                      </div>
+        {/* LEADERS LIST */}
+        {data.leaders.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden no-print">
+            <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold text-sm">
+              <div className="col-span-1 text-center">ক্রম</div>
+              <div className="col-span-1 text-center">ছবি</div>
+              <div className="col-span-4">নাম</div>
+              <div className="col-span-2 text-center">পদবি</div>
+              <div className="col-span-2 text-center">মেয়াদকাল</div>
+              <div className="col-span-2 text-center">অবস্থা</div>
+            </div>
+
+            <div className="divide-y divide-gray-100">
+              {data.leaders.map((leader, index) => (
+                <div key={leader.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center">
+                  {/* Mobile View */}
+                  <div className="md:hidden flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold flex-shrink-0">
+                      {index + 1}
+                    </span>
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-200 flex-shrink-0">
+                      <img 
+                        src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                        alt={leader.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                      />
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-                      committee.current 
-                        ? 'bg-white text-green-600' 
-                        : 'bg-white text-gray-600'
-                    }`}>
-                      {committee.current ? (
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" /> বর্তমান
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-800 text-sm truncate">{leader.name}</h4>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                          {leader.position}
                         </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" /> বিগত
+                        <span className="text-gray-500 text-xs">{leader.tenure}</span>
+                      </div>
+                      {leader.current && (
+                        <span className="inline-block mt-1 bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                          বর্তমান
                         </span>
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Desktop Table Header */}
-                <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-gray-100 font-semibold text-sm text-gray-700">
-                  <div className="col-span-1 text-center">ক্রম</div>
-                  <div className="col-span-1 text-center">ছবি</div>
-                  <div className="col-span-5">নাম</div>
-                  <div className="col-span-5">পদবি</div>
+                  {/* Desktop View */}
+                  <div className="hidden md:block col-span-1 text-center">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold text-sm">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <div className="hidden md:block col-span-1 text-center">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 mx-auto">
+                      <img 
+                        src={leader.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
+                        alt={leader.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; }}
+                      />
+                    </div>
+                  </div>
+                  <div className="hidden md:block col-span-4">
+                    <h4 className="font-bold text-gray-800 text-sm">{leader.name}</h4>
+                  </div>
+                  <div className="hidden md:block col-span-2 text-center">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                      {leader.position}
+                    </span>
+                  </div>
+                  <div className="hidden md:block col-span-2 text-center text-gray-600 text-sm">
+                    {leader.tenure}
+                  </div>
+                  <div className="hidden md:block col-span-2 text-center">
+                    {leader.current ? (
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                        বর্তমান
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">সমাপ্ত</span>
+                    )}
+                  </div>
                 </div>
-
-                {/* Members List */}
-                <div className="divide-y divide-gray-100">
-                  {committee.members.map((cm, index) => {
-                    const member = getMemberById(cm.memberId);
-                    return (
-                      <div 
-                        key={cm.memberId} 
-                        className="grid grid-cols-1 md:grid-cols-12 gap-2 px-4 py-3 hover:bg-purple-50 transition items-center"
-                      >
-                        {/* Mobile View */}
-                        <div className="md:hidden flex items-center gap-3">
-                          <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold flex-shrink-0 text-sm">
-                            {index + 1}
-                          </span>
-                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-200 flex-shrink-0">
-                            <img 
-                              src={member?.photo || defaultPhoto} 
-                              alt={member?.name || 'Member'} 
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = defaultPhoto; }}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-gray-800 text-sm truncate">
-                              {member?.name || 'অজানা সদস্য'}
-                            </h4>
-                            <span className="inline-block mt-1 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                              {cm.position}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Desktop View */}
-                        <div className="hidden md:block col-span-1 text-center">
-                          <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-600 rounded-full font-bold text-sm">
-                            {index + 1}
-                          </span>
-                        </div>
-                        <div className="hidden md:block col-span-1 text-center">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-purple-200 mx-auto">
-                            <img 
-                              src={member?.photo || defaultPhoto} 
-                              alt={member?.name || 'Member'} 
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = defaultPhoto; }}
-                            />
-                          </div>
-                        </div>
-                        <div className="hidden md:block col-span-5">
-                          <h4 className="font-bold text-gray-800 text-sm">
-                            {member?.name || 'অজানা সদস্য'}
-                          </h4>
-                        </div>
-                        <div className="hidden md:block col-span-5">
-                          <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                            {cm.position}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
