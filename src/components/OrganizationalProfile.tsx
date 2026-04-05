@@ -22,7 +22,14 @@ const OrganizationalProfile: React.FC = () => {
     fetch('/data/organizationalProfile.json')
       .then(res => res.json())
       .then(jsonData => {
-        setData(jsonData);
+        // ✅ বর্তমান নেতৃত্ব উপরে, বিগত নেতৃত্ব নিচে সাজানো
+        const sortedLeaders = [...jsonData.leaders].sort((a, b) => {
+          if (a.current && !b.current) return -1; // বর্তমান উপরে
+          if (!a.current && b.current) return 1;  // বিগত নিচে
+          return 0; // একই রকম হলে পরিবর্তন নেই
+        });
+
+        setData({ leaders: sortedLeaders });
         setLoading(false);
       })
       .catch(error => {
