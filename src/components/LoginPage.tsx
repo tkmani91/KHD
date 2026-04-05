@@ -40,6 +40,17 @@ interface LoginUser {
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
   photo?: string;
+  permissions?: string[];  // 👈 নতুন লাইন যোগ করুন
+}
+
+interface SessionUser {
+  id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  role: 'Member' | 'Admin' | 'Super Admin';
+  photo?: string;
+  permissions?: string[];  // 👈 নতুন লাইন যোগ করুন
 }
 
 interface Member {
