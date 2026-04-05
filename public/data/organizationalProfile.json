@@ -4,43 +4,26 @@
       "id": 1,
       "tenure": "২০২৩-২০২৫",
       "current": true,
-      "president": {
-        "memberId": "14",
-        "position": "সভাপতি"
-      },
-      "secretary": {
-        "memberId": "16",
-        "position": "সাধারণ সম্পাদক"
-      },
-      "treasurer": {
-        "memberId": "21",
-        "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ"
-      }
+      "members": [
+        { "memberId": "14", "position": "সভাপতি" },
+        { "memberId": "15", "position": "সহ-সভাপতি" },
+        { "memberId": "16", "position": "সাধারণ সম্পাদক" },
+        { "memberId": "17", "position": "যুগ্ম সাধারণ সম্পাদক" },
+        { "memberId": "18", "position": "সাংগঠনিক সম্পাদক" },
+        { "memberId": "19", "position": "প্রচার সম্পাদক" },
+        { "memberId": "20", "position": "সাংস্কৃতিক সম্পাদক" },
+        { "memberId": "21", "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ" }
+      ]
     },
     {
       "id": 2,
       "tenure": "২০২০-২০২২",
       "current": false,
-      "president": {
-        "memberId": "9",
-        "position": "সভাপতি"
-      },
-      "secretary": {
-        "memberId": "10",
-        "position": "সাধারণ সম্পাদক"
-      },
-      "treasurer": {
-        "memberId": "11",
-        "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ"
-      }
-    }
-  ],
-  "leaders": [
-    {
-      "memberId": "21",
-      "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
-      "tenure": "২০১৭",
-      "current": true
+      "members": [
+        { "memberId": "9", "position": "সভাপতি" },
+        { "memberId": "10", "position": "সাধারণ সম্পাদক" },
+        { "memberId": "11", "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ" }
+      ]
     }
   ]
 }
