@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin } from 'lucide-react';
+import { Settings, Copy, Check, Plus, Trash2, Save, Upload, Image as ImageIcon, Music, FileText, Filter, Users, DollarSign, TrendingUp, Calendar, MapPin, Lock, Shield } from 'lucide-react';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -16,11 +16,21 @@ interface JSONFile {
   hasAudioPreview?: boolean;
 }
 
+interface User {
+  id: string;
+  name: string;
+  role: 'Super Admin' | 'Admin' | 'Member';
+  editorPermissions?: Record<string, boolean>;
+}
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
 const JSONEditor: React.FC = () => {
+  // Get logged-in user from localStorage
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -47,18 +57,48 @@ const JSONEditor: React.FC = () => {
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
 
-  // Invitations special states (এলাকা ভিত্তিক ফিল্টার)
+  // Invitations special states
   const [selectedArea, setSelectedArea] = useState<string>('');
   
-  // Quiz special states (বছর ভিত্তিক ফিল্টার)
+  // Quiz special states
   const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
 
   // ============================================
-  // JSON FILES CONFIGURATION (১৪টি ফাইল)
+  // LOAD CURRENT USER
+  // ============================================
+  
+  useEffect(() => {
+    const loggedUser = localStorage.getItem('loggedInUser');
+    if (loggedUser) {
+      try {
+        const user: User = JSON.parse(loggedUser);
+        setCurrentUser(user);
+      } catch (err) {
+        console.error('Failed to parse user:', err);
+      }
+    }
+  }, []);
+
+  // ============================================
+  // PERMISSION CHECK FUNCTION
+  // ============================================
+
+  const hasPermission = (fileId: string): boolean => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'Super Admin') return true;
+    if (currentUser.role !== 'Admin') return false;
+    return currentUser.editorPermissions?.[fileId] === true;
+  };
+
+  const canEditFile = (fileId: string): boolean => {
+    return hasPermission(fileId);
+  };
+
+  // ============================================
+  // JSON FILES CONFIGURATION (১৬টি ফাইল - ২টি নতুন যোগ)
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
-    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -67,7 +107,6 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
-    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -77,7 +116,6 @@ const JSONEditor: React.FC = () => {
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
-    // 3. যোগাযোগ (🆕 নতুন)
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -87,7 +125,6 @@ const JSONEditor: React.FC = () => {
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
-    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -96,7 +133,6 @@ const JSONEditor: React.FC = () => {
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
-    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -104,7 +140,6 @@ const JSONEditor: React.FC = () => {
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
-    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -113,7 +148,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
-    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -122,7 +156,6 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
-    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -131,7 +164,6 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
-    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -140,7 +172,6 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
-    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -148,7 +179,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
-    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -156,7 +186,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
-    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -165,7 +194,6 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
-    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -174,7 +202,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
-    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -182,10 +209,25 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/songs.json',
       type: 'simple-array',
       hasAudioPreview: true
+    },
+    // 🆕 নতুন ২টি সেকশন
+    {
+      id: 'organizationalProfile',
+      label: '🏢 সংগঠনের প্রোফাইল',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
+      path: 'public/data/organizationalProfile.json',
+      type: 'complex-object',
+      sections: ['about', 'history', 'committee', 'achievements']
+    },
+    {
+      id: 'resolutions',
+      label: '📋 সিদ্ধান্তসমূহ',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
+      path: 'public/data/resolutions.json',
+      type: 'simple-array'
     }
   ];
-
-  const currentFile = JSON_FILES.find(f => f.id === selectedFile);
+    const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
   // ============================================
   // PUJA TYPES FOR GALLERY
@@ -225,7 +267,11 @@ const JSONEditor: React.FC = () => {
     durga: '🎉 দুর্গাপূজা',
     shyama: '🔱 শ্যামাপূজা',
     saraswati: '📚 সরস্বতী পূজা',
-    rath: '🎪 রথযাত্রা'
+    rath: '🎪 রথযাত্রা',
+    about: 'ℹ️ সম্পর্কে',
+    history: '📜 ইতিহাস',
+    committee: '👔 কমিটি',
+    achievements: '🏆 অর্জন'
   };
 
   // Schedule day labels
@@ -240,7 +286,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // LOAD JSON DATA
+  // LOAD JSON DATA (একই থাকবে)
   // ============================================
 
   useEffect(() => {
@@ -307,7 +353,7 @@ const JSONEditor: React.FC = () => {
   }, [selectedFile]);
 
   // ============================================
-  // HANDLE INVITATIONS DATA (এলাকা ভিত্তিক ফিল্টার)
+  // HANDLE INVITATIONS DATA
   // ============================================
 
   const handleInvitationsData = (data: any) => {
@@ -334,7 +380,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার - Array format)
+  // HANDLE QUIZ DATA
   // ============================================
 
   const handleQuizData = (data: any) => {
@@ -404,7 +450,7 @@ const JSONEditor: React.FC = () => {
   }, [selectedQuizYear]);
 
   // ============================================
-  // PROCESS FUND COLLECTION FILE (dynamicContent.json)
+  // PROCESS FUND COLLECTION FILE
   // ============================================
 
   const processFundCollectionFile = (data: any, section: string) => {
@@ -509,7 +555,6 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
-    // Handle pdfLink as single string
     if (section === 'pdfLink') {
       const pdfLinkValue = data.pdfLink || '';
       setJsonData([{ pdfLink: pdfLinkValue }]);
@@ -555,7 +600,6 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // Section change effect
   useEffect(() => {
     if (rawData && selectedSection) {
       if (currentFile?.type === 'fund-collection-special') {
@@ -580,7 +624,6 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedItemIndex, jsonData]);
 
-  // Gallery filter effect
   useEffect(() => {
     if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
       const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
@@ -645,87 +688,82 @@ const JSONEditor: React.FC = () => {
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
-// ============================================
-// AUTO CALCULATION FUNCTIONS (✅ NEW)
-// ============================================
+  // ============================================
+  // AUTO CALCULATION FUNCTIONS
+  // ============================================
 
-const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
-  setFundMembers(prev => prev.map(m => {
-    if (m.id === memberId) {
-      const updated = { ...m, [key]: value };
-      
-      // Auto calculate remaining when paidAmount changes
-      if (key === 'paidAmount') {
-        const dueAmount = updated.dueAmount || 0;
-        const paidAmount = parseFloat(value) || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+  const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
+    setFundMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        const updated = { ...m, [key]: value };
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'paidAmount') {
+          const dueAmount = updated.dueAmount || 0;
+          const paidAmount = parseFloat(value) || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
-      }
-      
-      // Auto calculate remaining when dueAmount changes
-      if (key === 'dueAmount') {
-        const dueAmount = parseFloat(value) || 0;
-        const paidAmount = updated.paidAmount || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'dueAmount') {
+          const dueAmount = parseFloat(value) || 0;
+          const paidAmount = updated.paidAmount || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
+        
+        return updated;
       }
-      
-      return updated;
+      return m;
+    }));
+  };
+
+  const autoRecalculateTotals = () => {
+    const totalMembers = fundMembers.length;
+    const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
+    const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
+    const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
+    const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
+    const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
+    const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
+    const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+
+    setPaymentStats({
+      totalMembers,
+      paidMembers,
+      partialMembers,
+      unpaidMembers,
+      paymentPercentage
+    });
+
+    setFundSettings((prev: any) => ({
+      ...prev,
+      totalDue,
+      totalPaid,
+      totalRemaining
+    }));
+  };
+
+  useEffect(() => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
+      autoRecalculateTotals();
     }
-    return m;
-  }));
-};
-
-const autoRecalculateTotals = () => {
-  const totalMembers = fundMembers.length;
-  const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
-  const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
-  const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
-  const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
-  const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
-  const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
-  const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
-
-  setPaymentStats({
-    totalMembers,
-    paidMembers,
-    partialMembers,
-    unpaidMembers,
-    paymentPercentage
-  });
-
-  setFundSettings((prev: any) => ({
-    ...prev,
-    totalDue,
-    totalPaid,
-    totalRemaining
-  }));
-};
-
-// ✅ Auto recalculate when members change
-useEffect(() => {
-  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
-    autoRecalculateTotals();
-  }
-}, [fundMembers]);
+  }, [fundMembers]);
   
   // ============================================
   // HANDLERS
@@ -962,7 +1000,6 @@ useEffect(() => {
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
       
-      // Update rawData
       const newRawData = { ...rawData };
       newRawData.contacts = updatedData;
       setRawData(newRawData);
@@ -1104,73 +1141,65 @@ useEffect(() => {
     setTimeout(() => setCopied(false), 2000);
   };
   
-// ============================================
-// DIRECT GITHUB UPLOAD
-// ============================================
-
-const handleDirectUpload = async () => {
-  if (!currentFile) {
-    alert('❌ কোন ফাইল নির্বাচন করা নেই!');
-    return;
-  }
-
-  const confirmUpload = window.confirm(
-    `⚠️ নিশ্চিত করুন:\n\n` +
-    `ফাইল: ${currentFile.path}\n` +
-    `লেবেল: ${currentFile.label}\n\n` +
-    `সরাসরি GitHub এ আপলোড হবে।\n` +
-    `এগিয়ে যেতে চান?`
-  );
-
-  if (!confirmUpload) return;
-
-  setIsUploading(true);
-  setError('');
-  setUploadSuccess(false);
-
-  try {
-    // Call our backend API
-    const response = await fetch('/api/github-upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        filePath: currentFile.path,
-        content: generatedJSON,
-        commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Upload failed');
+  const handleDirectUpload = async () => {
+    if (!currentFile) {
+      alert('❌ কোন ফাইল নির্বাচন করা নেই!');
+      return;
     }
 
-    // Success!
-    setUploadSuccess(true);
-    alert(
-      `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
-      `📁 ফাইল: ${currentFile.label}\n` +
-      `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
-      `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+    const confirmUpload = window.confirm(
+      `⚠️ নিশ্চিত করুন:\n\n` +
+      `ফাইল: ${currentFile.path}\n` +
+      `লেবেল: ${currentFile.label}\n\n` +
+      `সরাসরি GitHub এ আপলোড হবে।\n` +
+      `এগিয়ে যেতে চান?`
     );
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setUploadSuccess(false), 5000);
+    if (!confirmUpload) return;
 
-  } catch (err) {
-    console.error('Upload error:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
-    alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
-  } finally {
-    setIsUploading(false);
-  }
-};
-  
-  // ============================================
+    setIsUploading(true);
+    setError('');
+    setUploadSuccess(false);
+
+    try {
+      const response = await fetch('/api/github-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filePath: currentFile.path,
+          content: generatedJSON,
+          commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setUploadSuccess(true);
+      alert(
+        `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
+        `📁 ফাইল: ${currentFile.label}\n` +
+        `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
+        `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+      );
+
+      setTimeout(() => setUploadSuccess(false), 5000);
+
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+      alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+    // ============================================
   // LABEL MAPPING
   // ============================================
 
@@ -1199,7 +1228,8 @@ const handleDirectUpload = async () => {
     message: 'মেসেজ', instructions: 'নির্দেশনা',
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
-    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট',
+    about: 'সম্পর্কে', history: 'ইতিহাস', committee: 'কমিটি', achievements: 'অর্জন'
   };
 
   // ============================================
@@ -1222,7 +1252,6 @@ const handleDirectUpload = async () => {
       );
     }
 
-    // Area dropdown for invitations
     if (key === 'area' && currentFile?.type === 'invitations-special') {
       const areas = getInvitationAreas();
       return (
@@ -1249,112 +1278,106 @@ const handleDirectUpload = async () => {
       );
     }
     
-    // ============================================
-// QUESTIONS EDITOR (প্রশ্ন/উত্তর এডিট)
-// ============================================
-
-if (key === 'questions' && Array.isArray(value)) {
-  return (
-    <div key={key} className="form-field">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
-        <span>{label} ({value.length} টি প্রশ্ন)</span>
-        <button
-          onClick={() => {
-            const newQuestion = {
-              id: value.length + 1,
-              question: '',
-              answer: '',
-              options: ['', '', '', '']
-            };
-            handleFieldChange(key, [...value, newQuestion]);
-          }}
-          className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-        >
-          <Plus className="w-3 h-3" /> প্রশ্ন যোগ
-        </button>
-      </label>
-      
-      <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
-        {value.map((q: any, idx: number) => (
-          <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
-            <div className="flex items-center justify-between">
-              <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
-              <button
-                onClick={() => {
-                  if (value.length <= 1) {
-                    alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
-                    return;
-                  }
-                  if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
-                    handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
-                  }
-                }}
-                className="text-red-500 hover:bg-red-50 p-1 rounded"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {/* প্রশ্ন */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
-              <textarea
-                value={q.question || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], question: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                rows={2}
-                placeholder="প্রশ্ন লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            {/* উত্তর */}
-            <div>
-              <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
-              <input
-                type="text"
-                value={q.answer || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], answer: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                placeholder="সঠিক উত্তর লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            
-            {/* অপশন (যদি থাকে) */}
-            {q.options && Array.isArray(q.options) && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {q.options.map((opt: string, optIdx: number) => (
-                    <input
-                      key={optIdx}
-                      type="text"
-                      value={opt || ''}
-                      onChange={(e) => {
-                        const updated = [...value];
-                        updated[idx].options[optIdx] = e.target.value;
-                        handleFieldChange(key, updated);
-                      }}
-                      placeholder={`অপশন ${optIdx + 1}`}
-                      className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
-                    />
-                  ))}
+    if (key === 'questions' && Array.isArray(value)) {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
+            <span>{label} ({value.length} টি প্রশ্ন)</span>
+            <button
+              onClick={() => {
+                const newQuestion = {
+                  id: value.length + 1,
+                  question: '',
+                  answer: '',
+                  options: ['', '', '', '']
+                };
+                handleFieldChange(key, [...value, newQuestion]);
+              }}
+              className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+            >
+              <Plus className="w-3 h-3" /> প্রশ্ন যোগ
+            </button>
+          </label>
+          
+          <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+            {value.map((q: any, idx: number) => (
+              <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
+                <div className="flex items-center justify-between">
+                  <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
+                  <button
+                    onClick={() => {
+                      if (value.length <= 1) {
+                        alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
+                        return;
+                      }
+                      if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
+                        handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
+                      }
+                    }}
+                    className="text-red-500 hover:bg-red-50 p-1 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
+                  <textarea
+                    value={q.question || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], question: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    rows={2}
+                    placeholder="প্রশ্ন লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
+                  <input
+                    type="text"
+                    value={q.answer || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], answer: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    placeholder="সঠিক উত্তর লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                
+                {q.options && Array.isArray(q.options) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {q.options.map((opt: string, optIdx: number) => (
+                        <input
+                          key={optIdx}
+                          type="text"
+                          value={opt || ''}
+                          onChange={(e) => {
+                            const updated = [...value];
+                            updated[idx].options[optIdx] = e.target.value;
+                            handleFieldChange(key, updated);
+                          }}
+                          placeholder={`অপশন ${optIdx + 1}`}
+                          className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }
+    
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
@@ -1517,13 +1540,12 @@ if (key === 'questions' && Array.isArray(value)) {
   };
 
   // ============================================
-  // RENDER FUND COLLECTION EDITOR
+  // RENDER FUND COLLECTION EDITOR (একই থাকবে - আগের কোড)
   // ============================================
 
   const renderFundCollectionEditor = () => {
     return (
       <div className="space-y-4">
-        {/* Sub-section tabs */}
         <div className="flex flex-wrap gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
           <button onClick={() => setFundSubSection('settings')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
@@ -1545,7 +1567,6 @@ if (key === 'questions' && Array.isArray(value)) {
           </button>
         </div>
 
-        {/* Settings Sub-section */}
         {fundSubSection === 'settings' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
             <h4 className="font-bold text-green-700 flex items-center gap-2">
@@ -1600,61 +1621,60 @@ if (key === 'questions' && Array.isArray(value)) {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
 
-           <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          💰 মোট দায্যকৃত টাকা
-          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalDue || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ✅ মোট পরিশোধ
-          <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalPaid || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ⏳ মোট বাকি
-          <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalRemaining || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-    </div>
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  💰 মোট দায্যকৃত টাকা
+                  <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalDue || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ✅ মোট পরিশোধ
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalPaid || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ⏳ মোট বাকি
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalRemaining || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+            </div>
 
-    {/* ✅ NEW: Auto Calculation Alert */}
-    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
-      <div className="flex items-start gap-3">
-        <div className="text-3xl">💡</div>
-        <div className="flex-1">
-          <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
-          <p className="text-sm text-blue-700 leading-relaxed">
-            <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
-            Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-        {/* Members Sub-section */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">💡</div>
+                <div className="flex-1">
+                  <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
+                  <p className="text-sm text-blue-700 leading-relaxed">
+                    <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
+                    Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {fundSubSection === 'members' && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 rounded-lg">
@@ -1717,51 +1737,51 @@ if (key === 'questions' && Array.isArray(value)) {
                     </select>
                   </div>
                   
-               <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    💰 দায্যকৃত টাকা
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
-  />
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      💰 দায্যকৃত টাকা
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
+                    />
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ✅ পরিশোধিত
-    <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
-  />
-  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">💡</span>
-    <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ✅ পরিশোধিত
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
+                    />
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <span className="text-lg">💡</span>
+                      <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
+                    </p>
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ⏳ বকেয়া
-    <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
-    disabled
-    className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
-  />
-  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">🔒</span>
-    <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ⏳ বকেয়া
+                      <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
+                      disabled
+                      className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
+                    />
+                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      <span className="text-lg">🔒</span>
+                      <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
+                    </p>
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
@@ -1773,7 +1793,7 @@ if (key === 'questions' && Array.isArray(value)) {
                       <option value="নগদ">💵 নগদ</option>
                       <option value="রকেট">🚀 রকেট</option>
                       <option value="ব্যাংক">🏦 ব্যাংক</option>
-                      <option value="ব্যাংক">💲 নগদ অর্থ </option>
+                      <option value="ক্যাশ">💲 নগদ অর্থ</option>
                     </select>
                   </div>
                   
@@ -1797,7 +1817,6 @@ if (key === 'questions' && Array.isArray(value)) {
           </div>
         )}
 
-        {/* Stats Sub-section */}
         {fundSubSection === 'stats' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
             <div className="flex items-center justify-between">
@@ -1876,7 +1895,7 @@ if (key === 'questions' && Array.isArray(value)) {
   };
 
   // ============================================
-  // RENDER ACCOUNTS PDF EDITOR
+  // RENDER ACCOUNTS PDF EDITOR (একই থাকবে - আগের কোড থেকে)
   // ============================================
 
   const renderAccountsPdfEditor = () => {
@@ -1992,6 +2011,7 @@ if (key === 'questions' && Array.isArray(value)) {
   // ============================================
   // GENERATE JSON
   // ============================================
+  
   const generatedJSON = (() => {
     let finalData: any;
 
@@ -2054,25 +2074,198 @@ if (key === 'questions' && Array.isArray(value)) {
     return JSON.stringify(finalData, null, 2);
   })();
 
-  const btnClass = (active: boolean) => 
-    `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
+  const btnClass = (active: boolean, hasPermission: boolean = true) => {
+    if (!hasPermission) {
+      return 'px-3 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-400 cursor-not-allowed opacity-50';
+    }
+    return `px-3 py-2 rounded-lg text-sm font-medium transition ${
+      active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'
+    }`;
+  };
+    // ============================================
+  // 🆕 RENDER PERMISSION EDITOR (Super Admin Only)
+  // ============================================
+
+  const renderPermissionEditor = () => {
+    if (!rawData || !rawData.accountsMembers) return null;
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <div className="flex items-center gap-3">
+            <Shield className="w-8 h-8 text-red-600" />
+            <div>
+              <h3 className="text-lg font-bold text-red-800">🔐 ড্যাশবোর্ড পারমিশন কন্ট্রোল</h3>
+              <p className="text-sm text-red-700">শুধুমাত্র <strong>Super Admin</strong> এই সেকশন দেখতে এবং এডিট করতে পারবেন</p>
+            </div>
+          </div>
+        </div>
+
+        {rawData.accountsMembers
+          .filter((user: any) => user.role === 'Admin')
+          .map((admin: any) => {
+            const permissions = admin.editorPermissions || {};
+            const permissionCount = Object.values(permissions).filter(Boolean).length;
+            const totalPermissions = Object.keys(permissions).length;
+
+            return (
+              <div key={admin.id} className="bg-white rounded-xl shadow-lg border-2 border-gray-200 overflow-hidden">
+                {/* Admin Header */}
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {admin.photo ? (
+                        <img src={admin.photo} alt={admin.name} className="w-16 h-16 rounded-full border-4 border-white shadow-lg" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-2xl font-bold text-indigo-600">
+                          {admin.name?.charAt(0) || 'A'}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="text-xl font-bold text-white">{admin.name || `Admin #${admin.id}`}</h4>
+                        <p className="text-indigo-100 text-sm">
+                          📱 {admin.mobile || 'N/A'} | 📧 {admin.email || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="bg-white rounded-lg px-4 py-2 shadow-lg">
+                        <div className="text-2xl font-bold text-indigo-600">{permissionCount}/{totalPermissions}</div>
+                        <div className="text-xs text-gray-600">পারমিশন সক্রিয়</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Permission Grid */}
+                <div className="p-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { key: 'dynamicContent', label: '📰 সদস্য আয় হিসাব', color: 'green' },
+                      { key: 'membersData', label: '👥 সদস্য তথ্য', color: 'blue' },
+                      { key: 'contactsData', label: '📞 যোগাযোগ', color: 'cyan' },
+                      { key: 'invitationsData', label: '💌 নিমন্ত্রণ', color: 'pink' },
+                      { key: 'quizData', label: '❓ কুইজ', color: 'purple' },
+                      { key: 'loginData', label: '🔐 লগইন ডেটা', color: 'red' },
+                      { key: 'chatbotData', label: '💬 চ্যাটবট', color: 'indigo' },
+                      { key: 'galleryImages', label: '🖼️ গ্যালারি', color: 'yellow' },
+                      { key: 'accountsPDFs', label: '📊 বাৎসরিক হিসাব', color: 'orange' },
+                      { key: 'liveChannels', label: '📺 লাইভ চ্যানেল', color: 'red' },
+                      { key: 'pdfFiles', label: '📄 পূজাদ্রব্যের তালিকা', color: 'gray' },
+                      { key: 'pujaData', label: '🙏 পূজা তথ্য', color: 'orange' },
+                      { key: 'schedules', label: '📅 সময়সূচী', color: 'blue' },
+                      { key: 'songs', label: '🎵 গান', color: 'pink' },
+                      { key: 'organizationalProfile', label: '🏢 সংগঠনের প্রোফাইল', color: 'teal' },
+                      { key: 'resolutions', label: '📋 সিদ্ধান্তসমূহ', color: 'violet' }
+                    ].map(({ key, label, color }) => {
+                      const isEnabled = permissions[key] === true;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            const newRawData = { ...rawData };
+                            const adminIndex = newRawData.accountsMembers.findIndex((u: any) => u.id === admin.id);
+                            if (adminIndex !== -1) {
+                              if (!newRawData.accountsMembers[adminIndex].editorPermissions) {
+                                newRawData.accountsMembers[adminIndex].editorPermissions = {};
+                              }
+                              newRawData.accountsMembers[adminIndex].editorPermissions[key] = !isEnabled;
+                              setRawData(newRawData);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all text-sm font-medium text-left ${
+                            isEnabled
+                              ? `bg-${color}-50 border-${color}-500 text-${color}-900 shadow-md`
+                              : 'bg-gray-50 border-gray-300 text-gray-500 opacity-60'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate">{label}</span>
+                            {isEnabled ? (
+                              <Check className={`w-5 h-5 text-${color}-600 flex-shrink-0`} />
+                            ) : (
+                              <Lock className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="mt-6 flex gap-3 justify-end">
+                    <button
+                      onClick={() => {
+                        const newRawData = { ...rawData };
+                        const adminIndex = newRawData.accountsMembers.findIndex((u: any) => u.id === admin.id);
+                        if (adminIndex !== -1) {
+                          const allKeys = Object.keys(newRawData.accountsMembers[adminIndex].editorPermissions || {});
+                          const newPermissions: Record<string, boolean> = {};
+                          allKeys.forEach(k => newPermissions[k] = true);
+                          newRawData.accountsMembers[adminIndex].editorPermissions = newPermissions;
+                          setRawData(newRawData);
+                        }
+                      }}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 flex items-center gap-2"
+                    >
+                      <Check className="w-4 h-4" /> সব সক্রিয়
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newRawData = { ...rawData };
+                        const adminIndex = newRawData.accountsMembers.findIndex((u: any) => u.id === admin.id);
+                        if (adminIndex !== -1) {
+                          const allKeys = Object.keys(newRawData.accountsMembers[adminIndex].editorPermissions || {});
+                          const newPermissions: Record<string, boolean> = {};
+                          allKeys.forEach(k => newPermissions[k] = false);
+                          newRawData.accountsMembers[adminIndex].editorPermissions = newPermissions;
+                          setRawData(newRawData);
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 flex items-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" /> সব বন্ধ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    );
+  };
 
   // ============================================
-  // RENDER
+  // MAIN RENDER
   // ============================================
 
   return (
     <div className="space-y-4 p-4">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Settings className="w-7 h-7 text-orange-500" />
-        <h2 className="text-2xl font-bold text-orange-600">অ্যাডমিন ড্যাশবোর্ড</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Settings className="w-7 h-7 text-orange-500" />
+          <h2 className="text-2xl font-bold text-orange-600">অ্যাডমিন ড্যাশবোর্ড</h2>
+        </div>
+        {currentUser && (
+          <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-lg border-2 border-indigo-200">
+            {currentUser.role === 'Super Admin' ? (
+              <Shield className="w-6 h-6 text-red-600" />
+            ) : (
+              <Users className="w-6 h-6 text-blue-600" />
+            )}
+            <div>
+              <div className="text-sm font-bold text-gray-800">{currentUser.name}</div>
+              <div className="text-xs text-gray-600">{currentUser.role}</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Info */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
-        <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
+        <p className="text-blue-800 font-medium">✨ Advanced JSON Editor with Permission System</p>
+        <p className="text-sm text-blue-700">১৬টি JSON ফাইল • পারমিশন কন্ট্রোল • Real-time Update</p>
       </div>
 
       {error && (
@@ -2081,20 +2274,73 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
+      {/* 🆕 Super Admin: Permission Management Tab */}
+      {currentUser?.role === 'Super Admin' && selectedFile === 'loginData' && (
+        <div className="bg-white rounded-xl p-4 shadow-lg border-2 border-red-300">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setSelectedSection('accountsMembers')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                selectedSection === 'accountsMembers'
+                  ? 'bg-blue-500 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-blue-50'
+              }`}
+            >
+              👥 Admin তালিকা
+            </button>
+            <button
+              onClick={() => setSelectedSection('permissions')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                selectedSection === 'permissions'
+                  ? 'bg-red-500 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-red-50'
+              }`}
+            >
+              <Shield className="w-4 h-4" />
+              🔐 ড্যাশবোর্ড পারমিশন
+            </button>
+            <button
+              onClick={() => setSelectedSection('normalMembers')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                selectedSection === 'normalMembers'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-green-50'
+              }`}
+            >
+              👤 সাধারণ সদস্য
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* File Selector */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
         <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {JSON_FILES.map(file => (
-            <button key={file.id} onClick={() => setSelectedFile(file.id)} 
-              className={btnClass(selectedFile === file.id)}>
-              {file.label}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+          {JSON_FILES.map(file => {
+            const permitted = hasPermission(file.id);
+            return (
+              <button 
+                key={file.id} 
+                onClick={() => permitted && setSelectedFile(file.id)} 
+                disabled={!permitted}
+                className={btnClass(selectedFile === file.id, permitted)}
+                title={!permitted ? '🔒 আপনার পারমিশন নেই' : ''}
+              >
+                {file.label}
+                {!permitted && <Lock className="w-3 h-3 inline ml-1" />}
+              </button>
+            );
+          })}
         </div>
         {currentFile && (
-          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-            📂 <code>{currentFile.path}</code>
+          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded flex items-center justify-between">
+            <span>📂 <code>{currentFile.path}</code></span>
+            {!canEditFile(currentFile.id) && (
+              <span className="text-red-600 font-bold flex items-center gap-1">
+                <Lock className="w-4 h-4" /> Read Only - পারমিশন নেই
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -2110,11 +2356,25 @@ if (key === 'questions' && Array.isArray(value)) {
                 {sectionLabels[section] || section}
               </button>
             ))}
+            {/* 🆕 Show Permission Tab for Super Admin */}
+            {currentUser?.role === 'Super Admin' && selectedFile === 'loginData' && (
+              <button 
+                onClick={() => setSelectedSection('permissions')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
+                  selectedSection === 'permissions' 
+                    ? 'bg-red-500 text-white shadow-lg' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-red-50'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                🔐 পারমিশন
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Invitations Special Filters (এলাকা ভিত্তিক) */}
+      {/* Invitations Special Filters */}
       {currentFile?.type === 'invitations-special' && selectedSection === 'invitations' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2140,7 +2400,7 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-      {/* Quiz Special Filters (বছর ভিত্তিক) */}
+      {/* Quiz Special Filters */}
       {currentFile?.type === 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2204,128 +2464,146 @@ if (key === 'questions' && Array.isArray(value)) {
         </div>
       )}
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: Form */}
+      {/* 🆕 Permission Editor (Super Admin Only) */}
+      {currentUser?.role === 'Super Admin' && selectedFile === 'loginData' && selectedSection === 'permissions' ? (
         <div className="bg-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
-            <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
-            <button onClick={handleSaveItem} 
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-              <Save className="w-4 h-4" /> সংরক্ষণ
-            </button>
-          </div>
-          
-          <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
-            {loading ? (
-              <div className="text-center py-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-                <p className="mt-3 text-gray-600">লোডিং...</p>
-              </div>
-            ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
-              renderFundCollectionEditor()
-            ) : currentFile?.type === 'accounts-special' ? (
-              renderAccountsPdfEditor()
-            ) : (
-              <>
-                {/* Item Selector for other types */}
-                {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                      <label className="text-sm font-bold text-gray-700">
-                        📋 আইটেম ({jsonData.length} টি):
-                      </label>
-                      <div className="flex gap-2">
-                        <button onClick={handleAddItem} 
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                          <Plus className="w-4 h-4" /> যোগ
-                        </button>
-                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                          <Trash2 className="w-4 h-4" /> মুছুন
-                        </button>
-                      </div>
-                    </div>
-                    {jsonData.length > 1 && (
-                      <select value={selectedItemIndex} 
-                        onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-                        {jsonData.map((item: any, i: number) => (
-                          <option key={i} value={i}>
-                            #{i + 1} - {getItemDisplayName(item, i)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                )}
-
-                {/* Form Fields */}
-                {Object.keys(formData).length > 0 ? (
-                  Object.keys(formData).map(key => renderFormField(key, formData[key]))
-                ) : (
-                  <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
-                )}
-              </>
-            )}
-          </div>
+          {renderPermissionEditor()}
         </div>
-
-        {/* Right: JSON Code */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-  <h3 className="text-white font-bold flex items-center gap-2">
-    <FileText className="w-5 h-5" />
-    JSON কোড
-  </h3>
-  <div className="flex gap-2">
-    {/* Copy Button */}
-    <button onClick={handleCopyJSON} 
-      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-      {copied ? '✅ কপি' : '📋 কপি'}
-    </button>
-    
-    {/* Upload Button */}
-    <button 
-      onClick={handleDirectUpload} 
-      disabled={isUploading || loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-        uploadSuccess 
-          ? 'bg-green-600 text-white' 
-          : isUploading 
-            ? 'bg-gray-400 text-white cursor-not-allowed' 
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-      }`}>
-      {isUploading ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          আপলোড হচ্ছে...
-        </>
-      ) : uploadSuccess ? (
-        <>
-          <Check className="w-4 h-4" />
-          ✅ আপলোড হয়েছে!
-        </>
       ) : (
-        <>
-          <Upload className="w-4 h-4" />
-          🚀 সরাসরি আপলোড
-        </>
-      )}
-    </button>
-  </div>
-</div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
-            <code>{generatedJSON}</code>
-          </pre>
-          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
-            <p className="text-xs text-yellow-800">
-              ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
-            </p>
+        /* Two Column Layout */
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left: Form */}
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
+              <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
+              {canEditFile(selectedFile) ? (
+                <button onClick={handleSaveItem} 
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+                  <Save className="w-4 h-4" /> সংরক্ষণ
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 text-red-600 text-sm font-bold">
+                  <Lock className="w-4 h-4" /> Read Only
+                </div>
+              )}
+            </div>
+            
+            <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
+              {loading ? (
+                <div className="text-center py-10">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                  <p className="mt-3 text-gray-600">লোডিং...</p>
+                </div>
+              ) : !canEditFile(selectedFile) ? (
+                <div className="text-center py-10">
+                  <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-700 mb-2">🔒 এডিট পারমিশন নেই</h3>
+                  <p className="text-gray-600">আপনার এই ফাইল এডিট করার অনুমতি নেই।</p>
+                  <p className="text-sm text-gray-500 mt-2">Super Admin এর সাথে যোগাযোগ করুন।</p>
+                </div>
+              ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
+                renderFundCollectionEditor()
+              ) : currentFile?.type === 'accounts-special' ? (
+                renderAccountsPdfEditor()
+              ) : (
+                <>
+                  {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <label className="text-sm font-bold text-gray-700">
+                          📋 আইটেম ({jsonData.length} টি):
+                        </label>
+                        <div className="flex gap-2">
+                          <button onClick={handleAddItem} 
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                            <Plus className="w-4 h-4" /> যোগ
+                          </button>
+                          <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                            <Trash2 className="w-4 h-4" /> মুছুন
+                          </button>
+                        </div>
+                      </div>
+                      {jsonData.length > 1 && (
+                        <select value={selectedItemIndex} 
+                          onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+                          {jsonData.map((item: any, i: number) => (
+                            <option key={i} value={i}>
+                              #{i + 1} - {getItemDisplayName(item, i)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+
+                  {Object.keys(formData).length > 0 ? (
+                    Object.keys(formData).map(key => renderFormField(key, formData[key]))
+                  ) : (
+                    <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right: JSON Code */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                JSON কোড
+              </h3>
+              <div className="flex gap-2">
+                <button onClick={handleCopyJSON} 
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? '✅ কপি' : '📋 কপি'}
+                </button>
+                
+                {canEditFile(selectedFile) && (
+                  <button 
+                    onClick={handleDirectUpload} 
+                    disabled={isUploading || loading}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      uploadSuccess 
+                        ? 'bg-green-600 text-white' 
+                        : isUploading 
+                          ? 'bg-gray-400 text-white cursor-not-allowed' 
+                          : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}>
+                    {isUploading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        আপলোড হচ্ছে...
+                      </>
+                    ) : uploadSuccess ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        ✅ আপলোড হয়েছে!
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4" />
+                        🚀 সরাসরি আপলোড
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+            <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
+              <code>{generatedJSON}</code>
+            </pre>
+            <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
+              <p className="text-xs text-yellow-800">
+                ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Instructions */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 shadow-lg border-l-4 border-purple-500">
