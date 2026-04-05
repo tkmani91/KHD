@@ -201,7 +201,7 @@ const OrganizationalProfile: React.FC = () => {
             <h3 className="font-bold text-lg flex items-center gap-2 justify-center sm:justify-start">
               <Users className="w-5 h-5" /> সাংগঠনিক প্রোফাইল
             </h3>
-            <p className="text-sm text-purple-100">নেতৃত্বের সংক্ষিপ্ত তালিকা</p>
+            <p className="text-sm text-purple-100">কার্যনির্বাহী পরিষদের ধারাবাহিক তালিকা:</p>
           </div>
           <button 
             onClick={handlePrint}
