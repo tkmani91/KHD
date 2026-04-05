@@ -23,7 +23,6 @@ import {
   Calendar,
   Shield
 } from 'lucide-react';
-import JSONEditor from './JSONEditor';
 import FundCollection from './FundCollection';
 import MembersList from './MembersList';
 import ContactsList from './ContactsList';
@@ -121,38 +120,7 @@ const hasPermission = (user: SessionUser | null, permission: string): boolean =>
   return user.permissions?.includes(permission) || false;
 };
 
-/**
- * Check if user has ANY of the given permissions
- * Super Admin always returns true
- */
-const hasAnyPermission = (user: SessionUser | null, permissions: string[]): boolean => {
-  if (!user) return false;
-  if (user.role === 'Super Admin') return true;
-  
-  return permissions.some(p => user.permissions?.includes(p));
-};
 
-/**
- * Get user's permissions grouped by category
- */
-const getUserPermissionsByCategory = (user: SessionUser | null) => {
-  if (!user) return { data: [], content: [], finance: [], admin: [] };
-  
-  const grouped: Record<string, any[]> = {
-    data: [],
-    content: [],
-    finance: [],
-    admin: []
-  };
-  
-  Object.values(ALL_PERMISSIONS).forEach(perm => {
-    if (hasPermission(user, perm.id)) {
-      grouped[perm.category].push(perm);
-    }
-  });
-  
-  return grouped;
-};
 
 /**
  * Sanitize user data for storage (remove sensitive info)
@@ -266,12 +234,6 @@ const ALL_PERMISSIONS = {
   },
 };
 
-const PERMISSION_CATEGORIES = {
-  data: { label: 'ডেটা ম্যানেজমেন্ট', color: 'blue' },
-  content: { label: 'কন্টেন্ট ম্যানেজমেন্ট', color: 'green' },
-  finance: { label: 'আর্থিক ব্যবস্থাপনা', color: 'orange' },
-  admin: { label: 'অ্যাডমিন কন্ট্রোল', color: 'purple' }
-};
 
 // ==================== CUSTOM HOOK ====================
 
