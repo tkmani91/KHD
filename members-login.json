@@ -8,7 +8,13 @@
       "password": "admin123",
       "role": "Super Admin",
       "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png",
-      "permissions": []
+      "permissions": ["edit_members",
+        "edit_contacts",
+        "edit_invitations",
+        "edit_org_profile",
+        "edit_resolutions",
+        "edit_notices",
+        "edit_live_stream"]
     },
     {
       "id": "3",
