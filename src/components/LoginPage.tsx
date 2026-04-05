@@ -20,7 +20,8 @@ import {
   LogOut,
   DollarSign,
   ChevronRight,
-  Calendar
+  Calendar,
+  Shield
 } from 'lucide-react';
 import JSONEditor from './JSONEditor';
 import FundCollection from './FundCollection';
@@ -104,6 +105,68 @@ const cn = (...classes: (string | boolean | undefined | null)[]) => {
   return classes.filter(Boolean).join(' ');
 };
 
+// ==================== PERMISSION HELPERS ==================== 👈 এখান থেকে যোগ করুন
+
+/**
+ * Check if user has a specific permission
+ * Super Admin always returns true
+ */
+const hasPermission = (user: SessionUser | null, permission: string): boolean => {
+  if (!user) return false;
+  
+  // Super Admin সব permission আছে
+  if (user.role === 'Super Admin') return true;
+  
+  // Check permission array
+  return user.permissions?.includes(permission) || false;
+};
+
+/**
+ * Check if user has ANY of the given permissions
+ * Super Admin always returns true
+ */
+const hasAnyPermission = (user: SessionUser | null, permissions: string[]): boolean => {
+  if (!user) return false;
+  if (user.role === 'Super Admin') return true;
+  
+  return permissions.some(p => user.permissions?.includes(p));
+};
+
+/**
+ * Get user's permissions grouped by category
+ */
+const getUserPermissionsByCategory = (user: SessionUser | null) => {
+  if (!user) return { data: [], content: [], finance: [], admin: [] };
+  
+  const grouped: Record<string, any[]> = {
+    data: [],
+    content: [],
+    finance: [],
+    admin: []
+  };
+  
+  Object.values(ALL_PERMISSIONS).forEach(perm => {
+    if (hasPermission(user, perm.id)) {
+      grouped[perm.category].push(perm);
+    }
+  });
+  
+  return grouped;
+};
+
+/**
+ * Sanitize user data for storage (remove sensitive info)
+ */
+const sanitizeForStorage = (user: LoginUser): SessionUser => ({
+  id: user.id,
+  name: user.name,
+  mobile: user.mobile || '',
+  email: user.email || '',
+  role: user.role || 'Member',
+  photo: user.photo || '',
+  permissions: user.permissions || []  // 👈 নতুন
+});
+
 // Data URLs
 const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_CONTACTS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json';
@@ -111,6 +174,104 @@ const GITHUB_INVITATIONS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/m
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
 const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json';
+
+const PERMISSION_KEYS = {
+  // Data Management
+  EDIT_MEMBERS: 'edit_members',
+  EDIT_CONTACTS: 'edit_contacts',
+  EDIT_INVITATIONS: 'edit_invitations',
+  EDIT_ORG_PROFILE: 'edit_org_profile',
+  EDIT_RESOLUTIONS: 'edit_resolutions',
+  
+  // Content Management
+  EDIT_NOTICES: 'edit_notices',
+  EDIT_LIVE_STREAM: 'edit_live_stream',
+  EDIT_CHATBOT: 'edit_chatbot',
+  
+  // Finance
+  VIEW_ALL_FUNDS: 'view_all_funds',
+  EDIT_FUNDS: 'edit_funds',
+  
+  // User Management (Super Admin only)
+  MANAGE_USERS: 'manage_users',
+} as const;
+
+// All available permissions with details
+const ALL_PERMISSIONS = {
+  [PERMISSION_KEYS.EDIT_MEMBERS]: {
+    id: PERMISSION_KEYS.EDIT_MEMBERS,
+    label: 'সদস্য তালিকা সম্পাদনা',
+    description: 'members-data.json এডিট করতে পারবে',
+    category: 'data'
+  },
+  [PERMISSION_KEYS.EDIT_CONTACTS]: {
+    id: PERMISSION_KEYS.EDIT_CONTACTS,
+    label: 'জরুরী ফোন সম্পাদনা',
+    description: 'contacts.json এডিট করতে পারবে',
+    category: 'data'
+  },
+  [PERMISSION_KEYS.EDIT_INVITATIONS]: {
+    id: PERMISSION_KEYS.EDIT_INVITATIONS,
+    label: 'নিমন্ত্রণ তালিকা সম্পাদনা',
+    description: 'invitations.json এডিট করতে পারবে',
+    category: 'data'
+  },
+  [PERMISSION_KEYS.EDIT_ORG_PROFILE]: {
+    id: PERMISSION_KEYS.EDIT_ORG_PROFILE,
+    label: 'সাংগঠনিক প্রোফাইল সম্পাদনা',
+    description: 'organizationalProfile.json এডিট করতে পারবে',
+    category: 'data'
+  },
+  [PERMISSION_KEYS.EDIT_RESOLUTIONS]: {
+    id: PERMISSION_KEYS.EDIT_RESOLUTIONS,
+    label: 'রেজুলেশন সম্পাদনা',
+    description: 'resolutions.json এডিট করতে পারবে',
+    category: 'data'
+  },
+  [PERMISSION_KEYS.EDIT_NOTICES]: {
+    id: PERMISSION_KEYS.EDIT_NOTICES,
+    label: 'বিজ্ঞপ্তি সম্পাদনা',
+    description: 'dynamicContent.json (notices) এডিট করতে পারবে',
+    category: 'content'
+  },
+  [PERMISSION_KEYS.EDIT_LIVE_STREAM]: {
+    id: PERMISSION_KEYS.EDIT_LIVE_STREAM,
+    label: 'লাইভ সম্প্রচার সম্পাদনা',
+    description: 'dynamicContent.json (liveStream) এডিট করতে পারবে',
+    category: 'content'
+  },
+  [PERMISSION_KEYS.EDIT_CHATBOT]: {
+    id: PERMISSION_KEYS.EDIT_CHATBOT,
+    label: 'চ্যাটবট সম্পাদনা',
+    description: 'chatbot-data.json এডিট করতে পারবে',
+    category: 'content'
+  },
+  [PERMISSION_KEYS.VIEW_ALL_FUNDS]: {
+    id: PERMISSION_KEYS.VIEW_ALL_FUNDS,
+    label: 'সব চাঁদা দেখা',
+    description: 'সকল সদস্যের চাঁদার তথ্য দেখতে পারবে',
+    category: 'finance'
+  },
+  [PERMISSION_KEYS.EDIT_FUNDS]: {
+    id: PERMISSION_KEYS.EDIT_FUNDS,
+    label: 'চাঁদা সম্পাদনা',
+    description: 'চাঁদার তথ্য এডিট করতে পারবে',
+    category: 'finance'
+  },
+  [PERMISSION_KEYS.MANAGE_USERS]: {
+    id: PERMISSION_KEYS.MANAGE_USERS,
+    label: 'ইউজার ব্যবস্থাপনা',
+    description: 'members-login.json এডিট করতে পারবে',
+    category: 'admin'
+  },
+};
+
+const PERMISSION_CATEGORIES = {
+  data: { label: 'ডেটা ম্যানেজমেন্ট', color: 'blue' },
+  content: { label: 'কন্টেন্ট ম্যানেজমেন্ট', color: 'green' },
+  finance: { label: 'আর্থিক ব্যবস্থাপনা', color: 'orange' },
+  admin: { label: 'অ্যাডমিন কন্ট্রোল', color: 'purple' }
+};
 
 // ==================== CUSTOM HOOK ====================
 
@@ -466,7 +627,7 @@ export function AIChatbox() {
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
+  const [loggedInUser, setLoggedInUser] = useState<SessionUser | null>(null);
   const [userPhoto, setUserPhoto] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('members');
   const [usernameInput, setUsernameInput] = useState('');
@@ -600,94 +761,112 @@ function LoginPage() {
     loadAccountsPDFs();
   }, [isLoggedIn, loggedInUser]);
   
-  // ===== LOGIN HANDLER =====
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
-    if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
+ // ===== LOGIN HANDLER =====
+const handleLogin = (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoginError('');
+  
+  if (!usernameInput.trim()) { 
+    setLoginError('মোবাইল/ইমেইল দিন'); 
+    return; 
+  }
+  if (!passwordInput.trim()) { 
+    setLoginError('পাসওয়ার্ড দিন'); 
+    return; 
+  }
+  
+  if (!loginData) {
+    setLoginError('লগইন ডেটা লোড হয়নি');
+    return;
+  }
+
+  setIsLoading(true);
+  
+  setTimeout(() => {
+    const trimmedUsername = usernameInput.trim().toLowerCase();
+    const trimmedPassword = passwordInput.trim();
     
-    if (!loginData) {
-      setLoginError('লগইন ডেটা লোড হয়নি');
-      return;
-    }
+    const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
+    
+    const foundUser = allUsers.find((u: LoginUser) => 
+      (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
+      u.password === trimmedPassword
+    );
 
-    setIsLoading(true);
-    setTimeout(() => {
-      const trimmedUsername = usernameInput.trim().toLowerCase();
-      const trimmedPassword = passwordInput.trim();
-      
-      const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
-      
-      const foundUser = allUsers.find((u: LoginUser) => 
-        (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
-        u.password === trimmedPassword
-      );
+    if (foundUser) { 
+      // ✅ sanitizeForStorage() ব্যবহার করে password বাদ দিয়ে সংরক্ষণ
+      const sessionUser = sanitizeForStorage(foundUser);
 
-      if (foundUser) { 
-        const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
+      // localStorage-এ সংরক্ষণ (password ছাড়া, permissions সহ)
+      localStorage.setItem('khd_logged_in_user', JSON.stringify(sessionUser));
 
-        const userWithRole: LoginUser = {
-          id: foundUser.id,
-          name: foundUser.name,
-          mobile: foundUser.mobile || '',
-          email: foundUser.email || '',
-          password: '',
-          role: userRole,
-          photo: foundUser.photo || ''
-        };
-
-        localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
-
-        if (foundUser.photo) {
-          setUserPhoto(foundUser.photo);
-          localStorage.setItem('khd_user_photo', foundUser.photo);
-        }
-
-        setIsLoggedIn(true); 
-        setLoggedInUser(userWithRole);
-        setUsernameInput(''); 
-        setPasswordInput(''); 
+      // Photo সংরক্ষণ
+      if (foundUser.photo) {
+        setUserPhoto(foundUser.photo);
+        localStorage.setItem('khd_user_photo', foundUser.photo);
       }
-      else { setLoginError('ভুল তথ্য দিয়েছেন'); }
-      setIsLoading(false);
-    }, 800);
-  };
 
-  // ===== LOGOUT HANDLER =====
-  const handleLogout = () => {
-    localStorage.removeItem('khd_logged_in_user');
-    localStorage.removeItem('khd_user_photo');
+      // State আপডেট
+      setIsLoggedIn(true); 
+      setLoggedInUser(sessionUser);
+      setUsernameInput(''); 
+      setPasswordInput(''); 
+    }
+    else { 
+      setLoginError('ভুল তথ্য দিয়েছেন'); 
+    }
     
-    setIsLoggedIn(false);
-    setLoggedInUser(null);
-    setUserPhoto('');
-    setActiveTab('members');
-  };
+    setIsLoading(false);
+  }, 800);
+};
+  
+  // ===== LOGOUT HANDLER =====
+const handleLogout = () => {
+  localStorage.removeItem('khd_logged_in_user');
+  localStorage.removeItem('khd_user_photo');
+  
+  setIsLoggedIn(false);
+  setLoggedInUser(null);
+  setUserPhoto('');
+  setActiveTab('members');
+};
 
-  const getAvailableTabs = () => {
-    const baseTabs = [
-      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
-      { id: 'org-profile', label: 'সাংগঠনিক প্রোফাইল', icon: Users },
-      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
-      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
-      { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
-      { id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText },
-      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
-      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
-    ];
+// ===== AVAILABLE TABS =====
+const getAvailableTabs = () => {
+  // ===== সবাই দেখবে (Member, Admin, Super Admin) =====
+  const baseTabs = [
+    { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+    { id: 'org-profile', label: 'সাংগঠনিক প্রোফাইল', icon: Users },
+    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
+    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
+    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
+    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
+    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+  ];
 
-    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
-    }
+  // ===== রেজুলেশন - শুধু Admin ও Super Admin দেখবে =====
+  if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText });
+  }
 
-    if (loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
-    }
+  // ===== বাৎসরিক হিসাব - শুধু Admin ও Super Admin দেখবে =====
+  if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
+  }
 
-    return baseTabs;
-  };
+  // ===== কন্ট্রোল প্যানেল - Admin ও Super Admin দেখবে =====
+  if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
+  }
 
+  // ===== পারমিশন ব্যবস্থাপনা - শুধু Super Admin দেখবে =====
+  if (loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'permissions', label: 'পারমিশন ব্যবস্থাপনা', icon: Shield });
+  }
+
+  return baseTabs;
+};
+  
   // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
     return (
@@ -932,8 +1111,454 @@ function LoginPage() {
         </div>
       )}
 
-      {/* JSON Editor Tab (Super Admin only) */}
-      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
+            {/* JSON Editor Tab - Permission Based (Admin & Super Admin) */}
+      {activeTab === 'json-editor' && 
+        (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && 
+        !isDataLoading && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Settings className="w-8 h-8" />
+                  কন্ট্রোল প্যানেল
+                </h2>
+                <p className="text-orange-100 text-sm mt-1">
+                  {loggedInUser?.role === 'Super Admin' 
+                    ? '✨ সম্পূর্ণ নিয়ন্ত্রণ (Super Admin)'
+                    : `🔒 সীমিত সম্পাদনা (Admin)`
+                  }
+                </p>
+              </div>
+              <div className="bg-white/20 px-4 py-2 rounded-lg">
+                <p className="text-xs text-orange-100">আপনার Role</p>
+                <p className="font-bold">{loggedInUser?.role}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Admin-এর জন্য Permission Badge */}
+          {loggedInUser?.role === 'Admin' && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-blue-800 mb-2">আপনার সম্পাদনা অনুমতি:</h4>
+                  {loggedInUser.permissions && loggedInUser.permissions.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {loggedInUser.permissions.map((perm) => (
+                        <span 
+                          key={perm}
+                          className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium"
+                        >
+                          {ALL_PERMISSIONS[perm as keyof typeof ALL_PERMISSIONS]?.label || perm}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-blue-600">
+                      ⚠️ আপনার কোনো সম্পাদনা অনুমতি নেই। Super Admin-এর সাথে যোগাযোগ করুন।
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* JSON Editor Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* সদস্য তালিকা */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_MEMBERS) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-blue-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">সদস্য তালিকা</h3>
+                    <p className="text-xs text-gray-500">members-data.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">সদস্যদের তথ্য সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* জরুরী ফোন */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_CONTACTS) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-green-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <Phone className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">জরুরী ফোন</h3>
+                    <p className="text-xs text-gray-500">contacts.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">যোগাযোগের তথ্য সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* নিমন্ত্রণ তালিকা */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_INVITATIONS) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-purple-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">নিমন্ত্রণ তালিকা</h3>
+                    <p className="text-xs text-gray-500">invitations.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">নিমন্ত্রণ তালিকা সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* সাংগঠনিক প্রোফাইল */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_ORG_PROFILE) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-orange-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">সাংগঠনিক প্রোফাইল</h3>
+                    <p className="text-xs text-gray-500">organizationalProfile.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">সংগঠনের তথ্য সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* রেজুলেশন */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_RESOLUTIONS) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-red-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">রেজুলেশন সমূহ</h3>
+                    <p className="text-xs text-gray-500">resolutions.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">রেজুলেশন সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* বিজ্ঞপ্তি */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_NOTICES) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-yellow-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                    <Bell className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">বিজ্ঞপ্তি</h3>
+                    <p className="text-xs text-gray-500">dynamicContent.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">বিজ্ঞপ্তি সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* লাইভ সম্প্রচার */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_LIVE_STREAM) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-pink-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center">
+                    <Tv className="w-6 h-6 text-pink-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">লাইভ সম্প্রচার</h3>
+                    <p className="text-xs text-gray-500">dynamicContent.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">লাইভ সম্প্রচার সেটিংস</p>
+                <button className="w-full px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* চ্যাটবট */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.EDIT_CHATBOT) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-indigo-500">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <Send className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">চ্যাটবট</h3>
+                    <p className="text-xs text-gray-500">chatbot-data.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">চ্যাটবট সম্পাদনা করুন</p>
+                <button className="w-full px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+
+            {/* লগইন ডেটা - শুধু Super Admin */}
+            {hasPermission(loggedInUser, PERMISSION_KEYS.MANAGE_USERS) && (
+              <div className="bg-white rounded-xl p-5 shadow-lg hover:shadow-xl transition border-l-4 border-gray-800">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800">লগইন ডেটা</h3>
+                    <p className="text-xs text-gray-500">members-login.json</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">ইউজার ও পাসওয়ার্ড</p>
+                <button className="w-full px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition flex items-center justify-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  সম্পাদনা করুন
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* No Permission Message for Admin */}
+          {loggedInUser?.role === 'Admin' && 
+            (!loggedInUser.permissions || loggedInUser.permissions.length === 0) && (
+            <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-orange-300" />
+              <h3 className="text-xl font-bold text-gray-700 mb-2">কোনো সম্পাদনা অনুমতি নেই</h3>
+              <p className="text-gray-500">Super Admin-এর সাথে যোগাযোগ করুন।</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Permission Management Tab - Super Admin Only */}
+{activeTab === 'permissions' && loggedInUser?.role === 'Super Admin' && !isDataLoading && (
+  <div className="space-y-6">
+    {/* Header */}
+    <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl p-6 text-white">
+      <h2 className="text-2xl font-bold flex items-center gap-2">
+        <Shield className="w-8 h-8" />
+        পারমিশন ব্যবস্থাপনা
+      </h2>
+      <p className="text-purple-100 text-sm mt-1">
+        Admin-দের জন্য সম্পাদনা অনুমতি নির্ধারণ করুন
+      </p>
+    </div>
+
+    {/* Info Card */}
+    <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+      <div className="flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <h4 className="font-bold text-yellow-800 mb-1">গুরুত্বপূর্ণ তথ্য</h4>
+          <p className="text-sm text-yellow-700">
+            Permission পরিবর্তন করতে হলে <strong>members-login.json</strong> ফাইলে 
+            সরাসরি <strong>permissions</strong> array আপডেট করতে হবে।
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* Available Permissions */}
+    <div className="bg-white rounded-2xl p-6 shadow-lg">
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <FileText className="w-5 h-5 text-purple-500" />
+        সকল Permission Keys
+      </h3>
+      <p className="text-sm text-gray-600 mb-4">
+        Admin-কে যে permission দিতে চান, সেই key টি <code className="bg-gray-100 px-2 py-1 rounded">permissions</code> array-তে যোগ করুন:
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {Object.entries(ALL_PERMISSIONS).map(([key, perm]) => (
+          <div 
+            key={key}
+            className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+          >
+            <div className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+              perm.category === 'data' ? 'bg-blue-100' :
+              perm.category === 'content' ? 'bg-green-100' :
+              perm.category === 'finance' ? 'bg-orange-100' : 'bg-purple-100'
+            )}>
+              <FileText className={cn(
+                "w-5 h-5",
+                perm.category === 'data' ? 'text-blue-600' :
+                perm.category === 'content' ? 'text-green-600' :
+                perm.category === 'finance' ? 'text-orange-600' : 'text-purple-600'
+              )} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-800 text-sm">{perm.label}</p>
+              <code className="text-xs bg-gray-200 px-2 py-0.5 rounded text-gray-700 block mt-1 break-all">
+                "{key}"
+              </code>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Current Users from members-login.json */}
+    <div className="bg-white rounded-2xl p-6 shadow-lg">
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <Users className="w-5 h-5 text-purple-500" />
+        বর্তমান ইউজার তালিকা
+        <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full ml-2">
+          members-login.json থেকে লোড
+        </span>
+      </h3>
+      
+      {loginData ? (
+        <div className="space-y-6">
+          {/* Super Admins */}
+          <div>
+            <h4 className="font-semibold text-purple-600 mb-3 flex items-center gap-2">
+              <span className="text-lg">👑</span> Super Admin
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[...loginData.accountsMembers, ...loginData.normalMembers]
+                .filter(u => u.role === 'Super Admin')
+                .map(user => (
+                  <div key={user.id} className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200">
+                    <div className="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.mobile}</p>
+                    </div>
+                    <span className="ml-auto text-xs bg-purple-200 text-purple-700 px-2 py-1 rounded-full">
+                      সব অনুমতি ✓
+                    </span>
+                  </div>
+                ))
+              }
+              {[...loginData.accountsMembers, ...loginData.normalMembers]
+                .filter(u => u.role === 'Super Admin').length === 0 && (
+                <p className="text-sm text-gray-500 italic">কোনো Super Admin নেই</p>
+              )}
+            </div>
+          </div>
+
+          {/* Admins */}
+          <div>
+            <h4 className="font-semibold text-blue-600 mb-3 flex items-center gap-2">
+              <span className="text-lg">🔧</span> Admin
+            </h4>
+            <div className="grid grid-cols-1 gap-3">
+              {[...loginData.accountsMembers, ...loginData.normalMembers]
+                .filter(u => u.role === 'Admin')
+                .map(user => (
+                  <div key={user.id} className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.mobile} • {user.email}</p>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-600 mb-2 font-medium">📋 Permissions:</p>
+                      {user.permissions && user.permissions.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {user.permissions.map((p: string) => (
+                            <span 
+                              key={p} 
+                              className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium"
+                            >
+                              {ALL_PERMISSIONS[p as keyof typeof ALL_PERMISSIONS]?.label || p}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          কোনো permission নেই - JSON ফাইলে যোগ করুন
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              }
+              {[...loginData.accountsMembers, ...loginData.normalMembers]
+                .filter(u => u.role === 'Admin').length === 0 && (
+                <p className="text-sm text-gray-500 italic">কোনো Admin নেই</p>
+              )}
+            </div>
+          </div>
+
+          {/* Members Count */}
+          <div>
+            <h4 className="font-semibold text-green-600 mb-3 flex items-center gap-2">
+              <span className="text-lg">👤</span> Member
+            </h4>
+            <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+              <p className="text-sm text-gray-700">
+                মোট <span className="font-bold text-green-600">
+                  {[...loginData.accountsMembers, ...loginData.normalMembers]
+                    .filter(u => u.role === 'Member').length}
+                </span> জন সাধারণ সদস্য
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                (Member-দের কোনো edit permission থাকে না)
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500">লগইন ডেটা লোড হচ্ছে...</p>
+        </div>
+      )}
+    </div>
+
+      {/* Quick Guide */}
+    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
+      <h3 className="text-lg font-bold text-purple-800 mb-3">📌 Permission যোগ করার নিয়ম</h3>
+      <ol className="list-decimal list-inside space-y-2 text-sm text-purple-700">
+        <li>GitHub-এ <code className="bg-white px-2 py-0.5 rounded">members-login.json</code> ফাইলটি Edit করুন</li>
+        <li>যে Admin-কে permission দিতে চান তাকে খুঁজুন</li>
+        <li><code className="bg-white px-2 py-0.5 rounded">"permissions": []</code> array-তে উপরের key গুলো যোগ করুন</li>
+        <li>ফাইল save/commit করুন</li>
+        <li>Admin যখন login করবে, তার permission অনুযায়ী section দেখবে</li>
+      </ol>
+    </div>
+  </div>
+)}
     </div>
   );
 }
