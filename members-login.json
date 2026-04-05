@@ -31,7 +31,7 @@
         "edit_org_profile",
         "edit_resolutions",
         "edit_notices",
-        'edit_funds',
+        "edit_funds",
         "edit_live_stream"
       ]
     },
