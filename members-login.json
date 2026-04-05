@@ -7,14 +7,7 @@
       "email": "tanmoy4bd@gmail.com",
       "password": "admin123",
       "role": "Super Admin",
-      "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png",
-      "permissions": ["edit_members",
-        "edit_contacts",
-        "edit_invitations",
-        "edit_org_profile",
-        "edit_resolutions",
-        "edit_notices",
-        "edit_live_stream"]
+      "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png"
     },
     {
       "id": "3",
@@ -23,17 +16,7 @@
       "email": "",
       "password": "admin1234",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/LDS167S1/SHAMON.png",
-      "permissions": [
-        "edit_members",
-        "edit_contacts",
-        "edit_invitations",
-        "edit_org_profile",
-        "edit_resolutions",
-        "edit_notices",
-        "edit_funds",
-        "edit_live_stream"
-      ]
+      "photo": "https://i.ibb.co.com/LDS167S1/SHAMON.png"
     },
     {
       "id": "5",
@@ -42,8 +25,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/fGXxJVpq/ASASH.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/fGXxJVpq/ASASH.png"
     },
     {
       "id": "6",
@@ -52,8 +34,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/PJQFx4g/TAPAN.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/PJQFx4g/TAPAN.png"
     },
     {
       "id": "7",
@@ -62,8 +43,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/nMZ6vgSm/NAYAN.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/nMZ6vgSm/NAYAN.png"
     },
     {
       "id": "8",
@@ -72,8 +52,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/zVn70PjM/LITON.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/zVn70PjM/LITON.png"
     },
     {
       "id": "10",
@@ -82,8 +61,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png"
     },
     {
       "id": "14",
@@ -92,8 +70,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png"
     },
     {
       "id": "16",
@@ -102,8 +79,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png"
     },
     {
       "id": "17",
@@ -112,8 +88,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/2JwvZVK/ANUPAM.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/2JwvZVK/ANUPAM.png"
     },
     {
       "id": "18",
@@ -122,8 +97,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/b5NjXH3V/SUVO.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/b5NjXH3V/SUVO.png"
     },
     {
       "id": "20",
@@ -133,10 +107,22 @@
       "password": "01796069660",
       "role": "Admin",
       "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
-      "permissions": [
-        "edit_notices",
-        "edit_live_stream"
-      ]
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false
+      }
     },
     {
       "id": "15",
@@ -145,8 +131,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/zV3hyBhx/PAPPU.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/zV3hyBhx/PAPPU.png"
     },
     {
       "id": "21",
@@ -155,8 +140,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png"
     },
     {
       "id": "29",
@@ -165,8 +149,7 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png"
     }
   ],
   "normalMembers": [
@@ -177,8 +160,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/rGc8KB5J/ACHINTA.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/rGc8KB5J/ACHINTA.png"
     },
     {
       "id": "9",
@@ -187,8 +169,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/99r78jvR/SUJIT.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/99r78jvR/SUJIT.png"
     },
     {
       "id": "11",
@@ -197,8 +178,7 @@
       "email": "",
       "password": "admin303",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/6jHCSNZ/CHANCAL.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/6jHCSNZ/CHANCAL.png"
     },
     {
       "id": "12",
@@ -207,8 +187,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/W4pgPvkt/BAPPI.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/W4pgPvkt/BAPPI.png"
     },
     {
       "id": "13",
@@ -217,8 +196,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/ZzRkV404/SANAT.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/ZzRkV404/SANAT.png"
     },
     {
       "id": "22",
@@ -227,8 +205,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/JFwyQ4Hv/BIPUL.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/JFwyQ4Hv/BIPUL.png"
     },
     {
       "id": "23",
@@ -237,8 +214,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/ycTn5mKn/NONDO.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/ycTn5mKn/NONDO.png"
     },
     {
       "id": "24",
@@ -247,8 +223,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/jPPCpjCK/ASIM.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/jPPCpjCK/ASIM.png"
     },
     {
       "id": "25",
@@ -257,8 +232,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/TBGN5qZr/TONI.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/TBGN5qZr/TONI.png"
     },
     {
       "id": "26",
@@ -267,8 +241,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/B2Vg8cHY/SUDIPTA.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/B2Vg8cHY/SUDIPTA.png"
     },
     {
       "id": "27",
@@ -277,8 +250,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/hPNhZw1/PIJUS.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/hPNhZw1/PIJUS.png"
     },
     {
       "id": "28",
@@ -287,8 +259,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/fGTfmFrG/AVIJIT.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/fGTfmFrG/AVIJIT.png"
     },
     {
       "id": "30",
@@ -297,8 +268,7 @@
       "email": "",
       "password": "01770652315",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/PZv7s5YK/Sanjoy.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/PZv7s5YK/Sanjoy.png"
     },
     {
       "id": "31",
@@ -307,8 +277,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "",
-      "permissions": []
+      "photo": ""
     },
     {
       "id": "32",
@@ -317,8 +286,7 @@
       "email": "monmotho1999@gmail.com",
       "password": "01754206812",
       "role": "Member",
-      "photo": "",
-      "permissions": []
+      "photo": ""
     },
     {
       "id": "33",
@@ -327,8 +295,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/q6NBffp/UTTOM.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/q6NBffp/UTTOM.png"
     },
     {
       "id": "34",
@@ -337,8 +304,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "https://i.ibb.co.com/Q3ysYBnz/SHAM.png",
-      "permissions": []
+      "photo": "https://i.ibb.co.com/Q3ysYBnz/SHAM.png"
     },
     {
       "id": "35",
@@ -347,8 +313,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "",
-      "permissions": []
+      "photo": ""
     },
     {
       "id": "36",
@@ -357,8 +322,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "",
-      "permissions": []
+      "photo": ""
     },
     {
       "id": "37",
@@ -367,8 +331,7 @@
       "email": "",
       "password": "",
       "role": "Member",
-      "photo": "",
-      "permissions": []
+      "photo": ""
     }
   ]
 }
