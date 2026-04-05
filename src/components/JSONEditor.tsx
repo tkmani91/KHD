@@ -212,20 +212,22 @@ const JSONEditor: React.FC = () => {
     },
     // 🆕 নতুন ২টি সেকশন
     {
-      id: 'organizationalProfile',
-      label: '🏢 সংগঠনের প্রোফাইল',
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
-      path: 'public/data/organizationalProfile.json',
-      type: 'complex-object',
-      sections: ['about', 'history', 'committee', 'achievements']
-    },
+    id: 'organizationalProfile',
+    label: '🏢 সংগঠনের প্রোফাইল',
+    url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
+    path: 'public/data/organizationalProfile.json',
+    type: 'nested-sections',
+    sections: ['leaders'],
+    hasImagePreview: true
+  },
     {
-      id: 'resolutions',
-      label: '📋 সিদ্ধান্তসমূহ',
-      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
-      path: 'public/data/resolutions.json',
-      type: 'simple-array'
-    }
+    id: 'resolutions',
+    label: '📋 সিদ্ধান্তসমূহ',
+    url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
+    path: 'public/data/resolutions.json',
+    type: 'nested-sections',
+    sections: ['meetingDecisions', 'fundAllocations']
+  }
   ];
     const currentFile = JSON_FILES.find(f => f.id === selectedFile);
 
@@ -271,6 +273,9 @@ const JSONEditor: React.FC = () => {
     about: 'ℹ️ সম্পর্কে',
     history: '📜 ইতিহাস',
     committee: '👔 কমিটি',
+    eaders: '👔 নেতৃত্ব',
+    meetingDecisions: '📋 সভার সিদ্ধান্ত',
+    fundAllocations: '💰 অনুদান বরাদ্ধ ',
     achievements: '🏆 অর্জন'
   };
 
@@ -684,6 +689,20 @@ const JSONEditor: React.FC = () => {
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
     }
+    // 🆕 Organizational Profile
+  if (selectedFile === 'organizationalProfile' || selectedSection === 'leaders') {
+    return item.name || `নেতা ${index + 1}`;
+  }
+  
+  // 🆕 Resolutions
+  if (selectedFile === 'resolutions') {
+    if (selectedSection === 'meetingDecisions') {
+      return item.title || `সিদ্ধান্ত ${index + 1}`;
+    }
+    if (selectedSection === 'fundAllocations') {
+      return item.title || `অনুদান ${index + 1}`;
+    }
+  }
     
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
@@ -1229,7 +1248,8 @@ const JSONEditor: React.FC = () => {
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
     event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট',
-    about: 'সম্পর্কে', history: 'ইতিহাস', committee: 'কমিটি', achievements: 'অর্জন'
+    about: 'সম্পর্কে', history: 'ইতিহাস', committee: 'কমিটি', achievements: 'অর্জন',
+    position: 'পদবী', tenure: 'মেয়াদ', current: 'বর্তমান?',category: 'ক্যাটাগরি', pdfUrl: 'PDF URL', amount: 'পরিমাণ', source: 'উৎস'
   };
 
   // ============================================
@@ -1277,6 +1297,67 @@ const JSONEditor: React.FC = () => {
         </div>
       );
     }
+  // Category dropdown for resolutions
+if (key === 'category' && selectedFile === 'resolutions') {
+  return (
+    <div key={key} className="form-field">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <select value={String(formData[key] || '')} 
+        onChange={(e) => handleFieldChange(key, e.target.value)}
+        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+        <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+        <option value="সাধারণ সভা">📋 সাধারণ সভা</option>
+        <option value="কমিটি গঠন">👥 কমিটি গঠন</option>
+        <option value="পূজা সংক্রান্ত">🙏 পূজা সংক্রান্ত</option>
+        <option value="অর্থ সংক্রান্ত">💰 অর্থ সংক্রান্ত</option>
+        <option value="অন্যান্য">📌 অন্যান্য</option>
+      </select>
+    </div>
+  );
+}
+
+// Position dropdown for organizational profile
+if (key === 'position' && selectedFile === 'organizationalProfile') {
+  return (
+    <div key={key} className="form-field">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <select value={String(formData[key] || '')} 
+        onChange={(e) => handleFieldChange(key, e.target.value)}
+        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+        <option value="">পদবী নির্বাচন করুন</option>
+        <option value="সভাপতি">👑 সভাপতি</option>
+        <option value="সহ-সভাপতি">🎖️ সহ-সভাপতি</option>
+        <option value="সাধারণ সম্পাদক">📝 সাধারণ সম্পাদক</option>
+        <option value="সহ-সম্পাদক">📋 সহ-সম্পাদক</option>
+        <option value="অর্থ সম্পাদক / কোষাধ্যক্ষ">💰 অর্থ সম্পাদক / কোষাধ্যক্ষ</option>
+        <option value="সাংগঠনিক সম্পাদক">🏛️ সাংগঠনিক সম্পাদক</option>
+        <option value="প্রচার সম্পাদক">📢 প্রচার সম্পাদক</option>
+        <option value="কার্যনির্বাহী সদস্য">👤 কার্যনির্বাহী সদস্য</option>
+      </select>
+    </div>
+  );
+}
+
+// Source dropdown for fund allocations
+if (key === 'source' && selectedSection === 'fundAllocations') {
+  return (
+    <div key={key} className="form-field">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <select value={String(formData[key] || '')} 
+        onChange={(e) => handleFieldChange(key, e.target.value)}
+        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+        <option value="">উৎস নির্বাচন করুন</option>
+        <option value="জেলা প্রশাসন">🏛️ জেলা প্রশাসন</option>
+        <option value="উপজেলা পরিষদ">🏢 উপজেলা পরিষদ</option>
+        <option value="ইউনিয়ন পরিষদ">🏘️ ইউনিয়ন পরিষদ</option>
+        <option value="সংসদ সদস্য">🎖️ সংসদ সদস্য</option>
+        <option value="ব্যক্তিগত দান">🤝 ব্যক্তিগত দান</option>
+        <option value="সদস্য চাঁদা">💵 সদস্য চাঁদা</option>
+        <option value="অন্যান্য">📌 অন্যান্য</option>
+      </select>
+    </div>
+  );
+}
     
     if (key === 'questions' && Array.isArray(value)) {
       return (
