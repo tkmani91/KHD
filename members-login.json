@@ -303,7 +303,7 @@
       "mobile": "01796069660",
       "email": "",
       "password": "01796069660",
-      "role": "Admin",
+      "role": "Super Admin",
       "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
       "editorPermissions": {
         "dynamicContent": true,
@@ -404,8 +404,7 @@
         "organizationalProfile": false,
         "resolutions": false
       }
-     }
-      
+    }
   ],
   "normalMembers": [
     {
