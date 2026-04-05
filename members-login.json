@@ -7,7 +7,24 @@
       "email": "tanmoy4bd@gmail.com",
       "password": "admin123",
       "role": "Super Admin",
-      "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png"
+      "photo": "https://i.ibb.co.com/ZzRKw2St/TANMOY-M.png",
+      "editorPermissions": {
+        "dynamicContent": true,
+        "membersData": true,
+        "contactsData": true,
+        "invitationsData": true,
+        "quizData": true,
+        "loginData": true,
+        "chatbotData": true,
+        "galleryImages": true,
+        "accountsPDFs": true,
+        "liveChannels": true,
+        "pdfFiles": true,
+        "pujaData": true,
+        "schedules": true,
+        "songs": true,
+        "organizationalProfile": true,
+        "resolutions": true
     },
     {
       "id": "3",
