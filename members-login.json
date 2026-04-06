@@ -108,7 +108,7 @@
       "role": "Admin",
       "photo": "https://i.ibb.co.com/8LsRqy0g/TANMOY.png",
       "editorPermissions": {
-        "dynamicContent": true,
+        "dynamicContent": false,
         "membersData": true,
         "contactsData": false,
         "invitationsData": false,
@@ -118,10 +118,10 @@
         "galleryImages": false,
         "accountsPDFs": false,
         "liveChannels": false,
-        "pdfFiles": true,
+        "pdfFiles": false,
         "pujaData": false,
         "schedules": false,
-        "songs": true,
+        "songs": false,
         "organizationalProfile": false,
         "resolutions": false
       }
