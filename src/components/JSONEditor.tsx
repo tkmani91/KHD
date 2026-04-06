@@ -839,63 +839,76 @@ useEffect(() => {
     alert('✅ পরিসংখ্যান পুনরায় গণনা করা হয়েছে!');
   };
 
-  const handleSaveItem = () => {
-    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
-      alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-      return;
-    }
+const handleSaveItem = () => {
+  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection') {
+    alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+    return;
+  }
 
-    const updatedData = [...jsonData];
-    updatedData[selectedItemIndex] = { ...formData };
-    setJsonData(updatedData);
+  const updatedData = [...jsonData];
+  updatedData[selectedItemIndex] = { ...formData };
+  setJsonData(updatedData);
+  
+  if (currentFile?.type === 'gallery-special' && rawData) {
+    const newRawData = rawData.map((item: any) => {
+      if (item.id === formData.id) {
+        return { ...formData };
+      }
+      return item;
+    });
+    setRawData(newRawData);
+  } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
+    const newRawData = { ...rawData };
+    newRawData.invitations = rawData.invitations.map((item: any) => {
+      if (item.id === formData.id) {
+        return { ...formData };
+      }
+      return item;
+    });
+    setRawData(newRawData);
+  } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
+    const newRawData = rawData.map((item: any) => {
+      if (item.year === formData.year && item.title === jsonData[selectedItemIndex]?.title) {
+        return { ...formData };
+      }
+      return item;
+    });
+    setRawData(newRawData);
+  } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
+    const newRawData = { ...rawData };
+    if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
+    newRawData[selectedSection].years[formData.year] = formData.url;
+    setRawData(newRawData);
+  } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
+    const newRawData = { ...rawData };
     
-    if (currentFile?.type === 'gallery-special' && rawData) {
-      const newRawData = rawData.map((item: any) => {
-        if (item.id === formData.id) {
-          return { ...formData };
-        }
-        return item;
-      });
-      setRawData(newRawData);
-    } else if (currentFile?.type === 'invitations-special' && rawData && selectedSection === 'invitations') {
-      const newRawData = { ...rawData };
-      newRawData.invitations = rawData.invitations.map((item: any) => {
-        if (item.id === formData.id) {
-          return { ...formData };
-        }
-        return item;
-      });
-      setRawData(newRawData);
-    } else if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData)) {
-      const newRawData = rawData.map((item: any) => {
-        if (item.year === formData.year && item.title === jsonData[selectedItemIndex]?.title) {
-          return { ...formData };
-        }
-        return item;
-      });
-      setRawData(newRawData);
-    } else if (currentFile?.type === 'accounts-special' && rawData && selectedSection) {
-      const newRawData = { ...rawData };
-      if (!newRawData[selectedSection]) newRawData[selectedSection] = { years: {} };
-      newRawData[selectedSection].years[formData.year] = formData.url;
-      setRawData(newRawData);
-    } else if (selectedSection && rawData && currentFile?.type !== 'simple-array') {
-      const newRawData = { ...rawData };
-      
-      if (selectedSection === 'pdfLink') {
-        newRawData.pdfLink = formData.pdfLink || '';
-      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-        newRawData[selectedSection] = updatedData.map(item => item.text);
+    if (selectedSection === 'pdfLink') {
+      newRawData.pdfLink = formData.pdfLink || '';
+    } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+      newRawData[selectedSection] = updatedData.map(item => item.text);
+    } else {
+      // ✅ CRITICAL FIX: loginData section এ editorPermissions সহ সব data save করুন
+      if (selectedFile === 'loginData' && (selectedSection === 'accountsMembers' || selectedSection === 'normalMembers')) {
+        // Deep copy করুন যাতে editorPermissions ঠিকমতো save হয়
+        newRawData[selectedSection] = updatedData.map(item => {
+          const itemCopy = { ...item };
+          // editorPermissions যদি object হয়, deep copy করুন
+          if (item.editorPermissions && typeof item.editorPermissions === 'object') {
+            itemCopy.editorPermissions = { ...item.editorPermissions };
+          }
+          return itemCopy;
+        });
       } else {
         newRawData[selectedSection] = Array.isArray(rawData[selectedSection]) 
           ? updatedData 
           : updatedData[0];
       }
-      setRawData(newRawData);
     }
-    
-    alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
-  };
+    setRawData(newRawData);
+  }
+  
+  alert('✅ সংরক্ষিত! JSON কপি করে GitHub এ আপলোড করুন।');
+};
 
   const handleAddItem = () => {
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundSubSection === 'members') {
@@ -1166,69 +1179,74 @@ if (selectedFile === 'organizationalProfile' && selectedSection === 'leaders') {
     alert('🗑️ মুছে ফেলা হয়েছে!');
   };
 
-  const handleCopyJSON = () => {
-    let finalData: any;
+ const handleCopyJSON = () => {
+  let finalData: any;
 
-    if (currentFile?.type === 'simple-array') {
-      const updated = [...jsonData];
-      if (updated.length > 0) updated[selectedItemIndex] = formData;
-      finalData = updated;
-    } else if (currentFile?.type === 'gallery-special') {
-      finalData = rawData;
-    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
-      finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
+  if (currentFile?.type === 'simple-array') {
+    const updated = [...jsonData];
+    if (updated.length > 0) updated[selectedItemIndex] = formData;
+    finalData = updated;
+  } else if (currentFile?.type === 'gallery-special') {
+    finalData = rawData;
+  } else if (currentFile?.type === 'fund-collection-special' && rawData) {
+    finalData = { ...rawData };
+    finalData.fundCollection = {
+      ...fundSettings,
+      members: fundMembers,
+      paymentStats: paymentStats
+    };
+  } else if (currentFile?.type === 'invitations-special' && rawData) {
+    finalData = { ...rawData };
+  } else if (currentFile?.type === 'quiz-special' && rawData) {
+    finalData = rawData;
+  } else if (currentFile?.type === 'accounts-special' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection && rawData[selectedSection]) {
+      const yearsObj: Record<string, string> = {};
+      jsonData.forEach(item => {
+        yearsObj[item.year] = item.url;
+      });
+      if (formData.year && formData.url) {
+        yearsObj[formData.year] = formData.url;
+      }
+      finalData[selectedSection] = { 
+        title: formData.title || rawData[selectedSection]?.title || '',
+        years: yearsObj 
       };
-    } else if (currentFile?.type === 'invitations-special' && rawData) {
-      finalData = { ...rawData };
-    } else if (currentFile?.type === 'quiz-special' && rawData) {
-      finalData = rawData;
-    } else if (currentFile?.type === 'accounts-special' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection && rawData[selectedSection]) {
-        const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
+    }
+  } else if (currentFile?.type === 'nested-sections' && rawData) {
+    // ✅ CRITICAL FIX: Deep copy for loginData with editorPermissions
+    finalData = JSON.parse(JSON.stringify(rawData));
+    if (selectedSection) {
+      if (selectedSection === 'pdfLink') {
+        finalData.pdfLink = formData.pdfLink || '';
+      } else {
+        const updated = [...jsonData];
+        if (updated.length > 0) {
+          // ✅ Deep copy current formData including editorPermissions
+          updated[selectedItemIndex] = JSON.parse(JSON.stringify(formData));
         }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
-      }
-    } else if (currentFile?.type === 'nested-sections' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'pdfLink') {
-          finalData.pdfLink = formData.pdfLink || '';
-        } else {
-          const updated = [...jsonData];
-          if (updated.length > 0) updated[selectedItemIndex] = formData;
-          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
-        }
-      }
-    } else if (currentFile?.type === 'complex-object' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
+        finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
       }
     }
+  } else if (currentFile?.type === 'complex-object' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection) {
+      if (selectedSection === 'welcomeMessage') {
+        finalData[selectedSection] = formData.value || '';
+      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+        finalData[selectedSection] = jsonData.map(item => item.text);
+      } else {
+        finalData[selectedSection] = jsonData;
+      }
+    }
+  }
 
-    navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  navigator.clipboard.writeText(JSON.stringify(finalData, null, 2));
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2000);
+};
+  
     // ============================================
   // DIRECT GITHUB UPLOAD
   // ============================================
@@ -2315,67 +2333,70 @@ if (key === 'name' && selectedFile === 'organizationalProfile' && selectedSectio
   // GENERATE JSON
   // ============================================
   
-  const generatedJSON = (() => {
-    let finalData: any;
+ const generatedJSON = (() => {
+  let finalData: any;
 
-    if (currentFile?.type === 'simple-array') {
-      const updated = [...jsonData];
-      if (updated.length > 0) updated[selectedItemIndex] = formData;
-      finalData = updated;
-    } else if (currentFile?.type === 'gallery-special') {
-      finalData = rawData;
-    } else if (currentFile?.type === 'fund-collection-special' && rawData) {
-      finalData = { ...rawData };
-      finalData.fundCollection = {
-        ...fundSettings,
-        members: fundMembers,
-        paymentStats: paymentStats
+  if (currentFile?.type === 'simple-array') {
+    const updated = [...jsonData];
+    if (updated.length > 0) updated[selectedItemIndex] = formData;
+    finalData = updated;
+  } else if (currentFile?.type === 'gallery-special') {
+    finalData = rawData;
+  } else if (currentFile?.type === 'fund-collection-special' && rawData) {
+    finalData = { ...rawData };
+    finalData.fundCollection = {
+      ...fundSettings,
+      members: fundMembers,
+      paymentStats: paymentStats
+    };
+  } else if (currentFile?.type === 'invitations-special' && rawData) {
+    finalData = { ...rawData };
+  } else if (currentFile?.type === 'quiz-special' && rawData) {
+    finalData = rawData;
+  } else if (currentFile?.type === 'accounts-special' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection && rawData[selectedSection]) {
+      const yearsObj: Record<string, string> = {};
+      jsonData.forEach(item => {
+        yearsObj[item.year] = item.url;
+      });
+      if (formData.year && formData.url) {
+        yearsObj[formData.year] = formData.url;
+      }
+      finalData[selectedSection] = { 
+        title: formData.title || rawData[selectedSection]?.title || '',
+        years: yearsObj 
       };
-    } else if (currentFile?.type === 'invitations-special' && rawData) {
-      finalData = { ...rawData };
-    } else if (currentFile?.type === 'quiz-special' && rawData) {
-      finalData = rawData;
-    } else if (currentFile?.type === 'accounts-special' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection && rawData[selectedSection]) {
-        const yearsObj: Record<string, string> = {};
-        jsonData.forEach(item => {
-          yearsObj[item.year] = item.url;
-        });
-        if (formData.year && formData.url) {
-          yearsObj[formData.year] = formData.url;
+    }
+  } else if (currentFile?.type === 'nested-sections' && rawData) {
+    // ✅ CRITICAL FIX: Deep copy for proper editorPermissions handling
+    finalData = JSON.parse(JSON.stringify(rawData));
+    if (selectedSection) {
+      if (selectedSection === 'pdfLink') {
+        finalData.pdfLink = formData.pdfLink || '';
+      } else {
+        const updated = JSON.parse(JSON.stringify(jsonData));
+        if (updated.length > 0) {
+          updated[selectedItemIndex] = JSON.parse(JSON.stringify(formData));
         }
-        finalData[selectedSection] = { 
-          title: formData.title || rawData[selectedSection]?.title || '',
-          years: yearsObj 
-        };
-      }
-    } else if (currentFile?.type === 'nested-sections' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'pdfLink') {
-          finalData.pdfLink = formData.pdfLink || '';
-        } else {
-          const updated = [...jsonData];
-          if (updated.length > 0) updated[selectedItemIndex] = formData;
-          finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
-        }
-      }
-    } else if (currentFile?.type === 'complex-object' && rawData) {
-      finalData = { ...rawData };
-      if (selectedSection) {
-        if (selectedSection === 'welcomeMessage') {
-          finalData[selectedSection] = formData.value || '';
-        } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
-          finalData[selectedSection] = jsonData.map(item => item.text);
-        } else {
-          finalData[selectedSection] = jsonData;
-        }
+        finalData[selectedSection] = Array.isArray(rawData[selectedSection]) ? updated : updated[0];
       }
     }
+  } else if (currentFile?.type === 'complex-object' && rawData) {
+    finalData = { ...rawData };
+    if (selectedSection) {
+      if (selectedSection === 'welcomeMessage') {
+        finalData[selectedSection] = formData.value || '';
+      } else if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
+        finalData[selectedSection] = jsonData.map(item => item.text);
+      } else {
+        finalData[selectedSection] = jsonData;
+      }
+    }
+  }
 
-    return JSON.stringify(finalData, null, 2);
-  })();
+  return JSON.stringify(finalData, null, 2);
+})();
 
   const btnClass = (active: boolean) => 
     `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
