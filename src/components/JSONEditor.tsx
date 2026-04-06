@@ -2392,15 +2392,58 @@ if (key === 'name' && selectedFile === 'organizationalProfile' && selectedSectio
       </div>
 
       {/* Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
-        <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">
-          {userRole === 'Super Admin' 
-            ? '১৬টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update'
-            : `${availableFiles.length}টি অনুমোদিত ফাইল • আপনার Role: ${userRole}`
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
+  <div className="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
+      <p className="text-sm text-blue-700">
+        {userRole === 'Super Admin' 
+          ? '১৬টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update'
+          : `${availableFiles.length}টি অনুমোদিত ফাইল • আপনার Role: ${userRole}`
+        }
+      </p>
+    </div>
+    
+    {/* ✅ Cache Purge Button */}
+    {userRole === 'Super Admin' && (
+      <button 
+        onClick={async () => {
+          try {
+            const files = [
+              'members-login.json',
+              'members-data.json',
+              'contacts.json',
+              'invitations.json',
+              'dynamicContent.json',
+              'chatbot-data.json',
+              'gallery-images.json',
+              'quiz-archive.json',
+              'public/data/accountsPDFs.json',
+              'public/data/liveChannels.json',
+              'public/data/pdfFiles.json',
+              'public/data/pujaData.json',
+              'public/data/schedules.json',
+              'public/data/songs.json',
+              'public/data/organizationalProfile.json',
+              'public/data/resolutions.json'
+            ];
+            
+            for (const file of files) {
+              await fetch(`https://purge.jsdelivr.net/gh/tkmani91/KHD@main/${file}`);
+            }
+            
+            alert('✅ সব ফাইলের Cache cleared!\n\nএখন Page Refresh করুন। 🔄');
+          } catch (error) {
+            alert('❌ Cache purge failed! আবার চেষ্টা করুন।');
           }
-        </p>
-      </div>
+        }}
+        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition shadow-lg hover:shadow-xl flex items-center gap-2"
+      >
+        🔄 Cache Purge
+      </button>
+    )}
+  </div>
+</div>
 
       {/* ✅ NEW: Admin এর জন্য অনুমতি না থাকলে মেসেজ */}
       {userRole === 'Admin' && availableFiles.length === 0 && (
