@@ -930,7 +930,8 @@ const getAvailableTabs = () => {
   <JSONEditor 
     userRole={loggedInUser?.role || 'Member'} 
     editorPermissions={loggedInUser?.editorPermissions || {}} 
-  />}
+  />
+)}
     </div>
   );
 }
