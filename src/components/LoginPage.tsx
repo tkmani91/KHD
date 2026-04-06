@@ -473,29 +473,47 @@ function LoginPage() {
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [loginData, setLoginData] = useState<{ accountsMembers: LoginUser[]; normalMembers: LoginUser[] } | null>(null);
 
-  // ===== SESSION PERSISTENCE - Check saved login =====
-  useEffect(() => {
-    const checkSavedSession = async () => {
-      try {
-        const savedUser = localStorage.getItem('khd_logged_in_user');
-        const savedPhoto = localStorage.getItem('khd_user_photo');
+ // ===== SESSION PERSISTENCE - Check saved login =====
+useEffect(() => {
+  const checkSavedSession = async () => {
+    try {
+      const savedUser = localStorage.getItem('khd_logged_in_user');
+      const savedPhoto = localStorage.getItem('khd_user_photo');
+      
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
         
-        if (savedUser) {
-          const user = JSON.parse(savedUser);
-          setLoggedInUser(user);
-          setUserPhoto(user.photo || savedPhoto || '');
-          setIsLoggedIn(true);
-        }
-      } catch (error) {
-        console.log('Session check failed:', error);
-        localStorage.removeItem('khd_logged_in_user');
-        localStorage.removeItem('khd_user_photo');
+        // ✅ DEBUG: Console এ দেখুন restore হচ্ছে কিনা
+        console.log('🔄 SESSION RESTORE');
+        console.log('🔄 Saved User:', user);
+        console.log('🔄 Editor Permissions:', user.editorPermissions);
+        
+        // ✅ CRITICAL: editorPermissions সহ restore করুন
+        const restoredUser: LoginUser = {
+          id: user.id,
+          name: user.name,
+          mobile: user.mobile || '',
+          email: user.email || '',
+          password: '',
+          role: user.role || 'Member',
+          photo: user.photo || savedPhoto || '',
+          editorPermissions: user.editorPermissions || {}  // ✅ এটা গুরুত্বপূর্ণ!
+        };
+        
+        setLoggedInUser(restoredUser);
+        setUserPhoto(restoredUser.photo || '');
+        setIsLoggedIn(true);
       }
-      setIsCheckingSession(false);
-    };
+    } catch (error) {
+      console.log('Session check failed:', error);
+      localStorage.removeItem('khd_logged_in_user');
+      localStorage.removeItem('khd_user_photo');
+    }
+    setIsCheckingSession(false);
+  };
 
-    checkSavedSession();
-  }, []);
+  checkSavedSession();
+}, []);
 
   // Load login data
   useEffect(() => {
@@ -590,59 +608,69 @@ function LoginPage() {
     loadAccountsPDFs();
   }, [isLoggedIn, loggedInUser]);
   
-  // ===== LOGIN HANDLER =====
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
-    if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
+ // ===== LOGIN HANDLER =====
+const handleLogin = (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoginError('');
+  if (!usernameInput.trim()) { setLoginError('মোবাইল/ইমেইল দিন'); return; }
+  if (!passwordInput.trim()) { setLoginError('পাসওয়ার্ড দিন'); return; }
+  
+  if (!loginData) {
+    setLoginError('লগইন ডেটা লোড হয়নি');
+    return;
+  }
+
+  setIsLoading(true);
+  setTimeout(() => {
+    const trimmedUsername = usernameInput.trim().toLowerCase();
+    const trimmedPassword = passwordInput.trim();
     
-    if (!loginData) {
-      setLoginError('লগইন ডেটা লোড হয়নি');
-      return;
-    }
+    const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
+    
+    // ✅ IMPORTANT: any type ব্যবহার করুন যাতে editorPermissions পায়
+    const foundUser = allUsers.find((u: any) => 
+      (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
+      u.password === trimmedPassword
+    );
 
-    setIsLoading(true);
-    setTimeout(() => {
-      const trimmedUsername = usernameInput.trim().toLowerCase();
-      const trimmedPassword = passwordInput.trim();
-      
-      const allUsers = [...loginData.accountsMembers, ...loginData.normalMembers];
-      
-      const foundUser = allUsers.find((u: LoginUser) => 
-        (u.mobile === trimmedUsername || u.email?.toLowerCase() === trimmedUsername) && 
-        u.password === trimmedPassword
-      );
+    if (foundUser) { 
+      const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
 
-      if (foundUser) { 
-        const userRole: 'Member' | 'Admin' | 'Super Admin' = foundUser.role || 'Member';
+      // ✅ CRITICAL: editorPermissions অবশ্যই include করুন
+      const userWithRole: LoginUser = {
+        id: foundUser.id,
+        name: foundUser.name,
+        mobile: foundUser.mobile || '',
+        email: foundUser.email || '',
+        password: '',
+        role: userRole,
+        photo: foundUser.photo || '',
+        editorPermissions: foundUser.editorPermissions || {}  // ✅ এটা গুরুত্বপূর্ণ!
+      };
 
-        const userWithRole: LoginUser = {
-          id: foundUser.id,
-          name: foundUser.name,
-          mobile: foundUser.mobile || '',
-          email: foundUser.email || '',
-          password: '',
-          role: userRole,
-          photo: foundUser.photo || ''
-        };
+      // ✅ DEBUG: Console এ দেখুন save হচ্ছে কিনা
+      console.log('🔐 LOGIN SUCCESS');
+      console.log('🔐 Found User:', foundUser);
+      console.log('🔐 Editor Permissions from JSON:', foundUser.editorPermissions);
+      console.log('🔐 Saving to state:', userWithRole);
 
-        localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
+      // ✅ localStorage এ save করুন (editorPermissions সহ)
+      localStorage.setItem('khd_logged_in_user', JSON.stringify(userWithRole));
 
-        if (foundUser.photo) {
-          setUserPhoto(foundUser.photo);
-          localStorage.setItem('khd_user_photo', foundUser.photo);
-        }
-
-        setIsLoggedIn(true); 
-        setLoggedInUser(userWithRole);
-        setUsernameInput(''); 
-        setPasswordInput(''); 
+      if (foundUser.photo) {
+        setUserPhoto(foundUser.photo);
+        localStorage.setItem('khd_user_photo', foundUser.photo);
       }
-      else { setLoginError('ভুল তথ্য দিয়েছেন'); }
-      setIsLoading(false);
-    }, 800);
-  };
+
+      setIsLoggedIn(true); 
+      setLoggedInUser(userWithRole);
+      setUsernameInput(''); 
+      setPasswordInput(''); 
+    }
+    else { setLoginError('ভুল তথ্য দিয়েছেন'); }
+    setIsLoading(false);
+  }, 800);
+};
 
   // ===== LOGOUT HANDLER =====
   const handleLogout = () => {
