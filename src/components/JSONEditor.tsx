@@ -59,7 +59,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/dynamicContent.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json',
       path: 'dynamicContent.json',
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
@@ -67,7 +67,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/members-data.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json',
       path: 'members-data.json',
       type: 'nested-sections',
       sections: ['members', 'pdfLinks'],
@@ -76,7 +76,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/contacts.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json',
       path: 'contacts.json',
       type: 'nested-sections',
       sections: ['contacts', 'pdfLink'],
@@ -85,7 +85,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/invitations.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/invitations.json',
       path: 'invitations.json',
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
@@ -93,14 +93,14 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'quizData',
       label: '❓ কুইজ',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/quiz-archive.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/quiz-archive.json',
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/members-login.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json',
       path: 'members-login.json',
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
@@ -108,7 +108,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/chatbot-data.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json',
       path: 'chatbot-data.json',
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
@@ -116,7 +116,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/gallery-images.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/gallery-images.json',
       path: 'gallery-images.json',
       type: 'gallery-special',
       hasImagePreview: true
@@ -124,7 +124,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/accountsPDFs.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/accountsPDFs.json',
       path: 'public/data/accountsPDFs.json',
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
@@ -132,21 +132,21 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/liveChannels.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/liveChannels.json',
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/pdfFiles.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pdfFiles.json',
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/pujaData.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/pujaData.json',
       path: 'public/data/pujaData.json',
       type: 'simple-array',
       hasImagePreview: true
@@ -154,7 +154,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/schedules.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/schedules.json',
       path: 'public/data/schedules.json',
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
@@ -162,7 +162,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'songs',
       label: '🎵 গান',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/songs.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/songs.json',
       path: 'public/data/songs.json',
       type: 'simple-array',
       hasAudioPreview: true
@@ -171,7 +171,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'organizationalProfile',
       label: '🏛️ সাংগঠনিক প্রোফাইল',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/organizationalProfile.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
       path: 'public/data/organizationalProfile.json',
       type: 'nested-sections',
       sections: ['leaders'],
@@ -181,7 +181,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     {
       id: 'resolutions',
       label: '📋 রেজুলেশন',
-      url: 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/public/data/resolutions.json',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
       path: 'public/data/resolutions.json',
       type: 'nested-sections',
       sections: ['meetingDecisions', 'fundAllocations']
@@ -772,7 +772,7 @@ const currentFile = availableFiles.find(f => f.id === selectedFile);
 useEffect(() => {
   const fetchAllMembers = async () => {
     try {
-      const response = await fetch('https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/members-login.json');
+      const response = await fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json');
       const data = await response.json();
       const combined = [...(data.accountsMembers || []), ...(data.normalMembers || [])];
       setAllMembersForDropdown(combined);
