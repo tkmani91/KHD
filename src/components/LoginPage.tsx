@@ -95,12 +95,12 @@ const cn = (...classes: (string | boolean | undefined | null)[]) => {
 };
 
 // Data URLs
-const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
-const GITHUB_CONTACTS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json';
-const GITHUB_INVITATIONS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/invitations.json';
-const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
-const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
-const GITHUB_CHATBOT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/chatbot-data.json';
+const GITHUB_MEMBERS_DATA_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/members-data.json';
+const GITHUB_CONTACTS_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/contacts.json';
+const GITHUB_INVITATIONS_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/invitations.json';
+const GITHUB_LOGIN_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/members-login.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/dynamicContent.json';
+const GITHUB_CHATBOT_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/chatbot-data.json';
 
 // ==================== CUSTOM HOOK ====================
 
