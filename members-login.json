@@ -298,7 +298,7 @@
         "galleryImages": false,
         "accountsPDFs": false,
         "liveChannels": false,
-        "pdfFiles": true,
+        "pdfFiles": false,
         "pujaData": false,
         "schedules": false,
         "songs": false,
