@@ -39,7 +39,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
   const [error, setError] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  
+  const [allMembersForDropdown, setAllMembersForDropdown] = useState<any[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedPujaType, setSelectedPujaType] = useState<string>('');
   const [selectedPdfYear, setSelectedPdfYear] = useState<string>('');
@@ -188,22 +188,43 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     }
   ];
 
-  // ✅ NEW: Filter files based on permissions
-  const getAvailableFiles = () => {
-    if (userRole === 'Super Admin') {
-      return JSON_FILES; // সব দেখতে পারবে
+  // ✅ FIXED: Filter files based on permissions with debug logs
+const getAvailableFiles = () => {
+  // Debug logs - সমস্যা খুঁজতে সাহায্য করবে
+  console.log('🔍 getAvailableFiles called');
+  console.log('👤 User Role:', userRole);
+  console.log('🔑 Editor Permissions:', editorPermissions);
+  console.log('🔑 Permissions Type:', typeof editorPermissions);
+  
+  if (userRole === 'Super Admin') {
+    console.log('✅ Super Admin - showing all 16 files');
+    return JSON_FILES;
+  }
+  
+  if (userRole === 'Admin') {
+    // ✅ CRITICAL FIX: Check if editorPermissions exists and is valid
+    if (!editorPermissions || typeof editorPermissions !== 'object' || Object.keys(editorPermissions).length === 0) {
+      console.log('❌ No valid permissions object found - showing nothing');
+      return [];
     }
-    
-    if (userRole === 'Admin') {
-      return JSON_FILES.filter(file => editorPermissions[file.id] === true);
-    }
-    
-    return []; // Member কিছু দেখতে পারবে না
-  };
 
-  const availableFiles = getAvailableFiles();
-    const currentFile = availableFiles.find(f => f.id === selectedFile);
+    const filteredFiles = JSON_FILES.filter(file => {
+      const hasPermission = editorPermissions[file.id] === true;
+      console.log(`📄 ${file.id}: permission=${editorPermissions[file.id]}, allowed=${hasPermission}`);
+      return hasPermission;
+    });
+    
+    console.log(`✅ Admin - Showing ${filteredFiles.length}/${JSON_FILES.length} files`);
+    return filteredFiles;
+  }
+  
+  console.log('❌ Member - No access');
+  return [];
+};
 
+const availableFiles = getAvailableFiles();
+const currentFile = availableFiles.find(f => f.id === selectedFile);
+  
   // ============================================
   // PUJA TYPES FOR GALLERY
   // ============================================
@@ -747,6 +768,21 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     }));
   };
 
+  // Load all members for dropdown (organizationalProfile)
+useEffect(() => {
+  const fetchAllMembers = async () => {
+    try {
+      const response = await fetch('https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json');
+      const data = await response.json();
+      const combined = [...(data.accountsMembers || []), ...(data.normalMembers || [])];
+      setAllMembersForDropdown(combined);
+    } catch (error) {
+      console.error('Failed to load members for dropdown:', error);
+    }
+  };
+  fetchAllMembers();
+}, []);
+  
   useEffect(() => {
     if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
       autoRecalculateTotals();
@@ -962,29 +998,29 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
       return;
     }
 
-    // ✅ NEW: Handle organizationalProfile leaders
-    if (selectedFile === 'organizationalProfile' && selectedSection === 'leaders') {
-      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
-      const template = {
-        id: maxId + 1,
-        name: '',
-        position: '',
-        tenure: '',
-        photo: '',
-        current: false
-      };
-      const updatedData = [...jsonData, template];
-      setJsonData(updatedData);
-      setSelectedItemIndex(updatedData.length - 1);
-      setFormData(template);
-      
-      const newRawData = { ...rawData };
-      newRawData.leaders = updatedData;
-      setRawData(newRawData);
-      
-      alert('➕ নতুন নেতা যোগ হয়েছে!');
-      return;
-    }
+   // ✅ FIXED: Handle organizationalProfile leaders with member dropdown
+if (selectedFile === 'organizationalProfile' && selectedSection === 'leaders') {
+  const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+  const template = {
+    id: maxId + 1,
+    name: '',
+    position: '',
+    tenure: '',
+    photo: '',
+    current: false
+  };
+  const updatedData = [...jsonData, template];
+  setJsonData(updatedData);
+  setSelectedItemIndex(updatedData.length - 1);
+  setFormData(template);
+  
+  const newRawData = { ...rawData };
+  newRawData.leaders = updatedData;
+  setRawData(newRawData);
+  
+  alert('➕ নতুন নেতা যোগ হয়েছে!');
+  return;
+}
 
     // ✅ NEW: Handle resolutions
     if (selectedFile === 'resolutions' && (selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations')) {
@@ -1314,6 +1350,50 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
         </div>
       );
     }
+
+    // ✅ Name dropdown for organizationalProfile  
+if (key === 'name' && selectedFile === 'organizationalProfile' && selectedSection === 'leaders') {
+  return (
+    <div key={key} className="form-field">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
+        👤 নাম (সদস্য তালিকা থেকে নির্বাচন করুন)
+      </label>
+      <div className="space-y-2">
+        <select 
+          value=""
+          onChange={(e) => {
+            const selectedMember = allMembersForDropdown.find(m => m.name === e.target.value);
+            if (selectedMember) {
+              handleFieldChange('name', selectedMember.name);
+              if (selectedMember.photo) {
+                handleFieldChange('photo', selectedMember.photo);
+              }
+            }
+          }}
+          className="w-full px-3 py-2 border-2 border-purple-500 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm bg-purple-50 font-medium"
+        >
+          <option value="">-- {allMembersForDropdown.length} জন সদস্য থেকে নির্বাচন করুন --</option>
+          {allMembersForDropdown.map((member, idx) => (
+            <option key={idx} value={member.name}>
+              {member.name} ({member.role})
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-purple-600 bg-purple-50 p-2 rounded border border-purple-200">
+          💡 <strong>টিপস:</strong> উপরের dropdown থেকে নির্বাচন করলে নাম ও ছবি автоматически যোগ হবে। অথবা নিচে নতুন নাম লিখুন।
+        </p>
+        <input 
+          type="text" 
+          value={String(formData[key] || '')} 
+          onChange={(e) => handleFieldChange(key, e.target.value)}
+          placeholder="অথবা এখানে নতুন নাম লিখুন..."
+          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" 
+        />
+      </div>
+    </div>
+  );
+}
+    
 // ============================================
   // ✅ NEW: EDITOR PERMISSIONS UI
   // ============================================
