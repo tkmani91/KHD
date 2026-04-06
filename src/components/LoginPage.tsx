@@ -704,7 +704,13 @@ const getAvailableTabs = () => {
   if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
     baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
   }
-
+  //=======TANMOY
+<button onClick={async () => {
+  await fetch('https://purge.jsdelivr.net/gh/tkmani91/KHD@main/members-login.json');
+  alert('✅ Cache cleared! এখন Refresh করুন।');
+}}>
+  🔄 Cache Purge করুন
+</button>
   return baseTabs;
 };
 
