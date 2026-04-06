@@ -95,7 +95,7 @@ const cn = (...classes: (string | boolean | undefined | null)[]) => {
 };
 
 // Data URLs
-const GITHUB_MEMBERS_DATA_URL = 'members-data.json';
+const GITHUB_MEMBERS_DATA_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-data.json';
 const GITHUB_CONTACTS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/contacts.json';
 const GITHUB_INVITATIONS_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/invitations.json';
 const GITHUB_LOGIN_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/members-login.json';
