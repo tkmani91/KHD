@@ -1,18 +1,10 @@
 {
   "leaders": [
     {
-      "id": 1,
-      "name": "পিনাকী কুমার কুন্ডু",
-      "position": "সভাপতি",
-      "tenure": "২০২৩-২০২৫",
-      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
-      "current": true
-    },
-    {
       "id": 2,
       "name": "শুভ্র জ্যোতি পোদ্দার",
       "position": "সাধারণ সম্পাদক",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০২৫ হইতে",
       "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png",
       "current": true
     },
@@ -20,41 +12,17 @@
       "id": 3,
       "name": "নিরেন কুমার মানী (মোংলা)",
       "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
-      "tenure": "২০২৩-২০২৫",
+      "tenure": "২০১৭ হইতে ",
       "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png",
       "current": true
     },
     {
       "id": 4,
-      "name": "সুজিত কুমার পাল",
+      "name": "পিনাকী কুমার কুন্ডু",
       "position": "সভাপতি",
-      "tenure": "২০২০-২০২২",
-      "photo": "https://i.ibb.co.com/99r78jvR/SUJIT.png",
-      "current": false
-    },
-    {
-      "id": 5,
-      "name": "সুমন কুমার পাল",
-      "position": "সাধারণ সম্পাদক",
-      "tenure": "২০২০-২০২২",
-      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png",
-      "current": false
-    },
-    {
-      "id": 6,
-      "name": "চঞ্চল কুমার সাহা",
-      "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
-      "tenure": "২০২০-২০২২",
-      "photo": "https://i.ibb.co.com/6jHCSNZ/CHANCAL.png",
-      "current": false
-    },
-    {
-      "id": 7,
-      "name": "তন্ময় কুমার মানী",
-      "position": "",
-      "tenure": "",
-      "photo": "",
-      "current": false
+      "tenure": "২০২৫ হইতে",
+      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
+      "current": true
     }
   ]
 }
