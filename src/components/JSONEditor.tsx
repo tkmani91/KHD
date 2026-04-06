@@ -2070,9 +2070,10 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
     );
   };
 
- // ============================================
+  // ============================================
   // GENERATE JSON
   // ============================================
+  
   const generatedJSON = (() => {
     let finalData: any;
 
@@ -2137,9 +2138,8 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
 
   const btnClass = (active: boolean) => 
     `px-3 py-2 rounded-lg text-sm font-medium transition ${active ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`;
-
-  // ============================================
-  // RENDER
+    // ============================================
+  // ✅ FINAL RENDER
   // ============================================
 
   return (
@@ -2153,8 +2153,23 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
       {/* Info */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg">
         <p className="text-blue-800 font-medium">✨ Advanced JSON Editor</p>
-        <p className="text-sm text-blue-700">১৪টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update</p>
+        <p className="text-sm text-blue-700">
+          {userRole === 'Super Admin' 
+            ? '১৬টি JSON ফাইল • Section-based Editing • Image/Audio Preview • Real-time Update'
+            : `${availableFiles.length}টি অনুমোদিত ফাইল • আপনার Role: ${userRole}`
+          }
+        </p>
       </div>
+
+      {/* ✅ NEW: Admin এর জন্য অনুমতি না থাকলে মেসেজ */}
+      {userRole === 'Admin' && availableFiles.length === 0 && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-6 rounded-lg text-center">
+          <div className="text-5xl mb-4">🔒</div>
+          <h3 className="text-xl font-bold text-yellow-800 mb-2">কোনো ফাইল এডিট করার অনুমতি নেই</h3>
+          <p className="text-yellow-700">Super Admin আপনাকে নির্দিষ্ট ফাইল এডিট করার অনুমতি দিলে এখানে দেখাবে।</p>
+          <p className="text-sm text-yellow-600 mt-2">অনুমতির জন্য Super Admin এর সাথে যোগাযোগ করুন।</p>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
@@ -2162,23 +2177,32 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
         </div>
       )}
 
-      {/* File Selector */}
-      <div className="bg-white rounded-xl p-4 shadow-lg">
-        <label className="block text-sm font-bold text-gray-700 mb-3">📁 ফাইল নির্বাচন:</label>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          {JSON_FILES.map(file => (
-            <button key={file.id} onClick={() => setSelectedFile(file.id)} 
-              className={btnClass(selectedFile === file.id)}>
-              {file.label}
-            </button>
-          ))}
-        </div>
-        {currentFile && (
-          <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-            📂 <code>{currentFile.path}</code>
+      {/* ✅ UPDATED: File Selector - শুধু অনুমোদিত ফাইল দেখাবে */}
+      {availableFiles.length > 0 && (
+        <div className="bg-white rounded-xl p-4 shadow-lg">
+          <label className="block text-sm font-bold text-gray-700 mb-3">
+            📁 ফাইল নির্বাচন:
+            {userRole === 'Admin' && (
+              <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+                {availableFiles.length}/{JSON_FILES.length} ফাইল অনুমোদিত
+              </span>
+            )}
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {availableFiles.map(file => (
+              <button key={file.id} onClick={() => setSelectedFile(file.id)} 
+                className={btnClass(selectedFile === file.id)}>
+                {file.label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+          {currentFile && (
+            <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              📂 <code>{currentFile.path}</code>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Section Selector */}
       {currentFile?.sections && currentFile.sections.length > 0 && currentFile.type !== 'gallery-special' && currentFile.type !== 'quiz-special' && (
@@ -2195,7 +2219,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
         </div>
       )}
 
-      {/* Invitations Special Filters (এলাকা ভিত্তিক) */}
+      {/* Invitations Special Filters */}
       {currentFile?.type === 'invitations-special' && selectedSection === 'invitations' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2221,7 +2245,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
         </div>
       )}
 
-      {/* Quiz Special Filters (বছর ভিত্তিক) */}
+      {/* Quiz Special Filters */}
       {currentFile?.type === 'quiz-special' && (
         <div className="bg-white rounded-xl p-4 shadow-lg">
           <div className="flex flex-wrap items-center gap-4">
@@ -2286,142 +2310,144 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
       )}
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: Form */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
-            <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
-            <button onClick={handleSaveItem} 
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
-              <Save className="w-4 h-4" /> সংরক্ষণ
-            </button>
-          </div>
-          
-          <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
-            {loading ? (
-              <div className="text-center py-10">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-                <p className="mt-3 text-gray-600">লোডিং...</p>
-              </div>
-            ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
-              renderFundCollectionEditor()
-            ) : currentFile?.type === 'accounts-special' ? (
-              renderAccountsPdfEditor()
-            ) : (
-              <>
-                {/* Item Selector for other types */}
-                {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                      <label className="text-sm font-bold text-gray-700">
-                        📋 আইটেম ({jsonData.length} টি):
-                      </label>
-                      <div className="flex gap-2">
-                        <button onClick={handleAddItem} 
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                          <Plus className="w-4 h-4" /> যোগ
-                        </button>
-                        <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
-                          <Trash2 className="w-4 h-4" /> মুছুন
-                        </button>
+      {availableFiles.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left: Form */}
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-500">
+              <h3 className="text-lg font-bold text-orange-600">✏️ ফর্ম এডিট</h3>
+              <button onClick={handleSaveItem} 
+                className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">
+                <Save className="w-4 h-4" /> সংরক্ষণ
+              </button>
+            </div>
+            
+            <div className="max-h-[700px] overflow-y-auto pr-2 space-y-4">
+              {loading ? (
+                <div className="text-center py-10">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                  <p className="mt-3 text-gray-600">লোডিং...</p>
+                </div>
+              ) : currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' ? (
+                renderFundCollectionEditor()
+              ) : currentFile?.type === 'accounts-special' ? (
+                renderAccountsPdfEditor()
+              ) : (
+                <>
+                  {/* Item Selector for other types */}
+                  {Array.isArray(jsonData) && jsonData.length > 0 && selectedSection !== 'pdfLink' && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <label className="text-sm font-bold text-gray-700">
+                          📋 আইটেম ({jsonData.length} টি):
+                        </label>
+                        <div className="flex gap-2">
+                          <button onClick={handleAddItem} 
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
+                            <Plus className="w-4 h-4" /> যোগ
+                          </button>
+                          <button onClick={handleDeleteItem} disabled={jsonData.length <= 1}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:bg-gray-400">
+                            <Trash2 className="w-4 h-4" /> মুছুন
+                          </button>
+                        </div>
                       </div>
+                      {jsonData.length > 1 && (
+                        <select value={selectedItemIndex} 
+                          onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
+                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
+                          {jsonData.map((item: any, i: number) => (
+                            <option key={i} value={i}>
+                              #{i + 1} - {getItemDisplayName(item, i)}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
-                    {jsonData.length > 1 && (
-                      <select value={selectedItemIndex} 
-                        onChange={(e) => setSelectedItemIndex(Number(e.target.value))}
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm">
-                        {jsonData.map((item: any, i: number) => (
-                          <option key={i} value={i}>
-                            #{i + 1} - {getItemDisplayName(item, i)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                )}
+                  )}
 
-                {/* Form Fields */}
-                {Object.keys(formData).length > 0 ? (
-                  Object.keys(formData).map(key => renderFormField(key, formData[key]))
-                ) : (
-                  <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
-                )}
-              </>
-            )}
+                  {/* Form Fields */}
+                  {Object.keys(formData).length > 0 ? (
+                    Object.keys(formData).map(key => renderFormField(key, formData[key]))
+                  ) : (
+                    <p className="text-center text-gray-500 py-10">কোন ডেটা নেই</p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right: JSON Code */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                JSON কোড
+              </h3>
+              <div className="flex gap-2">
+                <button onClick={handleCopyJSON} 
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? '✅ কপি' : '📋 কপি'}
+                </button>
+                
+                <button 
+                  onClick={handleDirectUpload} 
+                  disabled={isUploading || loading}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    uploadSuccess 
+                      ? 'bg-green-600 text-white' 
+                      : isUploading 
+                        ? 'bg-gray-400 text-white cursor-not-allowed' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}>
+                  {isUploading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      আপলোড হচ্ছে...
+                    </>
+                  ) : uploadSuccess ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      ✅ আপলোড হয়েছে!
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      🚀 সরাসরি আপলোড
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
+              <code>{generatedJSON}</code>
+            </pre>
+            <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
+              <p className="text-xs text-yellow-800">
+                ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
+              </p>
+            </div>
           </div>
         </div>
-
-        {/* Right: JSON Code */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-900">
-  <h3 className="text-white font-bold flex items-center gap-2">
-    <FileText className="w-5 h-5" />
-    JSON কোড
-  </h3>
-  <div className="flex gap-2">
-    {/* Copy Button */}
-    <button onClick={handleCopyJSON} 
-      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
-      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-      {copied ? '✅ কপি' : '📋 কপি'}
-    </button>
-    
-    {/* Upload Button */}
-    <button 
-      onClick={handleDirectUpload} 
-      disabled={isUploading || loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-        uploadSuccess 
-          ? 'bg-green-600 text-white' 
-          : isUploading 
-            ? 'bg-gray-400 text-white cursor-not-allowed' 
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-      }`}>
-      {isUploading ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          আপলোড হচ্ছে...
-        </>
-      ) : uploadSuccess ? (
-        <>
-          <Check className="w-4 h-4" />
-          ✅ আপলোড হয়েছে!
-        </>
-      ) : (
-        <>
-          <Upload className="w-4 h-4" />
-          🚀 সরাসরি আপলোড
-        </>
       )}
-    </button>
-  </div>
-</div>
-          <pre className="bg-gray-900 text-green-400 p-4 text-xs font-mono overflow-auto max-h-[650px]">
-            <code>{generatedJSON}</code>
-          </pre>
-          <div className="bg-yellow-50 border-t-2 border-yellow-400 p-3">
-            <p className="text-xs text-yellow-800">
-              ⚠️ <code className="bg-yellow-200 px-1 rounded font-semibold">{currentFile?.path}</code> এ পেস্ট করুন
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Instructions */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 shadow-lg border-l-4 border-purple-500">
-        <h3 className="font-bold mb-3 text-purple-800 flex items-center gap-2">
-          <span className="text-lg">📝</span> GitHub এ আপডেট করার পদ্ধতি:
-        </h3>
-        <ol className="list-decimal list-inside space-y-2 text-sm text-purple-900">
-          <li>"📋 কপি" বাটনে ক্লিক করুন</li>
-          <li><a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
-            className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
-          <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path}</code> ফাইলটি খুলুন</li>
-          <li>✏️ Edit → পেস্ট → Commit</li>
-          <li>২-৩ মিনিট পর সাইটে রিফ্রেশ করুন 🔄</li>
-        </ol>
-      </div>
+      {availableFiles.length > 0 && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 shadow-lg border-l-4 border-purple-500">
+          <h3 className="font-bold mb-3 text-purple-800 flex items-center gap-2">
+            <span className="text-lg">📝</span> GitHub এ আপডেট করার পদ্ধতি:
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-purple-900">
+            <li>"📋 কপি" বাটনে ক্লিক করুন</li>
+            <li><a href="https://github.com/tkmani91/KHD" target="_blank" rel="noopener noreferrer" 
+              className="text-orange-600 underline font-semibold hover:text-orange-700">GitHub Repository</a> তে যান</li>
+            <li><code className="bg-purple-100 px-2 py-1 rounded text-xs">{currentFile?.path}</code> ফাইলটি খুলুন</li>
+            <li>✏️ Edit → পেস্ট → Commit</li>
+            <li>২-৩ মিনিট পর সাইটে রিফ্রেশ করুন 🔄</li>
+          </ol>
+        </div>
+      )}
     </div>
   );
 };
