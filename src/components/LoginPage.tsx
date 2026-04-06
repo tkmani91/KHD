@@ -40,6 +40,7 @@ interface LoginUser {
   password: string;
   role: 'Member' | 'Admin' | 'Super Admin';
   photo?: string;
+  editorPermissions?: Record<string, boolean>; // ✅ NEW
 }
 
 interface Member {
@@ -654,29 +655,32 @@ function LoginPage() {
     setActiveTab('members');
   };
 
-  const getAvailableTabs = () => {
-    const baseTabs = [
-      { id: 'members', label: 'সদস্য তালিকা', icon: Users },
-      { id: 'org-profile', label: 'সাংগঠনিক প্রোফাইল', icon: Users },
-      { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
-      { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
-      { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
-      { id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText },
-      { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
-      { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
-    ];
+ // ========== getAvailableTabs FUNCTION UPDATE ==========
+const getAvailableTabs = () => {
+  const baseTabs = [
+    { id: 'members', label: 'সদস্য তালিকা', icon: Users },
+    { id: 'org-profile', label: 'সাংগঠনিক প্রোফাইল', icon: Users },
+    { id: 'fund', label: 'চাঁদা হিসাব', icon: DollarSign },
+    { id: 'contacts', label: 'জরুরী ফোন', icon: Phone },
+    { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
+    { id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText },
+    { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
+    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+  ];
 
-    if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
-    }
+  if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
+  }
 
-    if (loggedInUser?.role === 'Super Admin') {
-      baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
-    }
+  // ✅ CHANGED: Admin এখন Control Panel দেখতে পারবে
+  if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
+    baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
+  }
 
-    return baseTabs;
-  };
+  return baseTabs;
+};
 
+  
   // ===== SESSION CHECKING LOADING =====
   if (isCheckingSession) {
     return (
@@ -921,8 +925,12 @@ function LoginPage() {
         </div>
       )}
 
-      {/* JSON Editor Tab (Super Admin only) */}
-      {activeTab === 'json-editor' && loggedInUser?.role === 'Super Admin' && !isDataLoading && <JSONEditor />}
+      {/* JSON Editor Tab (Admin ও Super Admin) */}
+{activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
+  <JSONEditor 
+    userRole={loggedInUser?.role || 'Member'} 
+    editorPermissions={loggedInUser?.editorPermissions || {}} 
+  />}
     </div>
   );
 }
