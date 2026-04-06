@@ -16,7 +16,7 @@ interface JSONFile {
   hasAudioPreview?: boolean;
 }
 
-// ✅ NEW: Props interface
+// ✅ NEW: Props interface.
 interface JSONEditorProps {
   userRole: 'Member' | 'Admin' | 'Super Admin';
   editorPermissions?: Record<string, boolean>;
