@@ -2406,41 +2406,12 @@ if (key === 'name' && selectedFile === 'organizationalProfile' && selectedSectio
     
     {/* ✅ Cache Purge Button */}
     {userRole === 'Super Admin' && (
-      <button 
-        onClick={async () => {
-          try {
-            const files = [
-              'members-login.json',
-              'members-data.json',
-              'contacts.json',
-              'invitations.json',
-              'dynamicContent.json',
-              'chatbot-data.json',
-              'gallery-images.json',
-              'quiz-archive.json',
-              'public/data/accountsPDFs.json',
-              'public/data/liveChannels.json',
-              'public/data/pdfFiles.json',
-              'public/data/pujaData.json',
-              'public/data/schedules.json',
-              'public/data/songs.json',
-              'public/data/organizationalProfile.json',
-              'public/data/resolutions.json'
-            ];
-            
-            for (const file of files) {
-              await fetch(`https://purge.jsdelivr.net/gh/tkmani91/KHD@main/${file}`);
-            }
-            
-            alert('✅ সব ফাইলের Cache cleared!\n\nএখন Page Refresh করুন। 🔄');
-          } catch (error) {
-            alert('❌ Cache purge failed! আবার চেষ্টা করুন।');
-          }
-        }}
-        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition shadow-lg hover:shadow-xl flex items-center gap-2"
-      >
-        🔄 Cache Purge
-      </button>
+    <button onClick={async () => {
+  await fetch('https://purge.jsdelivr.net/gh/tkmani91/KHD@main/members-login.json');
+  alert('✅ Cache cleared! এখন Refresh করুন।');
+}}>
+  🔄 Cache Purge করুন
+</button>
     )}
   </div>
 </div>
