@@ -1314,7 +1314,168 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {
         </div>
       );
     }
+// ============================================
+  // ✅ NEW: EDITOR PERMISSIONS UI
+  // ============================================
+  if (key === 'editorPermissions' && typeof value === 'object') {
+    const allFiles = [
+      'dynamicContent',
+      'membersData',
+      'contactsData',
+      'invitationsData',
+      'quizData',
+      'loginData',
+      'chatbotData',
+      'galleryImages',
+      'accountsPDFs',
+      'liveChannels',
+      'pdfFiles',
+      'pujaData',
+      'schedules',
+      'songs',
+      'organizationalProfile',
+      'resolutions'
+    ];
 
+    const fileLabels: Record<string, string> = {
+      'dynamicContent': '📰 সদস্য আয় হিসাব',
+      'membersData': '👥 সদস্য তথ্য',
+      'contactsData': '📞 যোগাযোগ',
+      'invitationsData': '💌 নিমন্ত্রণ',
+      'quizData': '❓ কুইজ',
+      'loginData': '🔐 লগইন ডেটা',
+      'chatbotData': '💬 চ্যাটবট',
+      'galleryImages': '🖼️ গ্যালারি',
+      'accountsPDFs': '📊 বাৎসরিক হিসাব',
+      'liveChannels': '📺 লাইভ চ্যানেল',
+      'pdfFiles': '📄 পূজাদ্রব্যের তালিকা',
+      'pujaData': '🙏 পূজা তথ্য',
+      'schedules': '📅 সময়সূচী',
+      'songs': '🎵 গান',
+      'organizationalProfile': '🏛️ সাংগঠনিক প্রোফাইল',
+      'resolutions': '📋 রেজুলেশন'
+    };
+
+    // যদি editorPermissions না থাকে, তাহলে সব false করে initialize করুন
+    if (!formData.editorPermissions || Object.keys(formData.editorPermissions).length === 0) {
+      const initialPermissions: Record<string, boolean> = {};
+      allFiles.forEach(f => { initialPermissions[f] = false; });
+      handleFieldChange('editorPermissions', initialPermissions);
+    }
+
+    const currentPermissions = formData.editorPermissions || {};
+    const grantedCount = Object.values(currentPermissions).filter(v => v === true).length;
+
+    return (
+      <div key={key} className="form-field">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-purple-200">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            🔒 এডিটর পারমিশন
+            <span className="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-bold">
+              {grantedCount}/{allFiles.length} অনুমোদিত
+            </span>
+          </label>
+        </div>
+        
+        <div className="space-y-2 max-h-80 overflow-y-auto bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border-2 border-purple-200">
+          {allFiles.map(fileId => {
+            const isGranted = currentPermissions[fileId] === true;
+            return (
+              <div key={fileId} className={`flex items-center gap-3 p-3 rounded-lg shadow-sm hover:shadow-md transition ${
+                isGranted ? 'bg-green-50 border-2 border-green-200' : 'bg-white'
+              }`}>
+                <input 
+                  type="checkbox" 
+                  id={`perm-${fileId}`}
+                  checked={isGranted}
+                  onChange={(e) => {
+                    const updatedPermissions = {
+                      ...currentPermissions,
+                      [fileId]: e.target.checked
+                    };
+                    handleFieldChange('editorPermissions', updatedPermissions);
+                  }}
+                  className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                />
+                <label htmlFor={`perm-${fileId}`} className="flex-1 cursor-pointer font-medium text-gray-800 text-sm">
+                  {fileLabels[fileId] || fileId}
+                </label>
+                {isGranted && (
+                  <span className="text-green-600 text-xs bg-green-200 px-2 py-0.5 rounded-full font-bold animate-pulse">
+                    ✓ Active
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <p className="text-xs text-blue-800 leading-relaxed">
+            <strong>💡 টিপস:</strong> যে ফাইলগুলোতে ✓ চেক দেবেন, এই Admin শুধু সেই ফাইলগুলোই Control Panel এ দেখতে ও এডিট করতে পারবে।
+            <br />
+            <strong className="text-red-600">⚠️ সাবধান:</strong> "🔐 লগইন ডেটা" অনুমতি দিলে Admin নিজের ও অন্যদের পাসওয়ার্ড পরিবর্তন করতে পারবে!
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const allTrue: Record<string, boolean> = {};
+              allFiles.forEach(f => { allTrue[f] = true; });
+              handleFieldChange('editorPermissions', allTrue);
+            }}
+            className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+          >
+            <Check className="w-4 h-4" />
+            সব অনুমতি দিন
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const allFalse: Record<string, boolean> = {};
+              allFiles.forEach(f => { allFalse[f] = false; });
+              handleFieldChange('editorPermissions', allFalse);
+            }}
+            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+          >
+            <X className="w-4 h-4" />
+            সব বাতিল করুন
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const safePermissions: Record<string, boolean> = {
+                dynamicContent: false,
+                membersData: false,
+                contactsData: true,
+                invitationsData: true,
+                quizData: true,
+                loginData: false, // ⚠️ Dangerous
+                chatbotData: false,
+                galleryImages: true,
+                accountsPDFs: false,
+                liveChannels: true,
+                pdfFiles: true,
+                pujaData: true,
+                schedules: true,
+                songs: true,
+                organizationalProfile: true,
+                resolutions: true
+              };
+              handleFieldChange('editorPermissions', safePermissions);
+            }}
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 font-medium flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition"
+          >
+            <Settings className="w-4 h-4" />
+            📌 নিরাপদ সেটিং (১১টি ফাইল)
+          </button>
+        </div>
+      </div>
+    );
+  }
     if (key === 'area' && currentFile?.type === 'invitations-special') {
       const areas = getInvitationAreas();
       return (
