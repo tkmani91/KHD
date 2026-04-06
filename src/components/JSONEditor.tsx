@@ -16,11 +16,18 @@ interface JSONFile {
   hasAudioPreview?: boolean;
 }
 
+// ✅ NEW: Props interface
+interface JSONEditorProps {
+  userRole: 'Member' | 'Admin' | 'Super Admin';
+  editorPermissions?: Record<string, boolean>;
+}
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
 
-const JSONEditor: React.FC = () => {
+const JSONEditor: React.FC<JSONEditorProps> = ({ userRole, editorPermissions = {} }) => {
+  // ... (আগের সব state গুলো একই থাকবে)
   const [selectedFile, setSelectedFile] = useState<string>('dynamicContent');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [rawData, setRawData] = useState<any>(null);
@@ -33,32 +40,22 @@ const JSONEditor: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   
-  // Gallery special states
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [selectedPujaType, setSelectedPujaType] = useState<string>('');
-  
-  // Accounts PDF special states
   const [selectedPdfYear, setSelectedPdfYear] = useState<string>('');
-  
-  // Fund collection special states
   const [fundSubSection, setFundSubSection] = useState<string>('settings');
   const [memberFilter, setMemberFilter] = useState<string>('all');
   const [fundMembers, setFundMembers] = useState<any[]>([]);
   const [fundSettings, setFundSettings] = useState<any>({});
   const [paymentStats, setPaymentStats] = useState<any>({});
-
-  // Invitations special states (এলাকা ভিত্তিক ফিল্টার)
   const [selectedArea, setSelectedArea] = useState<string>('');
-  
-  // Quiz special states (বছর ভিত্তিক ফিল্টার)
   const [selectedQuizYear, setSelectedQuizYear] = useState<string>('');
 
   // ============================================
-  // JSON FILES CONFIGURATION (১৪টি ফাইল)
+  // ✅ JSON FILES CONFIGURATION (১৬টি ফাইল - নতুন ২টি যোগ)
   // ============================================
 
   const JSON_FILES: JSONFile[] = [
-    // 1. সদস্য আয় হিসাব (OK - কোন পরিবর্তন নেই)
     {
       id: 'dynamicContent',
       label: '📰 সদস্য আয় হিসাব',
@@ -67,7 +64,6 @@ const JSONEditor: React.FC = () => {
       type: 'fund-collection-special',
       sections: ['notices', 'liveStream', 'fundCollection']
     },
-    // 2. সদস্য তথ্য (পরিবর্তন - শুধু members, pdfLinks)
     {
       id: 'membersData',
       label: '👥 সদস্য তথ্য',
@@ -77,7 +73,6 @@ const JSONEditor: React.FC = () => {
       sections: ['members', 'pdfLinks'],
       hasImagePreview: true
     },
-    // 3. যোগাযোগ (🆕 নতুন)
     {
       id: 'contactsData',
       label: '📞 যোগাযোগ',
@@ -87,7 +82,6 @@ const JSONEditor: React.FC = () => {
       sections: ['contacts', 'pdfLink'],
       hasImagePreview: true
     },
-    // 4. নিমন্ত্রণ (🆕 নতুন - এলাকা ভিত্তিক ফিল্টার)
     {
       id: 'invitationsData',
       label: '💌 নিমন্ত্রণ',
@@ -96,7 +90,6 @@ const JSONEditor: React.FC = () => {
       type: 'invitations-special',
       sections: ['invitations', 'pdfLink']
     },
-    // 5. কুইজ (🆕 নতুন - বছর ভিত্তিক ফিল্টার)
     {
       id: 'quizData',
       label: '❓ কুইজ',
@@ -104,7 +97,6 @@ const JSONEditor: React.FC = () => {
       path: 'quiz-archive.json',
       type: 'quiz-special'
     },
-    // 6. লগইন ডেটা (OK)
     {
       id: 'loginData',
       label: '🔐 লগইন ডেটা',
@@ -113,7 +105,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['accountsMembers', 'normalMembers']
     },
-    // 7. চ্যাটবট (OK)
     {
       id: 'chatbotData',
       label: '💬 চ্যাটবট',
@@ -122,7 +113,6 @@ const JSONEditor: React.FC = () => {
       type: 'complex-object',
       sections: ['welcomeMessage', 'quickReplies', 'faq', 'fallbackMessages']
     },
-    // 8. গ্যালারি (OK)
     {
       id: 'galleryImages',
       label: '🖼️ গ্যালারি',
@@ -131,7 +121,6 @@ const JSONEditor: React.FC = () => {
       type: 'gallery-special',
       hasImagePreview: true
     },
-    // 9. বাৎসরিক হিসাব (OK)
     {
       id: 'accountsPDFs',
       label: '📊 বাৎসরিক হিসাব',
@@ -140,7 +129,6 @@ const JSONEditor: React.FC = () => {
       type: 'accounts-special',
       sections: ['durgaPuja', 'shyamaPuja', 'saraswatiPuja', 'rathYatra']
     },
-    // 10. লাইভ চ্যানেল (OK)
     {
       id: 'liveChannels',
       label: '📺 লাইভ চ্যানেল',
@@ -148,7 +136,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/liveChannels.json',
       type: 'simple-array'
     },
-    // 11. পূজাদ্রব্যের তালিকা (OK)
     {
       id: 'pdfFiles',
       label: '📄 পূজাদ্রব্যের তালিকা',
@@ -156,7 +143,6 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/pdfFiles.json',
       type: 'simple-array'
     },
-    // 12. পূজা তথ্য (OK)
     {
       id: 'pujaData',
       label: '🙏 পূজা তথ্য',
@@ -165,7 +151,6 @@ const JSONEditor: React.FC = () => {
       type: 'simple-array',
       hasImagePreview: true
     },
-    // 13. সময়সূচী (OK)
     {
       id: 'schedules',
       label: '📅 সময়সূচী',
@@ -174,7 +159,6 @@ const JSONEditor: React.FC = () => {
       type: 'nested-sections',
       sections: ['durga', 'shyama', 'saraswati', 'rath']
     },
-    // 14. গান (OK)
     {
       id: 'songs',
       label: '🎵 গান',
@@ -182,10 +166,43 @@ const JSONEditor: React.FC = () => {
       path: 'public/data/songs.json',
       type: 'simple-array',
       hasAudioPreview: true
+    },
+    // ✅ NEW: সাংগঠনিক প্রোফাইল
+    {
+      id: 'organizationalProfile',
+      label: '🏛️ সাংগঠনিক প্রোফাইল',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/organizationalProfile.json',
+      path: 'public/data/organizationalProfile.json',
+      type: 'nested-sections',
+      sections: ['leaders'],
+      hasImagePreview: true
+    },
+    // ✅ NEW: রেজুলেশন
+    {
+      id: 'resolutions',
+      label: '📋 রেজুলেশন',
+      url: 'https://raw.githubusercontent.com/tkmani91/KHD/main/public/data/resolutions.json',
+      path: 'public/data/resolutions.json',
+      type: 'nested-sections',
+      sections: ['meetingDecisions', 'fundAllocations']
     }
   ];
 
-  const currentFile = JSON_FILES.find(f => f.id === selectedFile);
+  // ✅ NEW: Filter files based on permissions
+  const getAvailableFiles = () => {
+    if (userRole === 'Super Admin') {
+      return JSON_FILES; // সব দেখতে পারবে
+    }
+    
+    if (userRole === 'Admin') {
+      return JSON_FILES.filter(file => editorPermissions[file.id] === true);
+    }
+    
+    return []; // Member কিছু দেখতে পারবে না
+  };
+
+  const availableFiles = getAvailableFiles();
+    const currentFile = availableFiles.find(f => f.id === selectedFile);
 
   // ============================================
   // PUJA TYPES FOR GALLERY
@@ -200,7 +217,7 @@ const JSONEditor: React.FC = () => {
   ];
 
   // ============================================
-  // SECTION LABELS
+  // ✅ UPDATED SECTION LABELS (নতুন ২টি যোগ)
   // ============================================
 
   const sectionLabels: Record<string, string> = {
@@ -225,10 +242,12 @@ const JSONEditor: React.FC = () => {
     durga: '🎉 দুর্গাপূজা',
     shyama: '🔱 শ্যামাপূজা',
     saraswati: '📚 সরস্বতী পূজা',
-    rath: '🎪 রথযাত্রা'
+    rath: '🎪 রথযাত্রা',
+    leaders: '👔 নেতৃবৃন্দ', // ✅ NEW
+    meetingDecisions: '📝 মিটিং সিদ্ধান্ত', // ✅ NEW
+    fundAllocations: '💵 অনুদান বরাদ্ধ' // ✅ NEW
   };
 
-  // Schedule day labels
   const scheduleDayLabels: Record<string, string> = {
     'mahalaya': 'মহালয়া',
     'panchami': 'পঞ্চমী',
@@ -240,11 +259,25 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // LOAD JSON DATA
+  // ✅ LOAD JSON DATA - useEffect UPDATED
   // ============================================
 
   useEffect(() => {
     const fetchJSON = async () => {
+      // ✅ Check if user has access to any files
+      if (availableFiles.length === 0) {
+        setError('আপনার কোনো ফাইল এডিট করার অনুমতি নেই');
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Auto-select first available file
+      const firstFile = availableFiles[0];
+      if (selectedFile !== firstFile.id && !availableFiles.find(f => f.id === selectedFile)) {
+        setSelectedFile(firstFile.id);
+        return; // Re-run with new selectedFile
+      }
+
       setLoading(true);
       setError('');
       setSelectedYear('');
@@ -256,7 +289,7 @@ const JSONEditor: React.FC = () => {
       setSelectedQuizYear('');
       
       try {
-        const file = JSON_FILES.find(f => f.id === selectedFile);
+        const file = availableFiles.find(f => f.id === selectedFile);
         if (!file) {
           setError('ফাইল পাওয়া যায়নি');
           setLoading(false);
@@ -304,10 +337,10 @@ const JSONEditor: React.FC = () => {
       setLoading(false);
     };
     fetchJSON();
-  }, [selectedFile]);
+  }, [selectedFile, userRole, editorPermissions]); // ✅ Dependencies updated
 
   // ============================================
-  // HANDLE INVITATIONS DATA (এলাকা ভিত্তিক ফিল্টার)
+  // HANDLE INVITATIONS DATA
   // ============================================
 
   const handleInvitationsData = (data: any) => {
@@ -334,7 +367,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // HANDLE QUIZ DATA (বছর ভিত্তিক ফিল্টার - Array format)
+  // HANDLE QUIZ DATA
   // ============================================
 
   const handleQuizData = (data: any) => {
@@ -360,7 +393,7 @@ const JSONEditor: React.FC = () => {
   };
 
   // ============================================
-  // GET INVITATION AREAS
+  // GET HELPER FUNCTIONS
   // ============================================
 
   const getInvitationAreas = (): string[] => {
@@ -368,17 +401,13 @@ const JSONEditor: React.FC = () => {
     return [...new Set(rawData.invitations.map((item: any) => item.area))].filter(Boolean) as string[];
   };
 
-  // ============================================
-  // GET QUIZ YEARS
-  // ============================================
-
   const getQuizYears = (): string[] => {
     if (!rawData || !Array.isArray(rawData)) return [];
     return [...new Set(rawData.map((item: any) => item.year?.toString()))].filter(Boolean).sort((a, b) => parseInt(b) - parseInt(a)) as string[];
   };
 
   // ============================================
-  // INVITATION AREA FILTER EFFECT
+  // FILTER EFFECTS
   // ============================================
 
   useEffect(() => {
@@ -390,10 +419,6 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedArea]);
 
-  // ============================================
-  // QUIZ YEAR FILTER EFFECT
-  // ============================================
-
   useEffect(() => {
     if (currentFile?.type === 'quiz-special' && rawData && Array.isArray(rawData) && selectedQuizYear) {
       const filteredData = rawData.filter((item: any) => item.year?.toString() === selectedQuizYear);
@@ -404,7 +429,7 @@ const JSONEditor: React.FC = () => {
   }, [selectedQuizYear]);
 
   // ============================================
-  // PROCESS FUND COLLECTION FILE (dynamicContent.json)
+  // PROCESS FUND COLLECTION FILE
   // ============================================
 
   const processFundCollectionFile = (data: any, section: string) => {
@@ -509,7 +534,6 @@ const JSONEditor: React.FC = () => {
       return;
     }
 
-    // Handle pdfLink as single string
     if (section === 'pdfLink') {
       const pdfLinkValue = data.pdfLink || '';
       setJsonData([{ pdfLink: pdfLinkValue }]);
@@ -555,7 +579,6 @@ const JSONEditor: React.FC = () => {
     }
   };
 
-  // Section change effect
   useEffect(() => {
     if (rawData && selectedSection) {
       if (currentFile?.type === 'fund-collection-special') {
@@ -580,7 +603,6 @@ const JSONEditor: React.FC = () => {
     }
   }, [selectedItemIndex, jsonData]);
 
-  // Gallery filter effect
   useEffect(() => {
     if (currentFile?.type === 'gallery-special' && rawData && selectedYear) {
       const yearData = rawData.filter((item: any) => item.year?.toString() === selectedYear);
@@ -599,8 +621,7 @@ const JSONEditor: React.FC = () => {
       setFormData(filteredData[0] || {});
     }
   }, [selectedYear, selectedPujaType]);
-
-  // ============================================
+    // ============================================
   // HELPER FUNCTIONS
   // ============================================
 
@@ -638,6 +659,16 @@ const JSONEditor: React.FC = () => {
       return item.name || item.designation || `যোগাযোগ ${index + 1}`;
     }
     
+    // ✅ NEW: organizationalProfile leaders
+    if (selectedSection === 'leaders') {
+      return item.name || item.position || `নেতা ${index + 1}`;
+    }
+
+    // ✅ NEW: resolutions
+    if (selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations') {
+      return item.title || `রেজুলেশন ${index + 1}`;
+    }
+    
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       return item.text ? (item.text.substring(0, 30) + (item.text.length > 30 ? '...' : '')) : `আইটেম ${index + 1}`;
     }
@@ -645,87 +676,82 @@ const JSONEditor: React.FC = () => {
     return item.title || item.name || item.question || item.channelName || item.personName || item.day || `আইটেম ${index + 1}`;
   };
 
-// ============================================
-// AUTO CALCULATION FUNCTIONS (✅ NEW)
-// ============================================
+  // ============================================
+  // AUTO CALCULATION FUNCTIONS
+  // ============================================
 
-const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
-  setFundMembers(prev => prev.map(m => {
-    if (m.id === memberId) {
-      const updated = { ...m, [key]: value };
-      
-      // Auto calculate remaining when paidAmount changes
-      if (key === 'paidAmount') {
-        const dueAmount = updated.dueAmount || 0;
-        const paidAmount = parseFloat(value) || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+  const handleMemberPaymentChange = (memberId: string, key: string, value: any) => {
+    setFundMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        const updated = { ...m, [key]: value };
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'paidAmount') {
+          const dueAmount = updated.dueAmount || 0;
+          const paidAmount = parseFloat(value) || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
-      }
-      
-      // Auto calculate remaining when dueAmount changes
-      if (key === 'dueAmount') {
-        const dueAmount = parseFloat(value) || 0;
-        const paidAmount = updated.paidAmount || 0;
-        updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
         
-        // Auto update status
-        if (paidAmount === 0) {
-          updated.status = 'unpaid';
-        } else if (paidAmount >= dueAmount) {
-          updated.status = 'paid';
-          updated.remainingAmount = 0;
-        } else {
-          updated.status = 'partial';
+        if (key === 'dueAmount') {
+          const dueAmount = parseFloat(value) || 0;
+          const paidAmount = updated.paidAmount || 0;
+          updated.remainingAmount = Math.max(0, dueAmount - paidAmount);
+          
+          if (paidAmount === 0) {
+            updated.status = 'unpaid';
+          } else if (paidAmount >= dueAmount) {
+            updated.status = 'paid';
+            updated.remainingAmount = 0;
+          } else {
+            updated.status = 'partial';
+          }
         }
+        
+        return updated;
       }
-      
-      return updated;
+      return m;
+    }));
+  };
+
+  const autoRecalculateTotals = () => {
+    const totalMembers = fundMembers.length;
+    const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
+    const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
+    const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
+    const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
+    const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
+    const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
+    const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
+
+    setPaymentStats({
+      totalMembers,
+      paidMembers,
+      partialMembers,
+      unpaidMembers,
+      paymentPercentage
+    });
+
+    setFundSettings((prev: any) => ({
+      ...prev,
+      totalDue,
+      totalPaid,
+      totalRemaining
+    }));
+  };
+
+  useEffect(() => {
+    if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
+      autoRecalculateTotals();
     }
-    return m;
-  }));
-};
-
-const autoRecalculateTotals = () => {
-  const totalMembers = fundMembers.length;
-  const paidMembers = fundMembers.filter(m => m.status === 'paid').length;
-  const partialMembers = fundMembers.filter(m => m.status === 'partial').length;
-  const unpaidMembers = fundMembers.filter(m => m.status === 'unpaid').length;
-  const totalPaid = fundMembers.reduce((sum, m) => sum + (m.paidAmount || 0), 0);
-  const totalDue = fundMembers.reduce((sum, m) => sum + (m.dueAmount || 0), 0);
-  const totalRemaining = fundMembers.reduce((sum, m) => sum + (m.remainingAmount || 0), 0);
-  const paymentPercentage = totalDue > 0 ? Math.round((totalPaid / totalDue) * 100) : 0;
-
-  setPaymentStats({
-    totalMembers,
-    paidMembers,
-    partialMembers,
-    unpaidMembers,
-    paymentPercentage
-  });
-
-  setFundSettings((prev: any) => ({
-    ...prev,
-    totalDue,
-    totalPaid,
-    totalRemaining
-  }));
-};
-
-// ✅ Auto recalculate when members change
-useEffect(() => {
-  if (currentFile?.type === 'fund-collection-special' && selectedSection === 'fundCollection' && fundMembers.length > 0) {
-    autoRecalculateTotals();
-  }
-}, [fundMembers]);
+  }, [fundMembers]);
   
   // ============================================
   // HANDLERS
@@ -936,6 +962,63 @@ useEffect(() => {
       return;
     }
 
+    // ✅ NEW: Handle organizationalProfile leaders
+    if (selectedFile === 'organizationalProfile' && selectedSection === 'leaders') {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = {
+        id: maxId + 1,
+        name: '',
+        position: '',
+        tenure: '',
+        photo: '',
+        current: false
+      };
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      const newRawData = { ...rawData };
+      newRawData.leaders = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন নেতা যোগ হয়েছে!');
+      return;
+    }
+
+    // ✅ NEW: Handle resolutions
+    if (selectedFile === 'resolutions' && (selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations')) {
+      const maxId = jsonData.reduce((max, item) => Math.max(max, parseInt(item.id) || 0), 0);
+      const template = selectedSection === 'meetingDecisions' 
+        ? {
+            id: maxId + 1,
+            title: '',
+            date: '',
+            category: '',
+            pdfUrl: ''
+          }
+        : {
+            id: maxId + 1,
+            title: '',
+            amount: '',
+            date: '',
+            source: '',
+            pdfUrl: ''
+          };
+      
+      const updatedData = [...jsonData, template];
+      setJsonData(updatedData);
+      setSelectedItemIndex(updatedData.length - 1);
+      setFormData(template);
+      
+      const newRawData = { ...rawData };
+      newRawData[selectedSection] = updatedData;
+      setRawData(newRawData);
+      
+      alert('➕ নতুন রেজুলেশন যোগ হয়েছে!');
+      return;
+    }
+
     if (selectedSection === 'quickReplies' || selectedSection === 'fallbackMessages') {
       const maxId = jsonData.reduce((max, item) => Math.max(max, item.id || 0), 0);
       const template = { id: maxId + 1, text: '' };
@@ -962,7 +1045,6 @@ useEffect(() => {
       setSelectedItemIndex(updatedData.length - 1);
       setFormData(template);
       
-      // Update rawData
       const newRawData = { ...rawData };
       newRawData.contacts = updatedData;
       setRawData(newRawData);
@@ -1029,6 +1111,14 @@ useEffect(() => {
     } else if (selectedSection === 'contacts' && rawData) {
       const newRawData = { ...rawData };
       newRawData.contacts = jsonData.filter((_, i) => i !== selectedItemIndex);
+      setRawData(newRawData);
+    } else if (selectedFile === 'organizationalProfile' && selectedSection === 'leaders' && rawData) {
+      const newRawData = { ...rawData };
+      newRawData.leaders = jsonData.filter((_, i) => i !== selectedItemIndex);
+      setRawData(newRawData);
+    } else if (selectedFile === 'resolutions' && (selectedSection === 'meetingDecisions' || selectedSection === 'fundAllocations') && rawData) {
+      const newRawData = { ...rawData };
+      newRawData[selectedSection] = jsonData.filter((_, i) => i !== selectedItemIndex);
       setRawData(newRawData);
     }
     
@@ -1103,75 +1193,71 @@ useEffect(() => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  
-// ============================================
-// DIRECT GITHUB UPLOAD
-// ============================================
+    // ============================================
+  // DIRECT GITHUB UPLOAD
+  // ============================================
 
-const handleDirectUpload = async () => {
-  if (!currentFile) {
-    alert('❌ কোন ফাইল নির্বাচন করা নেই!');
-    return;
-  }
-
-  const confirmUpload = window.confirm(
-    `⚠️ নিশ্চিত করুন:\n\n` +
-    `ফাইল: ${currentFile.path}\n` +
-    `লেবেল: ${currentFile.label}\n\n` +
-    `সরাসরি GitHub এ আপলোড হবে।\n` +
-    `এগিয়ে যেতে চান?`
-  );
-
-  if (!confirmUpload) return;
-
-  setIsUploading(true);
-  setError('');
-  setUploadSuccess(false);
-
-  try {
-    // Call our backend API
-    const response = await fetch('/api/github-upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        filePath: currentFile.path,
-        content: generatedJSON,
-        commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Upload failed');
+  const handleDirectUpload = async () => {
+    if (!currentFile) {
+      alert('❌ কোন ফাইল নির্বাচন করা নেই!');
+      return;
     }
 
-    // Success!
-    setUploadSuccess(true);
-    alert(
-      `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
-      `📁 ফাইল: ${currentFile.label}\n` +
-      `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
-      `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+    const confirmUpload = window.confirm(
+      `⚠️ নিশ্চিত করুন:\n\n` +
+      `ফাইল: ${currentFile.path}\n` +
+      `লেবেল: ${currentFile.label}\n\n` +
+      `সরাসরি GitHub এ আপলোড হবে।\n` +
+      `এগিয়ে যেতে চান?`
     );
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setUploadSuccess(false), 5000);
+    if (!confirmUpload) return;
 
-  } catch (err) {
-    console.error('Upload error:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
-    alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
-  } finally {
-    setIsUploading(false);
-  }
-};
+    setIsUploading(true);
+    setError('');
+    setUploadSuccess(false);
+
+    try {
+      const response = await fetch('/api/github-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          filePath: currentFile.path,
+          content: generatedJSON,
+          commitMessage: `📝 Update ${currentFile.label} via Admin Panel`
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setUploadSuccess(true);
+      alert(
+        `✅ সফলভাবে GitHub এ আপলোড হয়েছে!\n\n` +
+        `📁 ফাইল: ${currentFile.label}\n` +
+        `🔗 Commit: ${data.commit.sha.substring(0, 7)}\n\n` +
+        `২-৩ মিনিট পর সাইট রিফ্রেশ করুন। 🔄`
+      );
+
+      setTimeout(() => setUploadSuccess(false), 5000);
+
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`❌ আপলোড ব্যর্থ: ${errorMessage}`);
+      alert(`❌ সমস্যা হয়েছে:\n\n${errorMessage}\n\nদয়া করে আবার চেষ্টা করুন অথবা manual copy করুন।`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   // ============================================
-  // LABEL MAPPING
+  // ✅ UPDATED LABEL MAPPING (নতুন fields যোগ)
   // ============================================
 
   const labelMap: Record<string, string> = {
@@ -1199,7 +1285,14 @@ const handleDirectUpload = async () => {
     message: 'মেসেজ', instructions: 'নির্দেশনা',
     totalDue: 'মোট বকেয়া', totalPaid: 'মোট পরিশোধ', totalRemaining: 'মোট অবশিষ্ট',
     lastUpdated: 'সর্বশেষ আপডেট',
-    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট'
+    event: 'অনুষ্ঠান', value: 'মান', text: 'টেক্সট',
+    // ✅ NEW: organizationalProfile fields
+    position: 'পদবী',
+    tenure: 'মেয়াদকাল',
+    current: 'বর্তমান?',
+    // ✅ NEW: resolutions fields
+    amount: 'পরিমাণ',
+    source: 'উৎস'
   };
 
   // ============================================
@@ -1222,7 +1315,6 @@ const handleDirectUpload = async () => {
       );
     }
 
-    // Area dropdown for invitations
     if (key === 'area' && currentFile?.type === 'invitations-special') {
       const areas = getInvitationAreas();
       return (
@@ -1249,112 +1341,106 @@ const handleDirectUpload = async () => {
       );
     }
     
-    // ============================================
-// QUESTIONS EDITOR (প্রশ্ন/উত্তর এডিট)
-// ============================================
-
-if (key === 'questions' && Array.isArray(value)) {
-  return (
-    <div key={key} className="form-field">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
-        <span>{label} ({value.length} টি প্রশ্ন)</span>
-        <button
-          onClick={() => {
-            const newQuestion = {
-              id: value.length + 1,
-              question: '',
-              answer: '',
-              options: ['', '', '', '']
-            };
-            handleFieldChange(key, [...value, newQuestion]);
-          }}
-          className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-        >
-          <Plus className="w-3 h-3" /> প্রশ্ন যোগ
-        </button>
-      </label>
-      
-      <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
-        {value.map((q: any, idx: number) => (
-          <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
-            <div className="flex items-center justify-between">
-              <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
-              <button
-                onClick={() => {
-                  if (value.length <= 1) {
-                    alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
-                    return;
-                  }
-                  if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
-                    handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
-                  }
-                }}
-                className="text-red-500 hover:bg-red-50 p-1 rounded"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {/* প্রশ্ন */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
-              <textarea
-                value={q.question || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], question: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                rows={2}
-                placeholder="প্রশ্ন লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            {/* উত্তর */}
-            <div>
-              <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
-              <input
-                type="text"
-                value={q.answer || ''}
-                onChange={(e) => {
-                  const updated = [...value];
-                  updated[idx] = { ...updated[idx], answer: e.target.value };
-                  handleFieldChange(key, updated);
-                }}
-                placeholder="সঠিক উত্তর লিখুন..."
-                className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            
-            {/* অপশন (যদি থাকে) */}
-            {q.options && Array.isArray(q.options) && (
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {q.options.map((opt: string, optIdx: number) => (
-                    <input
-                      key={optIdx}
-                      type="text"
-                      value={opt || ''}
-                      onChange={(e) => {
-                        const updated = [...value];
-                        updated[idx].options[optIdx] = e.target.value;
-                        handleFieldChange(key, updated);
-                      }}
-                      placeholder={`অপশন ${optIdx + 1}`}
-                      className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
-                    />
-                  ))}
+    if (key === 'questions' && Array.isArray(value)) {
+      return (
+        <div key={key} className="form-field">
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-between">
+            <span>{label} ({value.length} টি প্রশ্ন)</span>
+            <button
+              onClick={() => {
+                const newQuestion = {
+                  id: value.length + 1,
+                  question: '',
+                  answer: '',
+                  options: ['', '', '', '']
+                };
+                handleFieldChange(key, [...value, newQuestion]);
+              }}
+              className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+            >
+              <Plus className="w-3 h-3" /> প্রশ্ন যোগ
+            </button>
+          </label>
+          
+          <div className="space-y-3 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+            {value.map((q: any, idx: number) => (
+              <div key={idx} className="bg-white p-3 rounded-lg border space-y-2">
+                <div className="flex items-center justify-between">
+                  <strong className="text-sm text-blue-700">প্রশ্ন {idx + 1}</strong>
+                  <button
+                    onClick={() => {
+                      if (value.length <= 1) {
+                        alert('❌ কমপক্ষে একটি প্রশ্ন থাকতে হবে!');
+                        return;
+                      }
+                      if (window.confirm(`⚠️ প্রশ্ন ${idx + 1} মুছতে চান?`)) {
+                        handleFieldChange(key, value.filter((_: any, i: number) => i !== idx));
+                      }
+                    }}
+                    className="text-red-500 hover:bg-red-50 p-1 rounded"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">প্রশ্ন:</label>
+                  <textarea
+                    value={q.question || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], question: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    rows={2}
+                    placeholder="প্রশ্ন লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-semibold text-green-600 mb-1">সঠিক উত্তর:</label>
+                  <input
+                    type="text"
+                    value={q.answer || ''}
+                    onChange={(e) => {
+                      const updated = [...value];
+                      updated[idx] = { ...updated[idx], answer: e.target.value };
+                      handleFieldChange(key, updated);
+                    }}
+                    placeholder="সঠিক উত্তর লিখুন..."
+                    className="w-full px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                
+                {q.options && Array.isArray(q.options) && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">অপশনসমূহ:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {q.options.map((opt: string, optIdx: number) => (
+                        <input
+                          key={optIdx}
+                          type="text"
+                          value={opt || ''}
+                          onChange={(e) => {
+                            const updated = [...value];
+                            updated[idx].options[optIdx] = e.target.value;
+                            handleFieldChange(key, updated);
+                          }}
+                          placeholder={`অপশন ${optIdx + 1}`}
+                          className="w-full px-2 py-1 border rounded text-xs focus:ring-2 focus:ring-blue-500"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+        </div>
+      );
+    }
+
     if (key === 'pujaType' && fileConfig?.type === 'gallery-special') {
       return (
         <div key={key} className="form-field">
@@ -1515,15 +1601,13 @@ if (key === 'questions' && Array.isArray(value)) {
       </div>
     );
   };
-
-  // ============================================
-  // RENDER FUND COLLECTION EDITOR
+    // ============================================
+  // RENDER FUND COLLECTION EDITOR (একই থাকবে - কোন পরিবর্তন নেই)
   // ============================================
 
   const renderFundCollectionEditor = () => {
     return (
       <div className="space-y-4">
-        {/* Sub-section tabs */}
         <div className="flex flex-wrap gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
           <button onClick={() => setFundSubSection('settings')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
@@ -1545,7 +1629,6 @@ if (key === 'questions' && Array.isArray(value)) {
           </button>
         </div>
 
-        {/* Settings Sub-section */}
         {fundSubSection === 'settings' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
             <h4 className="font-bold text-green-700 flex items-center gap-2">
@@ -1600,61 +1683,60 @@ if (key === 'questions' && Array.isArray(value)) {
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 text-sm" />
             </div>
 
-           <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          💰 মোট দায্যকৃত টাকা
-          <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalDue || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ✅ মোট পরিশোধ
-          <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalPaid || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          ⏳ মোট বাকি
-          <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
-        </label>
-        <input 
-          type="number" 
-          value={fundSettings.totalRemaining || 0} 
-          disabled
-          className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
-        />
-      </div>
-    </div>
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  💰 মোট দায্যকৃত টাকা
+                  <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalDue || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-orange-50 text-orange-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ✅ মোট পরিশোধ
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalPaid || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-green-50 text-green-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  ⏳ মোট বাকি
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">Auto</span>
+                </label>
+                <input 
+                  type="number" 
+                  value={fundSettings.totalRemaining || 0} 
+                  disabled
+                  className="w-full px-3 py-2 border rounded-lg bg-red-50 text-red-700 font-bold text-sm cursor-not-allowed" 
+                />
+              </div>
+            </div>
 
-    {/* ✅ NEW: Auto Calculation Alert */}
-    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
-      <div className="flex items-start gap-3">
-        <div className="text-3xl">💡</div>
-        <div className="flex-1">
-          <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
-          <p className="text-sm text-blue-700 leading-relaxed">
-            <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
-            Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-        {/* Members Sub-section */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">💡</div>
+                <div className="flex-1">
+                  <p className="font-bold text-blue-800 mb-1">🔄 Auto Calculation সক্রিয়</p>
+                  <p className="text-sm text-blue-700 leading-relaxed">
+                    <strong className="text-blue-900">সদস্য সেকশনে</strong> পরিশোধিত টাকা বসালে এই তিনটি field <strong>automatically</strong> update হবে। 
+                    Manual edit করার দরকার নেই। <strong className="text-green-700">Real-time calculation!</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {fundSubSection === 'members' && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 rounded-lg">
@@ -1717,51 +1799,51 @@ if (key === 'questions' && Array.isArray(value)) {
                     </select>
                   </div>
                   
-               <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    💰 দায্যকৃত টাকা
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
-  />
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      💰 দায্যকৃত টাকা
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].dueAmount || 0}
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'dueAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm font-semibold" 
+                    />
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ✅ পরিশোধিত
-    <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
-    onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
-    className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
-  />
-  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">💡</span>
-    <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ✅ পরিশোধিত
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-bold animate-pulse">Auto Calculate</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].paidAmount || 0} 
+                      onChange={(e) => handleMemberPaymentChange(getFilteredMembers()[selectedItemIndex].id, 'paidAmount', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 border-2 border-green-500 rounded-lg focus:ring-2 focus:ring-green-500 text-sm font-bold text-green-700 bg-green-50" 
+                    />
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <span className="text-lg">💡</span>
+                      <strong>টাকা বসালে</strong> অবশিষ্ট এবং স্ট্যাটাস auto update হবে
+                    </p>
+                  </div>
 
-<div>
-  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-    ⏳ বকেয়া
-    <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
-  </label>
-  <input 
-    type="number" 
-    value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
-    disabled
-    className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
-  />
-  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-    <span className="text-lg">🔒</span>
-    <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
-  </p>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      ⏳ বকেয়া
+                      <span className="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded font-bold">Read Only</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      value={getFilteredMembers()[selectedItemIndex].remainingAmount || 0} 
+                      disabled
+                      className="w-full px-3 py-2 border-2 border-red-300 rounded-lg bg-red-50 text-red-700 font-bold text-lg text-center cursor-not-allowed" 
+                    />
+                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      <span className="text-lg">🔒</span>
+                      <strong>Auto calculated:</strong> দায্যকৃত - পরিশোধিত = {getFilteredMembers()[selectedItemIndex].remainingAmount || 0}
+                    </p>
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">পেমেন্ট মাধ্যম</label>
@@ -1773,7 +1855,7 @@ if (key === 'questions' && Array.isArray(value)) {
                       <option value="নগদ">💵 নগদ</option>
                       <option value="রকেট">🚀 রকেট</option>
                       <option value="ব্যাংক">🏦 ব্যাংক</option>
-                      <option value="ব্যাংক">💲 নগদ অর্থ </option>
+                      <option value="নগদ অর্থ">💲 নগদ অর্থ</option>
                     </select>
                   </div>
                   
@@ -1797,7 +1879,6 @@ if (key === 'questions' && Array.isArray(value)) {
           </div>
         )}
 
-        {/* Stats Sub-section */}
         {fundSubSection === 'stats' && (
           <div className="space-y-4 p-4 bg-white rounded-lg border">
             <div className="flex items-center justify-between">
@@ -1876,7 +1957,7 @@ if (key === 'questions' && Array.isArray(value)) {
   };
 
   // ============================================
-  // RENDER ACCOUNTS PDF EDITOR
+  // RENDER ACCOUNTS PDF EDITOR (একই থাকবে)
   // ============================================
 
   const renderAccountsPdfEditor = () => {
@@ -1989,7 +2070,7 @@ if (key === 'questions' && Array.isArray(value)) {
     );
   };
 
-  // ============================================
+ // ============================================
   // GENERATE JSON
   // ============================================
   const generatedJSON = (() => {
