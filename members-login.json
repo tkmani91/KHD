@@ -16,7 +16,25 @@
       "email": "",
       "password": "admin1234",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/LDS167S1/SHAMON.png"
+      "photo": "https://i.ibb.co.com/LDS167S1/SHAMON.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "5",
@@ -25,7 +43,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/fGXxJVpq/ASASH.png"
+      "photo": "https://i.ibb.co.com/fGXxJVpq/ASASH.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "6",
@@ -34,7 +70,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/PJQFx4g/TAPAN.png"
+      "photo": "https://i.ibb.co.com/PJQFx4g/TAPAN.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "7",
@@ -43,7 +97,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/nMZ6vgSm/NAYAN.png"
+      "photo": "https://i.ibb.co.com/nMZ6vgSm/NAYAN.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "8",
@@ -52,7 +124,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/zVn70PjM/LITON.png"
+      "photo": "https://i.ibb.co.com/zVn70PjM/LITON.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "10",
@@ -61,7 +151,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png"
+      "photo": "https://i.ibb.co.com/v62p0mtK/SUMON.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "14",
@@ -70,7 +178,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png"
+      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "16",
@@ -79,7 +205,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png"
+      "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "17",
@@ -88,7 +232,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/2JwvZVK/ANUPAM.png"
+      "photo": "https://i.ibb.co.com/2JwvZVK/ANUPAM.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "18",
@@ -97,7 +259,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/b5NjXH3V/SUVO.png"
+      "photo": "https://i.ibb.co.com/b5NjXH3V/SUVO.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "20",
@@ -133,7 +313,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/zV3hyBhx/PAPPU.png"
+      "photo": "https://i.ibb.co.com/zV3hyBhx/PAPPU.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "21",
@@ -142,7 +340,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png"
+      "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     },
     {
       "id": "29",
@@ -151,7 +367,25 @@
       "email": "",
       "password": "",
       "role": "Admin",
-      "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png"
+      "photo": "https://i.ibb.co.com/JW6bKkGw/SOURAV.png",
+      "editorPermissions": {
+        "dynamicContent": false,
+        "membersData": false,
+        "contactsData": false,
+        "invitationsData": false,
+        "quizData": false,
+        "loginData": false,
+        "chatbotData": false,
+        "galleryImages": false,
+        "accountsPDFs": false,
+        "liveChannels": false,
+        "pdfFiles": false,
+        "pujaData": false,
+        "schedules": false,
+        "songs": false,
+        "organizationalProfile": false,
+        "resolutions": false
+      }
     }
   ],
   "normalMembers": [
