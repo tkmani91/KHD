@@ -1,27 +1,27 @@
 {
   "leaders": [
     {
-      "id": 2,
+      "id": 3,
+      "name": "পিনাকী কুমার কুন্ডু",
+      "position": "সভাপতি",
+      "tenure": "২০২৫ হইতে",
+      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
+      "current": true
+    },
+    {
+      "id": 4,
       "name": "শুভ্র জ্যোতি পোদ্দার",
-      "position": "সাধারণ সম্পাদক",
+      "position": "সাধারন সম্পাদক",
       "tenure": "২০২৫ হইতে",
       "photo": "https://i.ibb.co.com/Z1MZx5qG/SUVROJOTI.png",
       "current": true
     },
     {
-      "id": 3,
+      "id": 5,
       "name": "নিরেন কুমার মানী (মোংলা)",
       "position": "অর্থ সম্পাদক / কোষাধ্যক্ষ",
-      "tenure": "২০১৭ হইতে ",
+      "tenure": "২০১৭ হইতে",
       "photo": "https://i.ibb.co.com/GvGKWknL/MONGLA.png",
-      "current": true
-    },
-    {
-      "id": 4,
-      "name": "পিনাকী কুমার কুন্ডু",
-      "position": "সভাপতি",
-      "tenure": "২০২৫ হইতে",
-      "photo": "https://i.ibb.co.com/YTQWpFKV/PINAKI.png",
       "current": true
     }
   ]
