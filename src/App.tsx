@@ -1820,6 +1820,7 @@ function App() {
       <Router>
         <AppContent />
       </Router>
+      <SpeedInsights />
     </MediaProvider>
   );
 }
