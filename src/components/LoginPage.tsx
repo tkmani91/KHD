@@ -697,12 +697,12 @@ const getAvailableTabs = () => {
   ];
 
   if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-    baseTabs.push({ id: 'accounts', label: 'বাৎসরিক হিসাব', icon: FileText });
+    baseTabs.push({ id: 'accounts', label: 'বার্ষিক হিসাব', icon: FileText });
   }
 
   // ✅ CHANGED: Admin এখন Control Panel দেখতে পারবে
   if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
-    baseTabs.push({ id: 'json-editor', label: 'কন্ট্রোল প্যানেল', icon: Settings });
+    baseTabs.push({ id: 'json-editor', label: 'ড্যাশবোর্ড', icon: Settings });
   }
  
   return baseTabs;
