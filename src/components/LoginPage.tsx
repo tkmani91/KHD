@@ -1005,7 +1005,7 @@ return (
     </div>
 
     {/* Spacer: শুধু মোবাইল অ্যাপে */}
-    {isStandalone && <div className="h-[52px]" />}
+    {isStandalone && <div className="h-[72px]" />}
 
     {/* ── Tabs + Content ── */}
     <div className="space-y-3 md:space-y-4">
