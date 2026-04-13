@@ -722,246 +722,256 @@ const getAvailableTabs = () => {
     );
   }
 
-  // ===== LOGIN FORM =====
-  if (!isLoggedIn) {
-    return (
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1>
-          <p className="text-gray-600 text-sm">একটি অ্যাকাউন্ট দিয়ে সকল সুবিধা</p>
+// ===== LOGIN FORM ===== (এই অংশ replace করুন)
+if (!isLoggedIn) {
+  return (
+    <div className="max-w-md mx-auto px-1">
+      {/* Logo + Title */}
+      <div className="text-center mb-6 md:mb-8">
+        <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-3 bg-white rounded-full shadow-lg overflow-hidden p-1">
+          <img
+            src="https://i.ibb.co.com/XZT93Lxq/KHDS.png"
+            alt="কলম হিন্দু ধর্মসভা"
+            className="w-full h-full object-contain rounded-full"
+          />
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          {dataSource === 'github' && (
-            <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              ✓ সার্ভার থেকে ডেটা লোড হয়েছে
-            </div>
-          )}
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1">মেম্বার লগইন</h1>
+        <p className="text-gray-500 text-xs md:text-sm">একটি অ্যাকাউন্ট দিয়ে সকল সুবিধা</p>
+      </div>
 
-          {loginError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-600">{loginError}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">মোবাইল / ইমেইল</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="text" 
-                  value={usernameInput} 
-                  onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }} 
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
-                  placeholder="মোবাইল বা ইমেইল" 
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  value={passwordInput} 
-                  onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} 
-                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none" 
-                  placeholder="পাসওয়ার্ড" 
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-            <button 
-              type="submit" 
-              disabled={isLoading} 
-              className={cn(
-                "w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition", 
-                isLoading ? "bg-gray-400 text-white" : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg"
-              )}
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  যাচাই করা হচ্ছে...
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5" />
-                  লগইন
-                </>
-              )}
-            </button>
-          </form>
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs text-yellow-700 text-center">
-              🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313
-            </p>
+      {/* Login Card */}
+      <div className="bg-white rounded-2xl p-5 md:p-6 shadow-lg">
+        {dataSource === 'github' && (
+          <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2 bg-green-50 text-green-600">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            ✓ সার্ভার থেকে ডেটা লোড হয়েছে
           </div>
+        )}
+
+        {loginError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-600">{loginError}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">মোবাইল / ইমেইল</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => { setUsernameInput(e.target.value); setLoginError(''); }}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm md:text-base"
+                placeholder="মোবাইল বা ইমেইল"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">পাসওয়ার্ড</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={passwordInput}
+                onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }}
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm md:text-base"
+                placeholder="পাসওয়ার্ড"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={cn(
+              "w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition text-sm md:text-base",
+              isLoading
+                ? "bg-gray-400 text-white"
+                : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg active:scale-[0.98]"
+            )}
+          >
+            {isLoading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                যাচাই করা হচ্ছে...
+              </>
+            ) : (
+              <>
+                <LogIn className="w-5 h-5" />
+                লগইন
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-xs text-yellow-700 text-center">
+            🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313
+          </p>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  // ===== DASHBOARD =====
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-2xl p-4 shadow-lg">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
-              <img 
-                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'} 
-                alt={loggedInUser?.name} 
+// ===== DASHBOARD ===== (এই অংশ replace করুন)
+return (
+  <div className="space-y-4 md:space-y-6">
+    {/* ── Profile Header ── */}
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      {/* Top gradient bar */}
+      <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500" />
+
+      <div className="p-4 md:p-5">
+        {/* Mobile: Column layout, Desktop: Row layout */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* User info */}
+          <div className="flex items-center gap-3">
+            {/* Photo */}
+            <div className="w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden border-3 md:border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+              <img
+                src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                alt={loggedInUser?.name}
                 className="w-full h-full object-cover"
-                onError={(e) => { 
-                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 }}
               />
             </div>
-            
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold gradient-text">ড্যাশবোর্ড</h1>
+
+            {/* Name + Info */}
+            <div className="min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold gradient-text truncate">
+                {loggedInUser?.name}
+              </h1>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <p className="text-sm text-gray-500">
-                  স্বাগতম, <span className="font-bold text-orange-600">{loggedInUser?.name}</span>
-                </p>
                 <span className={cn(
-                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                  "px-2 py-0.5 rounded-full text-[11px] md:text-xs font-medium",
                   loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
                   loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
                   'bg-green-100 text-green-600'
                 )}>
                   {loggedInUser?.role}
                 </span>
+                <span className="text-[11px] md:text-xs text-gray-400 flex items-center gap-1">
+                  <Phone className="w-3 h-3" />
+                  {loggedInUser?.mobile}
+                </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                <Phone className="w-3 h-3" />
-                {loggedInUser?.mobile}
-              </p>
             </div>
           </div>
-          
-          <button 
-            onClick={handleLogout} 
-            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition flex items-center gap-2"
+
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="self-end sm:self-auto px-3 py-2 bg-red-50 text-red-500 rounded-lg text-xs md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1.5"
           >
-            <LogOut className="w-4 h-4" /> লগআউট
+            <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            লগআউট
           </button>
         </div>
       </div>
+    </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2">
+    {/* ── Tabs - Horizontal scroll on mobile ── */}
+    <div className="overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide">
+      <div className="flex gap-2 min-w-max">
         {getAvailableTabs().map((tab) => (
-          <button 
-            key={tab.id} 
+          <button
+            key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition", 
-              activeTab === tab.id 
-                ? "bg-orange-500 text-white shadow-lg" 
-                : "bg-white text-gray-700 hover:bg-orange-50"
+              "px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2 transition whitespace-nowrap",
+              activeTab === tab.id
+                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
+                : "bg-white text-gray-600 hover:bg-orange-50 border border-gray-100"
             )}
           >
-            <tab.icon className="w-4 h-4" />{tab.label}
+            <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            {tab.label}
           </button>
         ))}
       </div>
-
-      {/* Loading */}
-      {isDataLoading && (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">ডেটা লোড হচ্ছে...</p>
-        </div>
-      )}
-
-      {/* Members Tab */}
-      {activeTab === 'members' && !isDataLoading && (
-        <MembersList 
-          membersData={membersData} 
-          pdfLink={pdfLinks.membersList} 
-        />
-      )}
-
-      {/* Contacts Tab */}
-      {activeTab === 'contacts' && !isDataLoading && (
-        <ContactsList 
-          contactsData={contactsData} 
-          pdfLink={pdfLinks.contactsList} 
-        />
-      )}
-
-      {/* Invitation Tab */}
-      {activeTab === 'invitation' && !isDataLoading && (
-        <InvitationListComponent 
-          invitationData={invitationData} 
-          pdfLink={pdfLinks.invitationList} 
-        />
-      )}
-
-      {/* Resolutions Tab - নতুন */}
-      {activeTab === 'resolutions' && !isDataLoading && <Resolutions />}
-
-      {/* Organizational Profile Tab - নতুন */}
-      {activeTab === 'org-profile' && !isDataLoading && <OrganizationalProfile />}
-      
-      {/* Notice Tab */}
-      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
-
-      {/* Live Broadcasting Tab */}
-      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
-
-      {/* Fund Collection Tab */}
-      {activeTab === 'fund' && !isDataLoading && (
-        <FundCollection 
-          userRole={loggedInUser?.role || 'Member'} 
-          loggedInUserId={loggedInUser?.id || ''} 
-        />
-      )}
-
-      {/* Accounts Tab (Admin/Super Admin only) */}
-      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(accountsPDFs).map(([key, data]) => (
-            <div key={key} className="bg-white rounded-xl p-6 shadow-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-orange-600" />
-                </div>
-                <h3 className="font-bold text-lg">{data.title}</h3>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {Object.entries(data.years).map(([year, url]) => (
-                  <a key={year} href={url as string} download className="flex items-center justify-center gap-2 p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
-                    <Download className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm font-medium">{year}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* JSON Editor Tab (Admin ও Super Admin) */}
-{activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
-  <JSONEditor 
-    userRole={loggedInUser?.role || 'Member'} 
-    editorPermissions={loggedInUser?.editorPermissions || {}} 
-  />
-)}
     </div>
-  );
+
+    {/* ── Loading ── */}
+    {isDataLoading && (
+      <div className="text-center py-10 md:py-12 bg-white rounded-2xl shadow-lg">
+        <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-500 text-sm">ডেটা লোড হচ্ছে...</p>
+      </div>
+    )}
+
+    {/* ── Tab Contents ── (আগের মতোই) */}
+    {activeTab === 'members' && !isDataLoading && (
+      <MembersList membersData={membersData} pdfLink={pdfLinks.membersList} />
+    )}
+
+    {activeTab === 'contacts' && !isDataLoading && (
+      <ContactsList contactsData={contactsData} pdfLink={pdfLinks.contactsList} />
+    )}
+
+    {activeTab === 'invitation' && !isDataLoading && (
+      <InvitationListComponent invitationData={invitationData} pdfLink={pdfLinks.invitationList} />
+    )}
+
+    {activeTab === 'resolutions' && !isDataLoading && <Resolutions />}
+
+    {activeTab === 'org-profile' && !isDataLoading && <OrganizationalProfile />}
+
+    {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+
+    {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
+
+    {activeTab === 'fund' && !isDataLoading && (
+      <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
+    )}
+
+    {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.entries(accountsPDFs).map(([key, data]) => (
+          <div key={key} className="bg-white rounded-xl p-4 md:p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                <FileText className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+              </div>
+              <h3 className="font-bold text-base md:text-lg">{data.title}</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(data.years).map(([year, url]) => (
+                <a key={year} href={url as string} download className="flex items-center justify-center gap-1.5 p-2.5 md:p-3 bg-orange-50 rounded-lg hover:bg-orange-100 active:scale-95 transition">
+                  <Download className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />
+                  <span className="text-xs md:text-sm font-medium">{year}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
+      <JSONEditor userRole={loggedInUser?.role || 'Member'} editorPermissions={loggedInUser?.editorPermissions || {}} />
+    )}
+
+    {/* Scrollbar hide CSS */}
+    <style>{`
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    `}</style>
+  </div>
+);
 }
 
 export default LoginPage;
