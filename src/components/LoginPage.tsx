@@ -945,15 +945,13 @@ if (!isLoggedIn) {
 // ===== DASHBOARD =====
 return (
   <div className="relative">
-    {/* ── Fixed Profile Header ── */}
-    <div className="fixed left-0 right-0 z-40 bg-white shadow-md"
-      style={{ top: 'calc(var(--header-height, 64px))' }}
-    >
+    {/* ── Fixed Profile Header (MobileHeader এর ঠিক নিচে) ── */}
+    <div className="fixed left-0 right-0 z-30 top-[56px] bg-white shadow-md">
       <div className="h-1 bg-gradient-to-r from-orange-500 to-red-500" />
-      <div className="px-4 py-2.5 max-w-screen-xl mx-auto">
-        <div className="flex items-center gap-2.5 md:gap-4">
+      <div className="px-4 py-2">
+        <div className="flex items-center gap-2.5">
           {/* Photo */}
-          <div className="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
             <img
               src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
               alt={loggedInUser?.name}
@@ -964,12 +962,12 @@ return (
             />
           </div>
 
-          {/* Name + Role */}
+          {/* Name + Role + Mobile */}
           <div className="flex-1 min-w-0">
             <h1 className="text-sm md:text-lg font-bold text-gray-800 truncate">
               {loggedInUser?.name}
             </h1>
-            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+            <div className="flex items-center gap-1.5 mt-0.5">
               <span className={cn(
                 "px-1.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium",
                 loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
@@ -988,23 +986,21 @@ return (
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
+            className="flex-shrink-0 px-2.5 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">লগআউট</span>
-            <span className="sm:hidden">বের</span>
+            <span>বের</span>
           </button>
         </div>
       </div>
     </div>
 
-    {/* ── Header এর জন্য space ── */}
-    <div className="h-16 md:h-20" />
+    {/* ── Fixed header এর জন্য space ── */}
+    <div className="h-[52px]" />
 
-    {/* ── বাকি content ── */}
-    <div className="space-y-4 md:space-y-6">
-
-      {/* ── Tabs ── */}
+    {/* ── Tabs + Content ── */}
+    <div className="space-y-3 md:space-y-4">
+      {/* Tabs */}
       <div className="overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide">
         <div className="flex gap-2 min-w-max">
           {getAvailableTabs().map((tab) => (
@@ -1012,7 +1008,7 @@ return (
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2 transition whitespace-nowrap",
+                "px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 transition whitespace-nowrap",
                 activeTab === tab.id
                   ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
                   : "bg-white text-gray-600 hover:bg-orange-50 border border-gray-100"
@@ -1025,7 +1021,6 @@ return (
         </div>
       </div>
 
-      {/* ── Loading ── */}
       {isDataLoading && (
         <div className="text-center py-10 bg-white rounded-2xl shadow-lg">
           <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -1049,16 +1044,15 @@ return (
       {activeTab === 'fund' && !isDataLoading && (
         <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
       )}
-
       {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
-            <div key={key} className="bg-white rounded-xl p-4 md:p-6 shadow-lg">
+            <div key={key} className="bg-white rounded-xl p-4 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
                   <FileText className="w-5 h-5 text-orange-600" />
                 </div>
-                <h3 className="font-bold text-base md:text-lg">{data.title}</h3>
+                <h3 className="font-bold text-base">{data.title}</h3>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
@@ -1073,7 +1067,6 @@ return (
           ))}
         </div>
       )}
-
       {activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <JSONEditor userRole={loggedInUser?.role || 'Member'} editorPermissions={loggedInUser?.editorPermissions || {}} />
       )}
