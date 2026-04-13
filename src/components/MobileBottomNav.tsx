@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, Image as ImageIcon, Music, Tv } from 'lucide-react';
+import { Home,  FileText, Image as ImageIcon, Music, Tv } from 'lucide-react';
 
 const MobileBottomNav: React.FC = () => {
   const location = useLocation();
