@@ -693,7 +693,7 @@ const getAvailableTabs = () => {
     { id: 'invitation', label: 'নিমন্ত্রণ তালিকা', icon: FileText },
     { id: 'resolutions', label: 'রেজুলেশন সমূহ', icon: FileText },
     { id: 'notice', label: 'বিজ্ঞপ্তি', icon: Bell },
-    { id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
+    //{ id: 'live', label: 'লাইভ সম্প্রচার', icon: Tv },
   ];
 
   if (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') {
