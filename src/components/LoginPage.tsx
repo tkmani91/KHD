@@ -946,15 +946,14 @@ if (!isLoggedIn) {
 return (
   <div className="relative">
     {/* ── Profile Header ── */}
-    {/* মোবাইল অ্যাপ (standalone): fixed, ডেস্কটপ: normal */}
-    <div className="
-      md:relative md:z-auto md:bg-white md:rounded-2xl md:shadow-lg md:overflow-hidden md:mb-4
-      fixed left-0 right-0 z-30 bg-white shadow-md
-      md:top-auto md:left-auto md:right-auto
-    "
-      style={{ top: '56px' }}
+    <div className={cn(
+      "bg-white overflow-hidden",
+      isStandalone
+        ? "fixed left-0 right-0 z-30 shadow-md"  // মোবাইল অ্যাপ: fixed
+        : "rounded-2xl shadow-lg mb-4"            // ডেস্কটপ: normal scroll
+    )}
+      style={isStandalone ? { top: '56px' } : {}}
     >
-      {/* Gradient bar */}
       <div className="h-1 md:h-2 bg-gradient-to-r from-orange-500 to-red-500" />
 
       <div className="px-4 py-2 md:py-4">
@@ -995,18 +994,17 @@ return (
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
+            className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1.5"
           >
             <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            <span className="hidden md:inline">লগআউট</span>
-            <span className="md:hidden">বের</span>
+            {isStandalone ? <span>বের</span> : <span>লগআউট</span>}
           </button>
         </div>
       </div>
     </div>
 
-    {/* Spacer: মোবাইলে fixed header এর জন্য, ডেস্কটপে লাগবে না */}
-    <div className="h-[52px] md:h-0" />
+    {/* Spacer: শুধু মোবাইল অ্যাপে */}
+    {isStandalone && <div className="h-[52px]" />}
 
     {/* ── Tabs + Content ── */}
     <div className="space-y-3 md:space-y-4">
