@@ -942,21 +942,20 @@ if (!isLoggedIn) {
   );
 }
 
-// ===== DASHBOARD ===== (এই অংশ replace করুন)
+// ===== DASHBOARD =====
 return (
-  <div className="space-y-4 md:space-y-6">
-    {/* ── Profile Header ── */}
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-      {/* Top gradient bar */}
-      <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500" />
+  <div>
+    {/* ── Sticky Profile Header ── */}
+    <div className="sticky top-0 md:top-0 z-40 -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="bg-white shadow-md md:rounded-2xl md:shadow-lg overflow-hidden">
+        {/* Top gradient bar */}
+        <div className="h-1 md:h-2 bg-gradient-to-r from-orange-500 to-red-500" />
 
-      <div className="p-4 md:p-5">
-        {/* Mobile: Column layout, Desktop: Row layout */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* User info */}
-          <div className="flex items-center gap-3">
+        <div className="px-3 py-2.5 md:p-5">
+          {/* Single row: Photo + Info + Logout */}
+          <div className="flex items-center gap-2.5 md:gap-4">
             {/* Photo */}
-            <div className="w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden border-3 md:border-4 border-orange-200 shadow-lg flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
+            <div className="w-10 h-10 md:w-16 md:h-16 rounded-full overflow-hidden border-2 md:border-4 border-orange-200 shadow flex-shrink-0 bg-gradient-to-br from-orange-100 to-red-100">
               <img
                 src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                 alt={loggedInUser?.name}
@@ -967,122 +966,128 @@ return (
               />
             </div>
 
-            {/* Name + Info */}
-            <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold gradient-text truncate">
+            {/* Name + Role + Mobile — ১-২ লাইনে */}
+            <div className="flex-1 min-w-0">
+              {/* Line 1: Name */}
+              <h1 className="text-sm md:text-xl font-bold text-gray-800 truncate">
                 {loggedInUser?.name}
               </h1>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {/* Line 2: Role badge + Mobile */}
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <span className={cn(
-                  "px-2 py-0.5 rounded-full text-[11px] md:text-xs font-medium",
+                  "px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium",
                   loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
                   loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
                   'bg-green-100 text-green-600'
                 )}>
                   {loggedInUser?.role}
                 </span>
-                <span className="text-[11px] md:text-xs text-gray-400 flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
+                <span className="text-[10px] md:text-xs text-gray-400 flex items-center gap-0.5">
+                  <Phone className="w-2.5 h-2.5 md:w-3 md:h-3" />
                   {loggedInUser?.mobile}
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Logout button */}
-          <button
-            onClick={handleLogout}
-            className="self-end sm:self-auto px-3 py-2 bg-red-50 text-red-500 rounded-lg text-xs md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1.5"
-          >
-            <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            লগআউট
-          </button>
+            {/* Logout — ডানে, একই row তে */}
+            <button
+              onClick={handleLogout}
+              className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
+            >
+              <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">লগআউট</span>
+              <span className="sm:hidden">✕</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    {/* ── Tabs - Horizontal scroll on mobile ── */}
-    <div className="overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide">
-      <div className="flex gap-2 min-w-max">
-        {getAvailableTabs().map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2 transition whitespace-nowrap",
-              activeTab === tab.id
-                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
-                : "bg-white text-gray-600 hover:bg-orange-50 border border-gray-100"
-            )}
-          >
-            <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            {tab.label}
-          </button>
-        ))}
+    {/* ── Space for sticky header ── */}
+    <div className="space-y-4 md:space-y-6 mt-3 md:mt-4">
+
+      {/* ── Tabs - Horizontal scroll on mobile ── */}
+      <div className="overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide">
+        <div className="flex gap-2 min-w-max">
+          {getAvailableTabs().map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-medium flex items-center gap-1.5 md:gap-2 transition whitespace-nowrap",
+                activeTab === tab.id
+                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
+                  : "bg-white text-gray-600 hover:bg-orange-50 border border-gray-100"
+              )}
+            >
+              <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* ── Loading ── */}
+      {isDataLoading && (
+        <div className="text-center py-10 md:py-12 bg-white rounded-2xl shadow-lg">
+          <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 text-sm">ডেটা লোড হচ্ছে...</p>
+        </div>
+      )}
+
+      {/* ── Tab Contents ── */}
+      {activeTab === 'members' && !isDataLoading && (
+        <MembersList membersData={membersData} pdfLink={pdfLinks.membersList} />
+      )}
+
+      {activeTab === 'contacts' && !isDataLoading && (
+        <ContactsList contactsData={contactsData} pdfLink={pdfLinks.contactsList} />
+      )}
+
+      {activeTab === 'invitation' && !isDataLoading && (
+        <InvitationListComponent invitationData={invitationData} pdfLink={pdfLinks.invitationList} />
+      )}
+
+      {activeTab === 'resolutions' && !isDataLoading && <Resolutions />}
+
+      {activeTab === 'org-profile' && !isDataLoading && <OrganizationalProfile />}
+
+      {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
+
+      {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
+
+      {activeTab === 'fund' && !isDataLoading && (
+        <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
+      )}
+
+      {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(accountsPDFs).map(([key, data]) => (
+            <div key={key} className="bg-white rounded-xl p-4 md:p-6 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-base md:text-lg">{data.title}</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(data.years).map(([year, url]) => (
+                  <a key={year} href={url as string} download className="flex items-center justify-center gap-1.5 p-2.5 md:p-3 bg-orange-50 rounded-lg hover:bg-orange-100 active:scale-95 transition">
+                    <Download className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />
+                    <span className="text-xs md:text-sm font-medium">{year}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
+        <JSONEditor userRole={loggedInUser?.role || 'Member'} editorPermissions={loggedInUser?.editorPermissions || {}} />
+      )}
     </div>
 
-    {/* ── Loading ── */}
-    {isDataLoading && (
-      <div className="text-center py-10 md:py-12 bg-white rounded-2xl shadow-lg">
-        <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-500 text-sm">ডেটা লোড হচ্ছে...</p>
-      </div>
-    )}
-
-    {/* ── Tab Contents ── (আগের মতোই) */}
-    {activeTab === 'members' && !isDataLoading && (
-      <MembersList membersData={membersData} pdfLink={pdfLinks.membersList} />
-    )}
-
-    {activeTab === 'contacts' && !isDataLoading && (
-      <ContactsList contactsData={contactsData} pdfLink={pdfLinks.contactsList} />
-    )}
-
-    {activeTab === 'invitation' && !isDataLoading && (
-      <InvitationListComponent invitationData={invitationData} pdfLink={pdfLinks.invitationList} />
-    )}
-
-    {activeTab === 'resolutions' && !isDataLoading && <Resolutions />}
-
-    {activeTab === 'org-profile' && !isDataLoading && <OrganizationalProfile />}
-
-    {activeTab === 'notice' && !isDataLoading && <NoticeBoard />}
-
-    {activeTab === 'live' && !isDataLoading && <LiveBroadcasting />}
-
-    {activeTab === 'fund' && !isDataLoading && (
-      <FundCollection userRole={loggedInUser?.role || 'Member'} loggedInUserId={loggedInUser?.id || ''} />
-    )}
-
-    {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(accountsPDFs).map(([key, data]) => (
-          <div key={key} className="bg-white rounded-xl p-4 md:p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                <FileText className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
-              </div>
-              <h3 className="font-bold text-base md:text-lg">{data.title}</h3>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(data.years).map(([year, url]) => (
-                <a key={year} href={url as string} download className="flex items-center justify-center gap-1.5 p-2.5 md:p-3 bg-orange-50 rounded-lg hover:bg-orange-100 active:scale-95 transition">
-                  <Download className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-600" />
-                  <span className="text-xs md:text-sm font-medium">{year}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    )}
-
-    {activeTab === 'json-editor' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
-      <JSONEditor userRole={loggedInUser?.role || 'Member'} editorPermissions={loggedInUser?.editorPermissions || {}} />
-    )}
-
-    {/* Scrollbar hide CSS */}
     <style>{`
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
