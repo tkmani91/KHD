@@ -10,7 +10,7 @@ const MobileBottomNav: React.FC = () => {
     { path: '/pdf', label: 'ফর্দ', icon: FileText },
     { path: '/gallery', label: 'গ্যালারি', icon: ImageIcon },
     { path: '/music', label: 'গান', icon: Music },
-    { path: '/live', label: 'লাইভ', icon: Tv },
+    { path: '/live', label: 'লাইভ TV', icon: Tv },
   ];
 
   return (
