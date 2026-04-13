@@ -1841,7 +1841,7 @@ function AppContent() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
           <MobileHeader notices={dynamicContent.notices || []} />
           
-          <main className="flex-grow pt-15 pb-24 px-4">
+          <main className="flex-grow pt-14 pb-24 px-4">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/durga" element={<DurgaPujaPage />} />
