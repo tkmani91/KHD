@@ -998,7 +998,7 @@ return (
             className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1.5"
           >
             <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
-            {isStandalone ? <span>প্রস্থান'</span> : <span>লগআউট</span>}
+            {isStandalone ? <span>প্রস্থান🏃</span> : <span>লগআউট</span>}
           </button>
         </div>
       </div>
