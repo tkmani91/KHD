@@ -18,7 +18,7 @@ interface MobileHeaderProps {
   notices?: Notice[];
 }
 
-// ✅ Fix: icon কে function হিসেবে রাখা হয়েছে, JSX object হিসেবে নয়
+// ✅ Fix: icon কে function হিসেবে রাখা হয়েছে , JSX object হিসেবে নয়
 const PRIORITY_CONFIG: Record<
   'high' | 'medium' | 'low',
   {
