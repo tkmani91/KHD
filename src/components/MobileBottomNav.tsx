@@ -7,7 +7,7 @@ const MobileBottomNav: React.FC = () => {
   
   const navItems = [
     { path: '/', label: 'হোম', icon: Home },
-    { path: '/deities', label: 'দেবী', icon: Users },
+    { path: '/pdf', label: 'ফর্দ', icon: FileText },
     { path: '/gallery', label: 'গ্যালারি', icon: ImageIcon },
     { path: '/music', label: 'গান', icon: Music },
     { path: '/live', label: 'লাইভ', icon: Tv },
