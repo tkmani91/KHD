@@ -1829,7 +1829,7 @@ function App() {
 
 function AppContent() {
   const { isStandalone } = usePWA(); // ডিটেক্ট করুন অ্যাপ না ব্রাউজার
- const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
+ const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
 
   return (
     <>
