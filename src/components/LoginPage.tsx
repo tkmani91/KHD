@@ -571,6 +571,7 @@ export function AIChatbox() {
 // ==================== MAIN LOGIN PAGE COMPONENT ====================
 
 function LoginPage() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<LoginUser | null>(null);
