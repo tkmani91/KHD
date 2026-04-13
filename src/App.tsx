@@ -1829,6 +1829,7 @@ function App() {
 
 function AppContent() {
   const { isStandalone } = usePWA(); // ডিটেক্ট করুন অ্যাপ না ব্রাউজার
+ const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
   return (
     <>
@@ -1838,7 +1839,7 @@ function AppContent() {
       {/* 📱 Mobile App UI (শুধু ইনস্টল করা থাকলে দেখাবে) */}
       {isStandalone ? (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-          <MobileHeader />
+          <MobileHeader notices={dynamicContent.notices || []} />
           
           <main className="flex-grow pt-16 pb-24 px-4 overflow-y-auto">
             <Routes>
