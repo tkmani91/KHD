@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { InstallPrompt } from './components/InstallPrompt';
 import LoginPage, { AIChatbox } from './components/LoginPage';
+import { usePWA } from './hooks/usePWA'; // নতুন হুকটি ইম্পোর্ট করুন
+import MobileHeader from './components/MobileHeader'; // নতুন হেডার
+import MobileBottomNav from './components/MobileBottomNav'; // নতুন নেভিগেশন
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -1825,35 +1828,71 @@ function App() {
 }
 
 function AppContent() {
+  const { isStandalone } = usePWA(); // ডিটেক্ট করুন অ্যাপ না ব্রাউজার
+
   return (
     <>
       <InstallPrompt />
       <SpeedInsights />
-      <div className="min-h-screen sacred-pattern">
-        <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/durga" element={<DurgaPujaPage />} />
-            <Route path="/shyama" element={<ShyamaPujaPage />} />
-            <Route path="/saraswati" element={<SaraswatiPujaPage />} />
-            <Route path="/rath" element={<RathYatraPage />} />
-            <Route path="/deities" element={<DeitiesPage />} />
-            <Route path="/quiz" element={<QuizArchivePage />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/music" element={<MusicPage />} />
-            <Route path="/pdf" element={<PDFPage />} />
-            <Route path="/live" element={<LiveTVPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-          </Routes>
-        </main>
-        
-        <GlobalMusicPlayer />
-        <GlobalLiveTVPlayer />
-        
-        <Footer />
-      </div>
+      
+      {/* 📱 Mobile App UI (শুধু ইনস্টল করা থাকলে দেখাবে) */}
+      {isStandalone ? (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <MobileHeader />
+          
+          <main className="flex-grow pt-16 pb-24 px-4 overflow-y-auto">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/durga" element={<DurgaPujaPage />} />
+              <Route path="/shyama" element={<ShyamaPujaPage />} />
+              <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+              <Route path="/rath" element={<RathYatraPage />} />
+              <Route path="/deities" element={<DeitiesPage />} />
+              <Route path="/quiz" element={<QuizArchivePage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/music" element={<MusicPage />} />
+              <Route path="/pdf" element={<PDFPage />} />
+              <Route path="/live" element={<LiveTVPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </main>
+          
+          {/* মিডিয়া প্লেয়ারগুলো আগের মতোই থাকবে */}
+          <GlobalMusicPlayer />
+          <GlobalLiveTVPlayer />
+          
+          <MobileBottomNav />
+        </div>
+      ) : (
+        /* 🌐 Browser Website UI (বর্তমান ডিজাইন) */
+        <div className="min-h-screen sacred-pattern">
+          <Header />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+            <Routes>
+              {/* সব রুট এখানেও থাকবে আগের মতোই */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/durga" element={<DurgaPujaPage />} />
+              <Route path="/shyama" element={<ShyamaPujaPage />} />
+              <Route path="/saraswati" element={<SaraswatiPujaPage />} />
+              <Route path="/rath" element={<RathYatraPage />} />
+              <Route path="/deities" element={<DeitiesPage />} />
+              <Route path="/quiz" element={<QuizArchivePage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/music" element={<MusicPage />} />
+              <Route path="/pdf" element={<PDFPage />} />
+              <Route path="/live" element={<LiveTVPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </main>
+          
+          <GlobalMusicPlayer />
+          <GlobalLiveTVPlayer />
+          
+          <Footer />
+        </div>
+      )}
     </>
   );
 }
