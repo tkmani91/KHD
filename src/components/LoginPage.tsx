@@ -728,7 +728,7 @@ const getAvailableTabs = () => {
       <div className="max-w-md mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold gradient-text mb-2">মেম্বার লগইন</h1>
-          <p className="text-gray-600 text-sm">একটি অ্যাকাউন্ট দিয়ে সব সুবিধা</p>
+          <p className="text-gray-600 text-sm">একটি অ্যাকাউন্ট দিয়ে সকল সুবিধা</p>
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           {dataSource === 'github' && (
@@ -802,7 +802,7 @@ const getAvailableTabs = () => {
           </form>
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-xs text-yellow-700">
-              🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313 । 📞+88 01612118313
+              🔑 নিবন্ধনের জন্য যোগাযোগ করুণ: 📞+88 01733118313
             </p>
           </div>
         </div>
