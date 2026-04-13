@@ -945,13 +945,22 @@ if (!isLoggedIn) {
 // ===== DASHBOARD =====
 return (
   <div className="relative">
-    {/* ── Fixed Profile Header (MobileHeader এর ঠিক নিচে) ── */}
-    <div className="fixed left-0 right-0 z-30 top-[56px] bg-white shadow-md">
-      <div className="h-1 bg-gradient-to-r from-orange-500 to-red-500" />
-      <div className="px-4 py-2">
-        <div className="flex items-center gap-2.5">
+    {/* ── Profile Header ── */}
+    {/* মোবাইল অ্যাপ (standalone): fixed, ডেস্কটপ: normal */}
+    <div className="
+      md:relative md:z-auto md:bg-white md:rounded-2xl md:shadow-lg md:overflow-hidden md:mb-4
+      fixed left-0 right-0 z-30 bg-white shadow-md
+      md:top-auto md:left-auto md:right-auto
+    "
+      style={{ top: '56px' }}
+    >
+      {/* Gradient bar */}
+      <div className="h-1 md:h-2 bg-gradient-to-r from-orange-500 to-red-500" />
+
+      <div className="px-4 py-2 md:py-4">
+        <div className="flex items-center gap-2.5 md:gap-4">
           {/* Photo */}
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-200 shadow flex-shrink-0">
+          <div className="w-10 h-10 md:w-16 md:h-16 rounded-full overflow-hidden border-2 md:border-4 border-orange-200 shadow flex-shrink-0">
             <img
               src={userPhoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
               alt={loggedInUser?.name}
@@ -964,12 +973,12 @@ return (
 
           {/* Name + Role + Mobile */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm md:text-lg font-bold text-gray-800 truncate">
+            <h1 className="text-sm md:text-xl font-bold text-gray-800 truncate">
               {loggedInUser?.name}
             </h1>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <span className={cn(
-                "px-1.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium",
+                "px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium",
                 loggedInUser?.role === 'Super Admin' ? 'bg-purple-100 text-purple-600' :
                 loggedInUser?.role === 'Admin' ? 'bg-blue-100 text-blue-600' :
                 'bg-green-100 text-green-600'
@@ -977,7 +986,7 @@ return (
                 {loggedInUser?.role}
               </span>
               <span className="text-[10px] md:text-xs text-gray-400 flex items-center gap-0.5">
-                <Phone className="w-2.5 h-2.5" />
+                <Phone className="w-2.5 h-2.5 md:w-3 md:h-3" />
                 {loggedInUser?.mobile}
               </span>
             </div>
@@ -986,17 +995,18 @@ return (
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex-shrink-0 px-2.5 py-1.5 bg-red-50 text-red-500 rounded-lg text-[11px] font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
+            className="flex-shrink-0 px-2.5 py-1.5 md:px-4 md:py-2 bg-red-50 text-red-500 rounded-lg text-[11px] md:text-sm font-medium hover:bg-red-100 active:scale-95 transition flex items-center gap-1"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>বের</span>
+            <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="hidden md:inline">লগআউট</span>
+            <span className="md:hidden">বের</span>
           </button>
         </div>
       </div>
     </div>
 
-    {/* ── Fixed header এর জন্য space ── */}
-    <div className="h-[52px]" />
+    {/* Spacer: মোবাইলে fixed header এর জন্য, ডেস্কটপে লাগবে না */}
+    <div className="h-[52px] md:h-0" />
 
     {/* ── Tabs + Content ── */}
     <div className="space-y-3 md:space-y-4">
@@ -1047,12 +1057,12 @@ return (
       {activeTab === 'accounts' && (loggedInUser?.role === 'Admin' || loggedInUser?.role === 'Super Admin') && !isDataLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(accountsPDFs).map(([key, data]) => (
-            <div key={key} className="bg-white rounded-xl p-4 shadow-lg">
+            <div key={key} className="bg-white rounded-xl p-4 md:p-6 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
                   <FileText className="w-5 h-5 text-orange-600" />
                 </div>
-                <h3 className="font-bold text-base">{data.title}</h3>
+                <h3 className="font-bold text-base md:text-lg">{data.title}</h3>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(data.years).map(([year, url]) => (
@@ -1075,6 +1085,12 @@ return (
     <style>{`
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      @media (min-width: 768px) {
+        [style*="top: 56px"] {
+          position: relative !important;
+          top: auto !important;
+        }
+      }
     `}</style>
   </div>
 );
