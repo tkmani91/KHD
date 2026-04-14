@@ -363,7 +363,7 @@ const EkadashiList = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredEntries.map((entry, idx) => {
+            {filteredEntries.map((entry) => {
               const styles = getStatusStyles(entry.status);
               const isUpcoming = entry.status === 'upcoming';
 
