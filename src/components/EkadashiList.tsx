@@ -313,7 +313,7 @@ const EkadashiList = () => {
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold active:scale-95 transition border border-white/20"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">প্রিন্ট/পিডিএফ</span>
+                <span className="hidden sm:inline">প্রিন্ট/PDF</span>
               </button>
             </div>
           </div>
