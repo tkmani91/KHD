@@ -1830,6 +1830,16 @@ const PageLoader = () => (
   </div>
 );
 
+// ========== Loading কম্পোনেন্ট ==========
+const PageLoader = () => (
+  <div className="flex justify-center items-center min-h-[50vh]">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-orange-200 rounded-full animate-spin border-t-orange-500 mx-auto"></div>
+      <p className="mt-3 text-orange-600 text-sm">লোড হচ্ছে...</p>
+    </div>
+  </div>
+);
+
 // ========== AppContent ফাংশন ==========
 function AppContent() {
   const { isStandalone } = usePWA();
@@ -1852,7 +1862,6 @@ function AppContent() {
               <Route path="/shyama" element={<ShyamaPujaPage />} />
               <Route path="/saraswati" element={<SaraswatiPujaPage />} />
               <Route path="/rath" element={<RathYatraPage />} />
-              {/* ✅ একাদশী Route যোগ হলো */}
               <Route path="/ekadashi" element={
                 <Suspense fallback={<PageLoader />}>
                   <EkadashiList />
@@ -1885,7 +1894,6 @@ function AppContent() {
               <Route path="/shyama" element={<ShyamaPujaPage />} />
               <Route path="/saraswati" element={<SaraswatiPujaPage />} />
               <Route path="/rath" element={<RathYatraPage />} />
-              {/* ✅ একাদশী Route যোগ হলো */}
               <Route path="/ekadashi" element={
                 <Suspense fallback={<PageLoader />}>
                   <EkadashiList />
@@ -1909,6 +1917,17 @@ function AppContent() {
         </div>
       )}
     </>
+  );
+}
+
+// ========== মূল App ফাংশন ==========
+function App() {
+  return (
+    <MediaProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </MediaProvider>
   );
 }
 
