@@ -6,6 +6,7 @@ import LoginPage, { AIChatbox } from './components/LoginPage';
 import { usePWA } from './hooks/usePWA'; // নতুন হুকটি ইম্পোর্ট করুন
 import MobileHeader from './components/MobileHeader'; // নতুন হেডার
 import MobileBottomNav from './components/MobileBottomNav'; // নতুন নেভিগেশন
+import { lazy, Suspense } from 'react';
 import { 
   Home as HomeIcon,
   Calendar, 
@@ -34,6 +35,9 @@ import {
   Check
 } from 'lucide-react';
 import { OptimizedImage } from './components/OptimizedImage';
+
+// Lazy load
+const EkadashiList = lazy(() => import('./components/EkadashiList'));
 
 // cn function - classnames utility
 const cn = (...classes: (string | boolean | undefined | null)[]) => {
@@ -559,8 +563,9 @@ function Header() {
     { path: '/deities', label: 'দেব-দেবী', icon: Users },
     { path: '/quiz', label: 'কুইজ', icon: FileText },
     { path: '/gallery', label: 'ফটো গ্যালারি', icon: Image },
-    { path: '/music', label: 'ধর্মীয় গান', icon: Music },
+    { path: '/ekadashi', label: 'একাদশী', icon: Calendar },
     { path: '/pdf', label: 'PDF', icon: FileText },
+    { path: '/music', label: 'ধর্মীয় গান', icon: Music },
     { path: '/live', label: 'লাইভ TV', icon: Tv },
     { path: '/contact', label: 'যোগাযোগ', icon: Phone },
     { path: '/login', label: 'মেম্বার লগইন', icon: LogIn },
@@ -1815,21 +1820,20 @@ function GlobalLiveTVPlayer() {
     </div>
   );
 }
-// ==================== MAIN APP COMPONENT ====================
+// ========== Loading কম্পোনেন্ট ==========
+const PageLoader = () => (
+  <div className="flex justify-center items-center min-h-[50vh]">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-orange-200 rounded-full animate-spin border-t-orange-500 mx-auto"></div>
+      <p className="mt-3 text-orange-600 text-sm">লোড হচ্ছে...</p>
+    </div>
+  </div>
+);
 
-function App() {
-  return (
-    <MediaProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </MediaProvider>
-  );
-}
-
+// ========== AppContent ফাংশন ==========
 function AppContent() {
-  const { isStandalone } = usePWA(); // ডিটেক্ট করুন অ্যাপ না ব্রাউজার
- const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
+  const { isStandalone } = usePWA();
+  const [dynamicContent] = useDataLoader<any>(GITHUB_DYNAMIC_CONTENT_URL, {});
 
   return (
     <>
@@ -1848,6 +1852,12 @@ function AppContent() {
               <Route path="/shyama" element={<ShyamaPujaPage />} />
               <Route path="/saraswati" element={<SaraswatiPujaPage />} />
               <Route path="/rath" element={<RathYatraPage />} />
+              {/* ✅ একাদশী Route যোগ হলো */}
+              <Route path="/ekadashi" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EkadashiList />
+                </Suspense>
+              } />
               <Route path="/deities" element={<DeitiesPage />} />
               <Route path="/quiz" element={<QuizArchivePage />} />
               <Route path="/gallery" element={<GalleryPage />} />
@@ -1859,7 +1869,6 @@ function AppContent() {
             </Routes>
           </main>
           
-          {/* মিডিয়া প্লেয়ারগুলো আগের মতোই থাকবে */}
           <GlobalMusicPlayer />
           <GlobalLiveTVPlayer />
           
@@ -1871,12 +1880,17 @@ function AppContent() {
           <Header />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
             <Routes>
-              {/* সব রুট এখানেও থাকবে আগের মতোই */}
               <Route path="/" element={<HomePage />} />
               <Route path="/durga" element={<DurgaPujaPage />} />
               <Route path="/shyama" element={<ShyamaPujaPage />} />
               <Route path="/saraswati" element={<SaraswatiPujaPage />} />
               <Route path="/rath" element={<RathYatraPage />} />
+              {/* ✅ একাদশী Route যোগ হলো */}
+              <Route path="/ekadashi" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EkadashiList />
+                </Suspense>
+              } />
               <Route path="/deities" element={<DeitiesPage />} />
               <Route path="/quiz" element={<QuizArchivePage />} />
               <Route path="/gallery" element={<GalleryPage />} />
