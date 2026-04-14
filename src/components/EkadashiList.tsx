@@ -166,6 +166,7 @@ const EkadashiList = () => {
     .print-area { position: absolute; left: 0; top: 0; width: 100%; }
     .no-print { display: none !important; }
     .print-only { display: block !important; }
+    .min-h-screen { min-height: 0 !important; }
     .print-header { 
       background: linear-gradient(135deg, #ea580c, #f59e0b) !important; 
       color: white !important; 
