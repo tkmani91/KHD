@@ -224,7 +224,7 @@ const EkadashiList = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEntries.map((entry, idx) => (
+              {filteredEntries.map((entry) => (
                 <tr key={entry.id} className={entry.status}>
                   <td style={{textAlign:'center', fontWeight:700}}>{entry.serialBn}</td>
                   <td>{entry.bengaliDate}</td>
