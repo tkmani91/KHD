@@ -191,7 +191,7 @@ const EkadashiList = () => {
       <div className="print-area">
         <div className="print-only">
           <div className="print-header">
-            <h1>🙏 একাদশী তালিকা - {data.year} 🙏</h1>
+            <h1> একাদশী তালিকা - {data.year} </h1>
             <p>কলম হিন্দু ধর্মসভা | মোট: {stats.total} | শেষ: {stats.passed} | বাকি: {stats.remaining}</p>
           </div>
           <table className="print-table">
@@ -239,7 +239,7 @@ const EkadashiList = () => {
             {/* Title */}
             <div>
               <h1 className="text-base md:text-xl font-black tracking-wide leading-tight">
-                🙏 একাদশী তালিকা
+                
               </h1>
               <p className="text-orange-100 text-xs mt-0.5">{data.year}</p>
             </div>
@@ -264,7 +264,7 @@ const EkadashiList = () => {
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold active:scale-95 transition border border-white/20"
               >
                 <Printer className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">প্রিন্ট</span>
+                <span className="hidden sm:inline">প্রিন্ট/পিডিএফ</span>
               </button>
             </div>
           </div>
