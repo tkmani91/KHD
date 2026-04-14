@@ -239,7 +239,7 @@ const EkadashiList = () => {
             {/* Title */}
             <div>
               <h1 className="text-base md:text-xl font-black tracking-wide leading-tight">
-                
+                একাদশী তালিকা
               </h1>
               <p className="text-orange-100 text-xs mt-0.5">{data.year}</p>
             </div>
