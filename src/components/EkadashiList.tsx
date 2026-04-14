@@ -18,26 +18,11 @@ interface EkadashiData {
   entries: EkadashiEntry[];
 }
 
-// ============ স্ট্যাটাস নির্ণয় ============
 type EntryStatus = 'passed' | 'upcoming' | 'future';
-
-const getStatus = (dateStr: string): EntryStatus => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const entryDate = new Date(dateStr);
-  entryDate.setHours(0, 0, 0, 0);
-
-  if (entryDate < today) return 'passed';
-
-  // আগামী একাদশী খুঁজে বের করার জন্য এটা পরে ব্যবহার হবে
-  return 'future';
-};
 
 const findUpcomingIndex = (entries: EkadashiEntry[]): number => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   for (let i = 0; i < entries.length; i++) {
     const entryDate = new Date(entries[i].englishDate);
     entryDate.setHours(0, 0, 0, 0);
@@ -46,62 +31,75 @@ const findUpcomingIndex = (entries: EkadashiEntry[]): number => {
   return -1;
 };
 
-// ============ স্ট্যাটাস অনুযায়ী স্টাইল ============
-const getStatusStyles = (status: EntryStatus) => {
-  switch (status) {
-    case 'passed':
-      return {
-        row: 'bg-red-50 border-l-4 border-red-400',
-        serial: 'bg-red-500 text-white',
-        text: 'text-red-600 line-through opacity-70',
-        dateText: 'text-red-400',
-        vratText: 'text-red-500 font-semibold',
-        paranText: 'text-red-400',
-        badge: 'bg-red-100 text-red-600 border border-red-200',
-        badgeLabel: 'সময় শেষ',
-        icon: '🔴'
-      };
-    case 'upcoming':
-      return {
-        row: 'bg-green-50 border-l-4 border-green-500 shadow-lg shadow-green-100 ring-2 ring-green-200',
-        serial: 'bg-green-500 text-white animate-pulse',
-        text: 'text-green-700 font-bold',
-        dateText: 'text-green-600 font-semibold',
-        vratText: 'text-green-700 font-bold text-lg',
-        paranText: 'text-green-600 font-semibold',
-        badge: 'bg-green-100 text-green-700 border border-green-300',
-        badgeLabel: '⏭️ আসন্ন',
-        icon: '🟢'
-      };
-    case 'future':
-      return {
-        row: 'bg-white border-l-4 border-gray-200 hover:bg-gray-50',
-        serial: 'bg-gray-700 text-white',
-        text: 'text-gray-800',
-        dateText: 'text-gray-600',
-        vratText: 'text-gray-800 font-semibold',
-        paranText: 'text-gray-500',
-        badge: 'bg-gray-100 text-gray-600 border border-gray-200',
-        badgeLabel: 'আসছে',
-        icon: '⚫'
-      };
-  }
-};
-
-// ============ দিন গণনা ============
 const getDaysRemaining = (dateStr: string): string => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr);
   target.setHours(0, 0, 0, 0);
-
-  const diffTime = target.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+  const diffDays = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return 'আজ!';
   if (diffDays === 1) return 'আগামীকাল';
   if (diffDays > 1) return `আর ${diffDays} দিন`;
   return `${Math.abs(diffDays)} দিন আগে`;
+};
+
+// ============ রো স্টাইল ============
+const rowStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: {
+    borderBottom: '1px solid #fca5a5',
+    backgroundColor: '#fff5f5',
+  },
+  upcoming: {
+    borderBottom: '2px solid #22c55e',
+    backgroundColor: '#f0fdf4',
+    boxShadow: '0 0 0 2px #bbf7d0',
+  },
+  future: {
+    borderBottom: '1px solid #e5e7eb',
+    backgroundColor: '#ffffff',
+  },
+};
+
+const serialStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: { backgroundColor: '#ef4444', color: '#fff' },
+  upcoming: { backgroundColor: '#22c55e', color: '#fff' },
+  future: { backgroundColor: '#374151', color: '#fff' },
+};
+
+const textStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: { color: '#dc2626', textDecoration: 'line-through', opacity: 0.7 },
+  upcoming: { color: '#15803d', fontWeight: 700 },
+  future: { color: '#1f2937' },
+};
+
+const dateStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: { color: '#f87171' },
+  upcoming: { color: '#16a34a', fontWeight: 600 },
+  future: { color: '#4b5563' },
+};
+
+const paranStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: { color: '#f87171' },
+  upcoming: { color: '#16a34a', fontWeight: 600 },
+  future: { color: '#6b7280' },
+};
+
+const badgeStyle: Record<EntryStatus, React.CSSProperties> = {
+  passed: { backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5' },
+  upcoming: { backgroundColor: '#dcfce7', color: '#15803d', border: '1px solid #86efac' },
+  future: { backgroundColor: '#f3f4f6', color: '#4b5563', border: '1px solid #d1d5db' },
+};
+
+const badgeLabel: Record<EntryStatus, string> = {
+  passed: 'সময় শেষ',
+  upcoming: 'আসন্ন',
+  future: 'আসছে',
+};
+
+const statusIcon: Record<EntryStatus, string> = {
+  passed: '🔴',
+  upcoming: '🟢',
+  future: '⚫',
 };
 
 // ============ মূল কম্পোনেন্ট ============
@@ -112,7 +110,6 @@ const EkadashiList = () => {
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'passed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // ডেটা লোড
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -129,37 +126,28 @@ const EkadashiList = () => {
     fetchData();
   }, []);
 
-  // আসন্ন একাদশী ইনডেক্স
   const upcomingIndex = useMemo(() => {
     if (!data) return -1;
     return findUpcomingIndex(data.entries);
   }, [data]);
 
-  // প্রতিটি এন্ট্রির স্ট্যাটাস নির্ণয়
-  const getEntryStatus = (entry: EkadashiEntry, index: number): EntryStatus => {
+  const getEntryStatus = (index: number): EntryStatus => {
     if (index === upcomingIndex) return 'upcoming';
-    const status = getStatus(entry.englishDate);
-    if (status === 'passed') return 'passed';
-    return 'future';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const entryDate = new Date(data!.entries[index].englishDate);
+    entryDate.setHours(0, 0, 0, 0);
+    return entryDate < today ? 'passed' : 'future';
   };
 
-  // ফিল্টার ও সার্চ
   const filteredEntries = useMemo(() => {
     if (!data) return [];
-
     let entries = data.entries.map((entry, index) => ({
       ...entry,
-      status: getEntryStatus(entry, index)
+      status: getEntryStatus(index),
     }));
-
-    // ফিল্টার
-    if (filter === 'upcoming') {
-      entries = entries.filter(e => e.status === 'upcoming' || e.status === 'future');
-    } else if (filter === 'passed') {
-      entries = entries.filter(e => e.status === 'passed');
-    }
-
-    // সার্চ
+    if (filter === 'upcoming') entries = entries.filter(e => e.status !== 'passed');
+    else if (filter === 'passed') entries = entries.filter(e => e.status === 'passed');
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       entries = entries.filter(e =>
@@ -169,32 +157,20 @@ const EkadashiList = () => {
         e.day.includes(term)
       );
     }
-
     return entries;
   }, [data, filter, searchTerm, upcomingIndex]);
 
-  // পরিসংখ্যান
   const stats = useMemo(() => {
     if (!data) return { total: 0, passed: 0, remaining: 0 };
-    const passed = data.entries.filter((_, i) => {
-      const s = getEntryStatus(data.entries[i], i);
-      return s === 'passed';
-    }).length;
-    return {
-      total: data.entries.length,
-      passed,
-      remaining: data.entries.length - passed
-    };
+    const passed = data.entries.filter((_, i) => getEntryStatus(i) === 'passed').length;
+    return { total: data.entries.length, passed, remaining: data.entries.length - passed };
   }, [data, upcomingIndex]);
 
-  // আসন্ন একাদশীতে স্ক্রল
   useEffect(() => {
     if (!loading && upcomingIndex >= 0) {
       setTimeout(() => {
         const el = document.getElementById(`ekadashi-${upcomingIndex}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 500);
     }
   }, [loading, upcomingIndex]);
@@ -202,13 +178,10 @@ const EkadashiList = () => {
   // ============ লোডিং ============
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-orange-200 rounded-full animate-spin border-t-orange-500 mx-auto"></div>
-            <span className="absolute inset-0 flex items-center justify-center text-3xl">🙏</span>
-          </div>
-          <p className="mt-4 text-orange-700 font-medium text-lg">একাদশী তালিকা লোড হচ্ছে...</p>
+      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🙏</div>
+          <p style={{ color: '#c2410c', fontWeight: 600 }}>একাদশী তালিকা লোড হচ্ছে...</p>
         </div>
       </div>
     );
@@ -217,14 +190,14 @@ const EkadashiList = () => {
   // ============ এরর ============
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <span className="text-5xl">⚠️</span>
-          <h2 className="text-xl font-bold text-red-600 mt-4">ডেটা লোড করা যায়নি</h2>
-          <p className="text-gray-500 mt-2">{error}</p>
+      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ background: '#fff', borderRadius: 16, padding: 32, maxWidth: 400, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.1)' }}>
+          <div style={{ fontSize: 48 }}>⚠️</div>
+          <h2 style={{ color: '#dc2626', marginTop: 12, fontSize: 18, fontWeight: 700 }}>ডেটা লোড করা যায়নি</h2>
+          <p style={{ color: '#6b7280', marginTop: 8 }}>{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            style={{ marginTop: 16, padding: '8px 24px', background: '#f97316', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
           >
             পুনরায় চেষ্টা করুন
           </button>
@@ -233,215 +206,236 @@ const EkadashiList = () => {
     );
   }
 
+  const upcoming = upcomingIndex >= 0 ? data.entries[upcomingIndex] : null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50">
-      {/* ============ হেডার ============ */}
-      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          {/* শিরোনাম */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <span className="text-4xl">🙏</span>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-wide">
-                একাদশী তালিকা
-              </h1>
-              <span className="text-4xl">🙏</span>
-            </div>
-            <p className="text-orange-100 text-lg mt-1">{data.year}</p>
-            <div className="w-32 h-1 bg-white/40 rounded-full mx-auto mt-3"></div>
+    <div style={{ background: '#fffbf5', minHeight: '100vh', fontFamily: 'inherit' }}>
+
+      {/* ===== হেডার ===== */}
+      <div style={{ background: 'linear-gradient(135deg, #ea580c, #f59e0b, #ea580c)', color: '#fff', padding: '24px 16px 20px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <h1 style={{ fontSize: 'clamp(22px, 5vw, 32px)', fontWeight: 800, letterSpacing: 1, margin: 0 }}>
+              🙏 একাদশী তালিকা 🙏
+            </h1>
+            <p style={{ color: '#fed7aa', marginTop: 4, fontSize: 14 }}>{data.year}</p>
           </div>
 
-          {/* পরিসংখ্যান কার্ড */}
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-xs text-orange-100">মোট ব্রত/তিথি</p>
-            </div>
-            <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-red-200">{stats.passed}</p>
-              <p className="text-xs text-orange-100">সময় গেছে</p>
-            </div>
-            <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-green-200">{stats.remaining}</p>
-              <p className="text-xs text-orange-100">বাকি আছে</p>
-            </div>
+          {/* পরিসংখ্যান */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            {[
+              { label: 'মোট', value: stats.total, color: '#fff' },
+              { label: 'শেষ', value: stats.passed, color: '#fca5a5' },
+              { label: 'বাকি', value: stats.remaining, color: '#86efac' },
+            ].map(s => (
+              <div key={s.label} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.color }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: '#fed7aa' }}>{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* ============ আসন্ন একাদশী হাইলাইট ============ */}
-        {upcomingIndex >= 0 && (
-          <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-5 text-white shadow-xl shadow-green-200">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl animate-bounce">⏭️</span>
-              <h2 className="text-lg font-bold">আসন্ন একাদশী / ব্রত</h2>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-              <h3 className="text-xl font-bold">
-                {data.entries[upcomingIndex].vratName}
-              </h3>
-              <div className="flex flex-wrap gap-4 mt-2 text-green-50">
-                <span>📅 {data.entries[upcomingIndex].displayDate}</span>
-                <span>📆 {data.entries[upcomingIndex].day}</span>
+      <div style={{ maxWidth: 700, margin: '0 auto', padding: '16px 12px' }}>
+
+        {/* ===== আসন্ন একাদশী কার্ড ===== */}
+        {upcoming && (
+          <div style={{ background: 'linear-gradient(135deg, #16a34a, #059669)', borderRadius: 14, padding: 16, color: '#fff', marginBottom: 16, boxShadow: '0 4px 16px rgba(22,163,74,0.25)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, opacity: 0.9 }}>⏭️ আসন্ন একাদশী / ব্রত</div>
+            <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 10, padding: 12 }}>
+              <div style={{ fontWeight: 800, fontSize: 'clamp(15px, 4vw, 18px)', marginBottom: 6 }}>{upcoming.vratName}</div>
+              <div style={{ fontSize: 13, opacity: 0.9, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                <span>📅 {upcoming.displayDate}</span>
+                <span>📆 {upcoming.day}</span>
               </div>
-              <div className="flex flex-wrap gap-4 mt-1 text-green-50">
-                <span>🕐 পারণ: {data.entries[upcomingIndex].paranTime}</span>
-                <span className="bg-white/25 px-3 py-1 rounded-full text-sm font-semibold">
-                  {getDaysRemaining(data.entries[upcomingIndex].englishDate)}
+              <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+                <span>🕐 পারণ: {upcoming.paranTime}</span>
+                <span style={{ background: 'rgba(255,255,255,0.25)', padding: '2px 10px', borderRadius: 20, fontWeight: 700, fontSize: 12 }}>
+                  {getDaysRemaining(upcoming.englishDate)}
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {/* ============ ফিল্টার ও সার্চ ============ */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          {/* সার্চ */}
-          <div className="flex-1 relative">
+        {/* ===== সার্চ ও ফিল্টার ===== */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+          <div style={{ position: 'relative' }}>
             <input
               type="text"
               placeholder="🔍 একাদশী খুঁজুন..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border-2 border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none bg-white text-gray-700 transition"
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '10px 40px 10px 14px', borderRadius: 10, border: '2px solid #fed7aa', outline: 'none', fontSize: 14, boxSizing: 'border-box', background: '#fff' }}
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
+                style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16 }}
+              >✕</button>
             )}
           </div>
-
-          {/* ফিল্টার বাটন */}
-          <div className="flex gap-2">
-            {[
-              { key: 'all' as const, label: 'সবগুলো', icon: '📋' },
-              { key: 'upcoming' as const, label: 'আসন্ন', icon: '🟢' },
-              { key: 'passed' as const, label: 'শেষ', icon: '🔴' },
-            ].map(f => (
+          <div style={{ display: 'flex', gap: 8 }}>
+            {([
+              { key: 'all', label: '📋 সব' },
+              { key: 'upcoming', label: '🟢 আসন্ন' },
+              { key: 'passed', label: '🔴 শেষ' },
+            ] as const).map(f => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  filter === f.key
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-200 scale-105'
-                    : 'bg-white text-gray-600 border-2 border-orange-200 hover:bg-orange-50'
-                }`}
-              >
-                {f.icon} {f.label}
-              </button>
+                style={{
+                  padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '2px solid',
+                  borderColor: filter === f.key ? '#f97316' : '#fed7aa',
+                  background: filter === f.key ? '#f97316' : '#fff',
+                  color: filter === f.key ? '#fff' : '#6b7280',
+                  transition: 'all 0.2s',
+                }}
+              >{f.label}</button>
             ))}
           </div>
         </div>
 
-        {/* ============ রঙের ব্যাখ্যা ============ */}
-        <div className="flex flex-wrap gap-4 mb-6 bg-white rounded-xl p-4 shadow-sm border border-orange-100">
-          <span className="text-sm text-gray-500 font-medium">রঙের অর্থ:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-red-500"></span>
-            <span className="text-sm text-red-600">সময় শেষ</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-sm text-green-600 font-semibold">আসন্ন</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-gray-700"></span>
-            <span className="text-sm text-gray-600">আসছে</span>
-          </div>
+        {/* ===== রঙের ব্যাখ্যা ===== */}
+        <div style={{ background: '#fff', borderRadius: 10, padding: '10px 14px', marginBottom: 14, border: '1px solid #fed7aa', display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center' }}>
+          <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600 }}>রঙের অর্থ:</span>
+          {[
+            { color: '#ef4444', label: 'সময় শেষ' },
+            { color: '#22c55e', label: 'আসন্ন' },
+            { color: '#374151', label: 'আসছে' },
+          ].map(c => (
+            <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, display: 'inline-block' }}></span>
+              <span style={{ fontSize: 12, color: c.color, fontWeight: 600 }}>{c.label}</span>
+            </div>
+          ))}
         </div>
 
-        {/* ============ তালিকা ============ */}
+        {/* ===== দাগ টানা খাতার মতো তালিকা ===== */}
         {filteredEntries.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
-            <span className="text-5xl">🔍</span>
-            <p className="text-gray-500 mt-3 text-lg">কোনো একাদশী পাওয়া যায়নি</p>
+          <div style={{ textAlign: 'center', padding: '40px 0', background: '#fff', borderRadius: 12 }}>
+            <div style={{ fontSize: 40 }}>🔍</div>
+            <p style={{ color: '#6b7280', marginTop: 8 }}>কোনো একাদশী পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+
+            {/* টেবিল হেডার */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '36px 1fr auto',
+              gap: 0,
+              background: 'linear-gradient(135deg, #ea580c, #f59e0b)',
+              padding: '10px 12px',
+              alignItems: 'center',
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', textAlign: 'center' }}>ক্রঃ</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', paddingLeft: 10 }}>তারিখ • বার • ব্রতের নাম • পারণের সময়</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', textAlign: 'right' }}>অবস্থা</div>
+            </div>
+
+            {/* প্রতিটি সারি — দাগ টানা খাতার এক লাইন */}
             {filteredEntries.map((entry) => {
-              const styles = getStatusStyles(entry.status);
-              const isUpcoming = entry.status === 'upcoming';
+              const status = entry.status;
+              const isUpcoming = status === 'upcoming';
+              const originalIndex = data.entries.findIndex(e => e.id === entry.id);
 
               return (
                 <div
                   key={entry.id}
-                  id={`ekadashi-${data.entries.findIndex(e => e.id === entry.id)}`}
-                  className={`
-                    rounded-xl overflow-hidden transition-all duration-300
-                    ${styles.row}
-                    ${isUpcoming ? 'transform scale-[1.02]' : 'hover:shadow-md'}
-                  `}
+                  id={`ekadashi-${originalIndex}`}
+                  style={{
+                    ...rowStyle[status],
+                    display: 'grid',
+                    gridTemplateColumns: '36px 1fr auto',
+                    alignItems: 'center',
+                    gap: 0,
+                    padding: '10px 12px',
+                    transition: 'background 0.2s',
+                    position: 'relative',
+                  }}
                 >
-                  <div className="p-4">
-                    {/* উপরের সারি — ক্রম ও স্ট্যাটাস */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        {/* ক্রম নম্বর */}
-                        <div className={`
-                          w-10 h-10 rounded-full flex items-center justify-center
-                          text-sm font-bold ${styles.serial}
-                        `}>
-                          {entry.serialBn}
-                        </div>
+                  {/* ক্রম নম্বর */}
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <span style={{
+                      ...serialStyle[status],
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}>
+                      {entry.serialBn}
+                    </span>
+                  </div>
 
-                        {/* বাংলা তারিখ */}
-                        <div>
-                          <span className={`text-sm ${styles.dateText}`}>
-                            {entry.bengaliDate}
-                          </span>
-                          <span className={`block text-xs ${styles.dateText} opacity-75`}>
-                            {entry.displayDate}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* স্ট্যাটাস ব্যাজ */}
-                      <div className="flex items-center gap-2">
-                        <span className={`
-                          text-xs px-3 py-1 rounded-full font-medium
-                          ${styles.badge}
-                        `}>
-                          {isUpcoming
-                            ? getDaysRemaining(entry.englishDate)
-                            : styles.badgeLabel
-                          }
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* মূল তথ্য */}
-                    <div className="ml-13 pl-0 sm:pl-13">
+                  {/* মূল তথ্য — এক লাইনে */}
+                  <div style={{ paddingLeft: 10, paddingRight: 8, minWidth: 0 }}>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: '2px 8px',
+                      fontSize: 'clamp(12px, 3vw, 14px)',
+                      lineHeight: 1.5,
+                    }}>
+                      {/* তারিখ */}
+                      <span style={{ ...dateStyle[status], fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {entry.bengaliDate}
+                      </span>
+                      <span style={{ color: '#d1d5db' }}>•</span>
+                      {/* ইংরেজি তারিখ */}
+                      <span style={{ ...dateStyle[status], whiteSpace: 'nowrap', fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
+                        {entry.displayDate}
+                      </span>
+                      <span style={{ color: '#d1d5db' }}>•</span>
+                      {/* বার */}
+                      <span style={{ ...dateStyle[status], whiteSpace: 'nowrap' }}>
+                        {entry.day}
+                      </span>
+                      <span style={{ color: '#d1d5db' }}>•</span>
                       {/* ব্রতের নাম */}
-                      <h3 className={`${styles.vratText} mb-2`}>
-                        {styles.icon} {entry.vratName}
-                      </h3>
-
-                      {/* বিবরণ সারি */}
-                      <div className="flex flex-wrap gap-x-4 gap-y-1">
-                        <span className={`text-sm flex items-center gap-1 ${styles.dateText}`}>
-                          📆 {entry.day}
-                        </span>
-                        <span className={`text-sm flex items-center gap-1 ${styles.paranText}`}>
-                          🕐 পারণ: <strong>{entry.paranTime}</strong>
-                        </span>
-                      </div>
+                      <span style={{ ...textStyle[status], fontWeight: isUpcoming ? 700 : 600 }}>
+                        {statusIcon[status]} {entry.vratName}
+                      </span>
+                      <span style={{ color: '#d1d5db' }}>•</span>
+                      {/* পারণের সময় */}
+                      <span style={{ ...paranStyle[status], fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
+                        🕐 {entry.paranTime}
+                      </span>
                     </div>
                   </div>
 
-                  {/* আসন্ন একাদশী — বিশেষ ফুটার */}
+                  {/* স্ট্যাটাস ব্যাজ */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <span style={{
+                      ...badgeStyle[status],
+                      fontSize: 11,
+                      padding: '3px 8px',
+                      borderRadius: 20,
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {isUpcoming ? getDaysRemaining(entry.englishDate) : badgeLabel[status]}
+                    </span>
+                  </div>
+
+                  {/* আসন্ন হলে বাম পাশে সবুজ গ্লো */}
                   {isUpcoming && (
-                    <div className="bg-green-100 px-4 py-2 flex items-center justify-center gap-2">
-                      <span className="animate-pulse text-green-600">●</span>
-                      <span className="text-sm font-semibold text-green-700">
-                        এটি আপনার পরবর্তী একাদশী / ব্রত
-                      </span>
-                      <span className="animate-pulse text-green-600">●</span>
-                    </div>
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 4,
+                      background: '#22c55e',
+                      borderRadius: '0 2px 2px 0',
+                    }} />
                   )}
                 </div>
               );
@@ -449,16 +443,15 @@ const EkadashiList = () => {
           </div>
         )}
 
-        {/* ============ ফুটার ============ */}
-        <div className="mt-8 text-center bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
-          <p className="text-orange-600 font-medium">🙏 হরে কৃষ্ণ 🙏</p>
-          <p className="text-gray-400 text-sm mt-2">
+        {/* ===== ফুটার ===== */}
+        <div style={{ marginTop: 20, textAlign: 'center', background: '#fff', borderRadius: 12, padding: '16px 12px', border: '1px solid #fed7aa' }}>
+          <p style={{ color: '#ea580c', fontWeight: 600, margin: 0 }}>🙏 হরে কৃষ্ণ 🙏</p>
+          <p style={{ color: '#9ca3af', fontSize: 12, marginTop: 6, marginBottom: 0 }}>
             সকল তথ্য পঞ্জিকা অনুসারে সংকলিত। পারণের সময় স্থানভেদে পরিবর্তন হতে পারে।
           </p>
         </div>
 
-        {/* নিচে ফাঁকা জায়গা */}
-        <div className="h-8"></div>
+        <div style={{ height: 24 }} />
       </div>
     </div>
   );
