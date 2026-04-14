@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, X, Printer } from 'lucide-react';
+import { Printer } from 'lucide-react';
 
 interface EkadashiEntry {
   id: number;
@@ -53,7 +53,6 @@ const STATUS_CONFIG = {
     badge: 'bg-red-100 text-red-600 border border-red-200',
     badgeLabel: 'সময় শেষ',
     icon: '🔴',
-    bar: '',
   },
   upcoming: {
     row: 'bg-green-50 border-b-2 border-green-400 shadow-[0_0_0_2px_#bbf7d0]',
@@ -64,7 +63,6 @@ const STATUS_CONFIG = {
     badge: 'bg-green-100 text-green-700 border border-green-300',
     badgeLabel: 'আসন্ন',
     icon: '🟢',
-    bar: 'absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-r',
   },
   future: {
     row: 'bg-white border-b border-gray-100',
@@ -75,7 +73,6 @@ const STATUS_CONFIG = {
     badge: 'bg-gray-100 text-gray-500 border border-gray-200',
     badgeLabel: 'আসছে',
     icon: '⚫',
-    bar: '',
   },
 };
 
@@ -84,7 +81,6 @@ const EkadashiList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'passed'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetch('/data/ekadashi.json')
@@ -109,17 +105,8 @@ const EkadashiList = () => {
     let entries = data.entries.map((e, i) => ({ ...e, status: getStatus(i) }));
     if (filter === 'upcoming') entries = entries.filter(e => e.status !== 'passed');
     else if (filter === 'passed') entries = entries.filter(e => e.status === 'passed');
-    if (searchTerm.trim()) {
-      const t = searchTerm.toLowerCase();
-      entries = entries.filter(e =>
-        e.vratName.toLowerCase().includes(t) ||
-        e.displayDate.includes(t) ||
-        e.bengaliDate.includes(t) ||
-        e.day.includes(t)
-      );
-    }
     return entries;
-  }, [data, filter, searchTerm, upcomingIndex]);
+  }, [data, filter, upcomingIndex]);
 
   const stats = useMemo(() => {
     if (!data) return { total: 0, passed: 0, remaining: 0 };
@@ -143,7 +130,6 @@ const EkadashiList = () => {
     setTimeout(() => { document.title = orig; }, 1000);
   };
 
-  // ── Loading ──
   if (loading) return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="text-center">
@@ -153,7 +139,6 @@ const EkadashiList = () => {
     </div>
   );
 
-  // ── Error ──
   if (error || !data) return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-lg">
@@ -171,9 +156,7 @@ const EkadashiList = () => {
   const upcoming = upcomingIndex >= 0 ? data.entries[upcomingIndex] : null;
 
   return (
-    <div className="bg-[#fffbf5] min-h-screen font-inherit">
-
-      {/* ── Print Styles ── */}
+    <div className="bg-[#fffbf5] min-h-screen">
       <style>{`
         @media print {
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -216,11 +199,11 @@ const EkadashiList = () => {
               <tr>
                 <th style={{width:'5%'}}>ক্রঃ</th>
                 <th style={{width:'14%'}}>বাংলা তারিখ</th>
-                <th style={{width:'14%'}}>ইং তারিখ</th>
+                <th style={{width:'13%'}}>ইং তারিখ</th>
                 <th style={{width:'8%'}}>বার</th>
                 <th style={{width:'35%'}}>ব্রতের নাম</th>
                 <th style={{width:'18%'}}>পারণের সময়</th>
-                <th style={{width:'6%'}}>অবস্থা</th>
+                <th style={{width:'7%'}}>অবস্থা</th>
               </tr>
             </thead>
             <tbody>
@@ -250,52 +233,57 @@ const EkadashiList = () => {
       </div>
 
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 text-white px-4 py-5 md:py-6 no-print">
+      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 text-white px-4 py-3 no-print">
         <div className="max-w-4xl mx-auto">
-          {/* Title + Print */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between gap-3">
+            {/* Title */}
             <div>
-              <h1 className="text-xl md:text-3xl font-black tracking-wide">🙏 একাদশী তালিকা 🙏</h1>
-              <p className="text-orange-100 text-xs md:text-sm mt-0.5">{data.year}</p>
+              <h1 className="text-base md:text-xl font-black tracking-wide leading-tight">
+                🙏 একাদশী তালিকা
+              </h1>
+              <p className="text-orange-100 text-xs mt-0.5">{data.year}</p>
             </div>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs md:text-sm font-semibold active:scale-95 transition backdrop-blur-sm border border-white/20"
-            >
-              <Printer className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              <span className="hidden sm:inline">প্রিন্ট</span>
-            </button>
-          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2 md:gap-3">
-            {[
-              { label: 'মোট', value: stats.total, color: 'text-white' },
-              { label: 'শেষ', value: stats.passed, color: 'text-red-200' },
-              { label: 'বাকি', value: stats.remaining, color: 'text-green-200' },
-            ].map(s => (
-              <div key={s.label} className="bg-white/15 backdrop-blur-sm rounded-xl py-2.5 text-center border border-white/10">
-                <div className={`text-xl md:text-3xl font-black ${s.color}`}>{s.value}</div>
-                <div className="text-[11px] md:text-xs text-orange-100 mt-0.5">{s.label}</div>
+            {/* Stats + Print */}
+            <div className="flex items-center gap-2">
+              {/* Compact Stats */}
+              <div className="flex items-center gap-1.5 bg-white/15 rounded-lg px-2.5 py-1.5 text-xs">
+                <span className="text-white font-bold">{stats.total}</span>
+                <span className="text-orange-100">মোট</span>
+                <span className="text-orange-200">|</span>
+                <span className="text-red-200 font-bold">{stats.passed}</span>
+                <span className="text-orange-100">শেষ</span>
+                <span className="text-orange-200">|</span>
+                <span className="text-green-200 font-bold">{stats.remaining}</span>
+                <span className="text-orange-100">বাকি</span>
               </div>
-            ))}
+
+              {/* Print Button */}
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold active:scale-95 transition border border-white/20"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">প্রিন্ট</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 no-print">
+      <div className="max-w-4xl mx-auto px-3 md:px-4 py-3 no-print">
 
         {/* ── আসন্ন একাদশী Card ── */}
         {upcoming && (
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl md:rounded-2xl p-3.5 md:p-5 text-white mb-3 md:mb-4 shadow-lg shadow-green-200">
-            <p className="text-[11px] md:text-sm font-bold opacity-90 mb-2">⏭️ আসন্ন একাদশী / ব্রত</p>
-            <div className="bg-white/15 rounded-lg md:rounded-xl p-3 md:p-4">
-              <h3 className="font-black text-base md:text-xl mb-2">{upcoming.vratName}</h3>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs md:text-sm opacity-90">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-3 md:p-4 text-white mb-3 shadow-lg shadow-green-200/50">
+            <p className="text-[11px] font-bold opacity-90 mb-1.5">⏭️ আসন্ন একাদশী / ব্রত</p>
+            <div className="bg-white/15 rounded-lg p-2.5 md:p-3">
+              <h3 className="font-black text-sm md:text-base mb-1.5">{upcoming.vratName}</h3>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-90">
                 <span>📅 {upcoming.displayDate}</span>
                 <span>📆 {upcoming.day}</span>
                 <span>🕐 পারণ: {upcoming.paranTime}</span>
-                <span className="bg-white/25 px-2.5 py-0.5 rounded-full font-bold text-xs">
+                <span className="bg-white/25 px-2 py-0.5 rounded-full font-bold">
                   {getDaysRemaining(upcoming.englishDate)}
                 </span>
               </div>
@@ -303,62 +291,27 @@ const EkadashiList = () => {
           </div>
         )}
 
-        {/* ── Search + Filter ── */}
-        <div className="space-y-2 mb-3 md:mb-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-400" />
-            <input
-              type="text"
-              placeholder="একাদশী খুঁজুন..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-9 py-2.5 rounded-xl border-2 border-orange-200 focus:border-orange-400 outline-none text-sm bg-white"
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="flex gap-2">
-            {([
-              { key: 'all', label: '📋 সব', count: data.entries.length },
-              { key: 'upcoming', label: '🟢 আসন্ন', count: stats.remaining },
-              { key: 'passed', label: '🔴 শেষ', count: stats.passed },
-            ] as const).map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`flex-1 py-2 px-2 md:px-4 rounded-lg text-xs md:text-sm font-semibold border-2 transition active:scale-95 ${
-                  filter === f.key
-                    ? 'bg-orange-500 border-orange-500 text-white'
-                    : 'bg-white border-orange-200 text-gray-600 hover:border-orange-300'
-                }`}
-              >
-                {f.label}
-                <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                  filter === f.key ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
-                }`}>{f.count}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Color Legend ── */}
-        <div className="bg-white rounded-lg px-3 py-2 mb-3 border border-orange-100 flex flex-wrap gap-3 items-center">
-          <span className="text-[11px] text-gray-500 font-semibold">রঙের অর্থ:</span>
-          {[
-            { color: 'bg-red-500', label: 'সময় শেষ', text: 'text-red-600' },
-            { color: 'bg-green-500', label: 'আসন্ন', text: 'text-green-600' },
-            { color: 'bg-gray-700', label: 'আসছে', text: 'text-gray-600' },
-          ].map(c => (
-            <div key={c.label} className="flex items-center gap-1.5">
-              <span className={`w-2.5 h-2.5 rounded-full ${c.color}`} />
-              <span className={`text-[11px] font-semibold ${c.text}`}>{c.label}</span>
-            </div>
+        {/* ── Filter Tabs ── */}
+        <div className="flex gap-2 mb-3">
+          {([
+            { key: 'all', label: '📋 সব', count: data.entries.length },
+            { key: 'upcoming', label: '🟢 আসন্ন', count: stats.remaining },
+            { key: 'passed', label: '🔴 শেষ', count: stats.passed },
+          ] as const).map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`flex-1 py-1.5 px-2 md:px-4 rounded-lg text-xs md:text-sm font-semibold border-2 transition active:scale-95 ${
+                filter === f.key
+                  ? 'bg-orange-500 border-orange-500 text-white'
+                  : 'bg-white border-orange-200 text-gray-600 hover:border-orange-300'
+              }`}
+            >
+              {f.label}
+              <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                filter === f.key ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
+              }`}>{f.count}</span>
+            </button>
           ))}
         </div>
 
@@ -367,7 +320,7 @@ const EkadashiList = () => {
           <div className="text-center py-10 bg-white rounded-xl border border-gray-100">
             <div className="text-4xl mb-2">🔍</div>
             <p className="text-gray-500 text-sm">কোনো একাদশী পাওয়া যায়নি</p>
-            <button onClick={() => { setSearchTerm(''); setFilter('all'); }}
+            <button onClick={() => setFilter('all')}
               className="mt-3 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm active:scale-95 transition">
               সব দেখুন
             </button>
@@ -375,14 +328,12 @@ const EkadashiList = () => {
         ) : (
           <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
             {/* Table Header */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2.5 md:px-4 md:py-3">
-              {/* Mobile header */}
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-2.5">
               <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 text-white text-[11px] font-bold">
                 <div className="text-center">ক্রঃ</div>
                 <div>তারিখ • বার • ব্রত • পারণ</div>
                 <div>অবস্থা</div>
               </div>
-              {/* Desktop header */}
               <div className="hidden md:grid grid-cols-[40px_120px_120px_80px_1fr_140px_90px] gap-2 text-white text-xs font-bold">
                 <div className="text-center">ক্রঃ</div>
                 <div>বাংলা তারিখ</div>
@@ -405,7 +356,6 @@ const EkadashiList = () => {
                     id={`ekadashi-${originalIndex}`}
                     className={`relative ${cfg.row} transition-colors`}
                   >
-                    {/* Green left bar for upcoming */}
                     {entry.status === 'upcoming' && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-r" />
                     )}
@@ -463,8 +413,8 @@ const EkadashiList = () => {
         )}
 
         {/* ── Footer ── */}
-        <div className="mt-4 bg-white rounded-xl p-3 md:p-4 text-center border border-orange-100">
-          <p className="text-orange-500 font-bold text-sm md:text-base">🙏 হরে কৃষ্ণ 🙏</p>
+        <div className="mt-4 bg-white rounded-xl p-3 text-center border border-orange-100">
+          <p className="text-orange-500 font-bold text-sm">🙏 হরে কৃষ্ণ 🙏</p>
           <p className="text-gray-400 text-xs mt-1">
             সকল তথ্য পঞ্জিকা অনুসারে সংকলিত। পারণের সময় স্থানভেদে পরিবর্তন হতে পারে।
           </p>
