@@ -80,7 +80,7 @@ const EkadashiList = () => {
   const [data, setData] = useState<EkadashiData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'passed'>('all');
+  const [filter] = useState<'all' | 'upcoming' | 'passed'>('all');
 
   useEffect(() => {
     fetch('/data/ekadashi.json')
