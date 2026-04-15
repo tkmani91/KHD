@@ -102,7 +102,7 @@ interface LiveChannel {
 }
 
 // Data URL (শুধু এটা রাখুন)
-const GITHUB_DYNAMIC_CONTENT_URL = 'https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/dynamicContent.json';
+const GITHUB_DYNAMIC_CONTENT_URL = 'https://raw.githubusercontent.com/tkmani91/KHD/main/dynamicContent.json';
 
 const deities: Deity[] = [
   {
@@ -1178,7 +1178,7 @@ function QuizArchivePage() {
     const fetchQuizData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`https://cdn.jsdelivr.net/gh/tkmani91/KHD@main/quiz-archive.json?t=${Date.now()}`, { cache: 'no-store' });
+        const response = await fetch(`https://raw.githubusercontent.com/tkmani91/KHD/main/?t=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed');
         setQuizData(await response.json());
       } catch { setError('কুইজ লোড করতে সমস্যা হয়েছে।'); }
