@@ -795,7 +795,7 @@ function HomePage() {
         {latestNotices.length > 0 && (
           <div className="mt-6 text-center">
             <Link 
-              to="/" 
+              to="https://durgapuja12.vercel.app/login" 
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-medium hover:shadow-lg transition"
             >
               <Bell className="w-4 h-4" />
