@@ -912,7 +912,7 @@ function GalleryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
-  
+
   const years = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008];
   const pujaTypes = ['সব', 'দূর্গাপূজা', 'শ্যামাপূজা', 'সরস্বতী পূজা', 'রথযাত্রা'];
 
@@ -930,7 +930,7 @@ function GalleryPage() {
         const data = await response.json();
         if (!Array.isArray(data)) throw new Error('Invalid data format');
         setGalleryImages(data);
-      } catch (err) {
+      } catch {
         setError('ছবি লোড করতে সমস্যা হয়েছে।');
       } finally {
         setIsLoading(false);
@@ -954,114 +954,216 @@ function GalleryPage() {
     });
   }, [galleryImages, selectedYear, selectedPuja]);
 
+  const currentIndex = selectedImage
+    ? filteredImages.findIndex((img) => img.id === selectedImage.id)
+    : -1;
+
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return;
-    const currentIndex = filteredImages.findIndex((img) => img.id === selectedImage.id);
-    if (direction === 'prev' && currentIndex > 0) {
+    if (direction === 'prev' && currentIndex > 0)
       setSelectedImage(filteredImages[currentIndex - 1]);
-    } else if (direction === 'next' && currentIndex < filteredImages.length - 1) {
+    else if (direction === 'next' && currentIndex < filteredImages.length - 1)
       setSelectedImage(filteredImages[currentIndex + 1]);
+  };
+
+  // Swipe support for mobile
+  const touchStartX = useRef<number>(0);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      navigateImage(diff > 0 ? 'next' : 'prev');
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
+
+      {/* ── Header ── */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold gradient-text mb-2">ফটো গ্যালারি</h1>
-        <p className="text-gray-600">পূজার ছবি সংগ্রহ</p>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1 md:mb-2">ফটো গ্যালারি</h1>
+        <p className="text-gray-600 text-sm md:text-base">পূজার ছবি সংগ্রহ</p>
       </div>
 
-      <div className="bg-white rounded-2xl p-4 shadow-lg">
-        <div className="flex flex-col sm:flex-row gap-4">
+      {/* ── Filters ── */}
+      <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-4 shadow-md">
+        {/* Mobile: side by side compact */}
+        <div className="flex gap-2 md:gap-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">সাল</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+              সাল
+            </label>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
+              className="w-full px-2 md:px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm md:text-base"
             >
-              {years.map(year => (<option key={year} value={year}>{year}</option>))}
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">পূজার ধরন</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+              পূজার ধরন
+            </label>
             <select
               value={selectedPuja}
               onChange={(e) => setSelectedPuja(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none"
+              className="w-full px-2 md:px-4 py-2 rounded-xl border border-gray-200 focus:border-orange-500 outline-none text-sm md:text-base"
             >
-              {pujaTypes.map(type => (<option key={type} value={type}>{type}</option>))}
+              {pujaTypes.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
+      {/* ── Loading ── */}
       {isLoading && (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">ছবি লোড হচ্ছে...</p>
+        <div className="text-center py-12 md:py-16 bg-white rounded-2xl shadow-lg">
+          <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3 md:mb-4" />
+          <p className="text-gray-500 text-sm md:text-base">ছবি লোড হচ্ছে...</p>
         </div>
       )}
 
+      {/* ── Error ── */}
       {error && !isLoading && (
-        <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
-          <p className="text-red-500 text-lg mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-orange-500 text-white rounded-lg">
+        <div className="text-center py-10 md:py-12 bg-red-50 rounded-2xl border border-red-200">
+          <p className="text-red-500 text-sm md:text-lg mb-3 md:mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2 bg-orange-500 text-white rounded-lg text-sm active:scale-95 transition"
+          >
             🔄 আবার চেষ্টা করুন
           </button>
         </div>
       )}
 
+      {/* ── Gallery Grid ── */}
       {!isLoading && !error && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {/* Image count */}
+          {filteredImages.length > 0 && (
+            <p className="text-xs text-gray-400 text-right">
+              {filteredImages.length}টি ছবি
+            </p>
+          )}
+
+          {/* Grid - মোবাইলে ২ কলাম, ডেস্কটপে ৩-৪ কলাম */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
             {filteredImages.map((img) => (
-              <div 
-                key={img.id} 
-                onClick={() => setSelectedImage(img)} 
-                className="card-hover relative group rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100"
+              <div
+                key={img.id}
+                onClick={() => setSelectedImage(img)}
+                className="relative group rounded-xl overflow-hidden shadow-md cursor-pointer bg-gray-100 active:scale-[0.98] transition-transform"
               >
-                <OptimizedImage src={img.url} alt={img.title} className="w-full h-48"/> 
+                <OptimizedImage
+                  src={img.url}
+                  alt={img.title}
+                  className="w-full h-36 md:h-48"
+                />
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                    <p className="text-sm font-medium line-clamp-1">{img.title}</p>
-                    <p className="text-xs text-gray-300">{img.pujaType} • {img.year}</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 text-white">
+                    <p className="text-xs md:text-sm font-medium line-clamp-1">{img.title}</p>
+                    <p className="text-[10px] md:text-xs text-gray-300">{img.pujaType} • {img.year}</p>
                   </div>
+                </div>
+                {/* Mobile: always show title at bottom */}
+                <div className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p className="text-white text-[10px] font-medium line-clamp-1">{img.title}</p>
                 </div>
               </div>
             ))}
           </div>
 
+          {/* Empty State */}
           {filteredImages.length === 0 && (
-            <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
-              <p className="text-gray-500 text-lg">{selectedYear} সালের ছবি পাওয়া যায়নি</p>
+            <div className="text-center py-12 md:py-16 bg-white rounded-2xl shadow-lg">
+              <div className="text-5xl mb-3">📷</div>
+              <p className="text-gray-500 text-sm md:text-lg">
+                {selectedYear} সালের ছবি পাওয়া যায়নি
+              </p>
             </div>
           )}
         </>
       )}
 
+      {/* ── Lightbox Modal ── */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
-          <div className="relative max-w-5xl w-full" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedImage(null)} className="absolute -top-12 right-0 text-white text-3xl hover:text-orange-400">✕</button>
-            {filteredImages.findIndex((img) => img.id === selectedImage.id) > 0 && (
-              <button onClick={() => navigateImage('prev')} className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">‹</button>
-            )}
-            {filteredImages.findIndex((img) => img.id === selectedImage.id) < filteredImages.length - 1 && (
-              <button onClick={() => navigateImage('next')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-orange-400 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center">›</button>
-            )}
-            <img src={selectedImage.url} alt={selectedImage.title} className="w-full rounded-xl max-h-[80vh] object-contain" />
-            <div className="mt-4 text-center text-white">
-              <p className="font-bold text-lg">{selectedImage.title}</p>
-              <p className="text-gray-300 text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
+        <div
+          className="fixed inset-0 bg-black/95 z-50 flex flex-col"
+          onClick={() => setSelectedImage(null)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+            <div className="text-white">
+              <p className="font-bold text-sm md:text-lg">{selectedImage.title}</p>
+              <p className="text-gray-400 text-xs md:text-sm">{selectedImage.pujaType} • {selectedImage.year}</p>
             </div>
+            <div className="flex items-center gap-3">
+              {/* Counter */}
+              <span className="text-gray-400 text-xs">
+                {currentIndex + 1}/{filteredImages.length}
+              </span>
+              {/* Close */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition active:scale-95"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Image */}
+          <div
+            className="flex-1 flex items-center justify-center relative px-2 md:px-16"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Prev */}
+            {currentIndex > 0 && (
+              <button
+                onClick={() => navigateImage('prev')}
+                className="absolute left-2 md:left-4 z-10 w-10 h-10 md:w-12 md:h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center text-xl md:text-2xl active:scale-95 transition"
+              >
+                ‹
+              </button>
+            )}
+
+            <img
+              src={selectedImage.url}
+              alt={selectedImage.title}
+              className="max-w-full max-h-full rounded-lg object-contain"
+              style={{ maxHeight: 'calc(100vh - 140px)' }}
+            />
+
+            {/* Next */}
+            {currentIndex < filteredImages.length - 1 && (
+              <button
+                onClick={() => navigateImage('next')}
+                className="absolute right-2 md:right-4 z-10 w-10 h-10 md:w-12 md:h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center text-xl md:text-2xl active:scale-95 transition"
+              >
+                ›
+              </button>
+            )}
+          </div>
+
+          {/* Bottom: swipe hint (mobile only) */}
+          <div className="md:hidden text-center py-3 flex-shrink-0">
+            <p className="text-gray-500 text-xs">← সোয়াইপ করুন →</p>
           </div>
         </div>
       )}
     </div>
   );
 }
-
 function QuizArchivePage() {
   const [quizData, setQuizData] = useState<any[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(2025);
