@@ -158,7 +158,7 @@ const EkadashiList = () => {
   return (
     <div className="bg-[#fffbf5] min-h-screen">
       <style>{`
-       @media print {
+     @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
   body * { visibility: hidden; }
@@ -168,38 +168,56 @@ const EkadashiList = () => {
   .print-only { display: block !important; }
   .min-h-screen { min-height: 0 !important; }
 
+  /* ── Header ── */
   .print-header {
     background: linear-gradient(135deg, #ea580c, #f59e0b) !important;
     color: white !important;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin-bottom: 6px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .print-header-left h1 { font-size: 12px; font-weight: 800; margin: 0; line-height: 1.3; }
-  .print-header-left p { font-size: 8px; margin: 1px 0 0; opacity: 0.85; }
+  .print-header-left h1 {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.3;
+  }
+  .print-header-left p {
+    font-size: 9.5px;
+    margin: 2px 0 0;
+    opacity: 0.9;
+  }
   .print-header-stats { display: flex; gap: 6px; }
-  .print-stat-box { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 3px 8px; text-align: center; line-height: 1.3; }
-  .print-stat-box .val { font-size: 11px; font-weight: 800; display: block; }
-  .print-stat-box .lbl { font-size: 7px; opacity: 0.9; }
+  .print-stat-box {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 4px 10px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .print-stat-box .val { font-size: 14px; font-weight: 800; display: block; }
+  .print-stat-box .lbl { font-size: 8.5px; opacity: 0.9; }
 
-  .print-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  /* ── Table ── */
+  .print-table { width: 100%; border-collapse: collapse; }
   .print-table th {
     background: #1f2937 !important;
     color: white !important;
-    padding: 2.5px 4px;
-    font-size: 8.5px;
+    padding: 4px 6px;
+    font-size: 10.5px;
     border: 1px solid #374151;
-    line-height: 1.2;
+    line-height: 1.3;
+    font-weight: 700;
   }
   .print-table td {
-    padding: 1.8px 4px;
+    padding: 3px 6px;
     border: 1px solid #e5e7eb;
-    font-size: 9px;
+    font-size: 10.5px;
     vertical-align: middle;
-    line-height: 1.3;
+    line-height: 1.4;
   }
   .print-table tr.passed td {
     background: #fff5f5 !important;
@@ -216,16 +234,17 @@ const EkadashiList = () => {
     background: #f9fafb !important;
   }
 
+  /* ── Footer ── */
   .print-footer {
-    margin-top: 5px;
+    margin-top: 6px;
     text-align: center;
-    font-size: 8px;
+    font-size: 9px;
     color: #6b7280;
     border-top: 1px solid #e5e7eb;
-    padding-top: 4px;
+    padding-top: 5px;
   }
 
-  @page { size: A4 portrait; margin: 6mm; }
+  @page { size: A4 portrait; margin: 8mm; }
   tr { page-break-inside: avoid; }
   thead { display: table-header-group; }
 }
