@@ -158,106 +158,78 @@ const EkadashiList = () => {
   return (
     <div className="bg-[#fffbf5] min-h-screen">
       <style>{`
-        @media print {
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
-          body * { visibility: hidden; }
-          .print-area, .print-area * { visibility: visible; }
-          .print-area { position: absolute; left: 0; top: 0; width: 100%; }
-          .no-print { display: none !important; }
-          .print-only { display: block !important; }
-          .min-h-screen { min-height: 0 !important; }
+       @media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .min-h-screen { min-height: 0 !important; }
 
-          /* ── Print Header ── */
-          .print-header {
-            background: linear-gradient(135deg, #ea580c, #f59e0b) !important;
-            color: white !important;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
-          .print-header-left h1 {
-            font-size: 13px;
-            font-weight: 800;
-            margin: 0;
-            line-height: 1.3;
-          }
-          .print-header-left p {
-            font-size: 8px;
-            margin: 1px 0 0;
-            opacity: 0.85;
-          }
-          /* ── Stats sidebar (ডানে) ── */
-          .print-header-stats {
-            display: flex;
-            gap: 8px;
-            font-size: 9px;
-            font-weight: 700;
-          }
-          .print-stat-box {
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            padding: 3px 7px;
-            text-align: center;
-            line-height: 1.3;
-          }
-          .print-stat-box .val { font-size: 12px; font-weight: 800; display: block; }
-          .print-stat-box .lbl { font-size: 7.5px; opacity: 0.9; }
+  .print-header {
+    background: linear-gradient(135deg, #ea580c, #f59e0b) !important;
+    color: white !important;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .print-header-left h1 { font-size: 12px; font-weight: 800; margin: 0; line-height: 1.3; }
+  .print-header-left p { font-size: 8px; margin: 1px 0 0; opacity: 0.85; }
+  .print-header-stats { display: flex; gap: 6px; }
+  .print-stat-box { background: rgba(255,255,255,0.2); border-radius: 4px; padding: 3px 8px; text-align: center; line-height: 1.3; }
+  .print-stat-box .val { font-size: 11px; font-weight: 800; display: block; }
+  .print-stat-box .lbl { font-size: 7px; opacity: 0.9; }
 
-          /* ── Table ── */
-          .print-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9.5px;
-          }
-          .print-table th {
-            background: #1f2937 !important;
-            color: white !important;
-            padding: 2px 3px;
-            font-size: 9px;
-            border: 1px solid #374151;
-            line-height: 1.2;
-          }
-          .print-table td {
-            padding: 1px 3px;
-            border: 1px solid #e5e7eb;
-            font-size: 9.5px;
-            vertical-align: middle;
-            line-height: 1.25;
-          }
-          .print-table tr.passed td {
-            background: #fff5f5 !important;
-            color: #dc2626;
-            text-decoration: line-through;
-            opacity: 0.7;
-          }
-          .print-table tr.upcoming td {
-            background: #f0fdf4 !important;
-            color: #15803d;
-            font-weight: 700;
-          }
-          .print-table tr:nth-child(even):not(.passed):not(.upcoming) td {
-            background: #f9fafb !important;
-          }
+  .print-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  .print-table th {
+    background: #1f2937 !important;
+    color: white !important;
+    padding: 2.5px 4px;
+    font-size: 8.5px;
+    border: 1px solid #374151;
+    line-height: 1.2;
+  }
+  .print-table td {
+    padding: 1.8px 4px;
+    border: 1px solid #e5e7eb;
+    font-size: 9px;
+    vertical-align: middle;
+    line-height: 1.3;
+  }
+  .print-table tr.passed td {
+    background: #fff5f5 !important;
+    color: #dc2626;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .print-table tr.upcoming td {
+    background: #f0fdf4 !important;
+    color: #15803d;
+    font-weight: 700;
+  }
+  .print-table tr:nth-child(even):not(.passed):not(.upcoming) td {
+    background: #f9fafb !important;
+  }
 
-          /* ── Footer ── */
-          .print-footer {
-            margin-top: 5px;
-            text-align: center;
-            font-size: 8px;
-            color: #6b7280;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 4px;
-          }
+  .print-footer {
+    margin-top: 5px;
+    text-align: center;
+    font-size: 8px;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 4px;
+  }
 
-          @page { size: A4 portrait; margin: 5mm; }
-          tr { page-break-inside: avoid; }
-          thead { display: table-header-group; }
-        }
-        .print-only { display: none; }
+  @page { size: A4 portrait; margin: 6mm; }
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+}
+.print-only { display: none; }
       `}</style>
 
       {/* ── Print Area ── */}
