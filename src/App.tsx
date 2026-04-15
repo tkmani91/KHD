@@ -1285,37 +1285,98 @@ function PDFPage() {
   const [pdfFiles] = useDataLoader<PDFFile[]>('/data/pdfFiles.json', []);
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const categories = ['সব', 'পূজা ফর্দ', 'বিবাহ', 'শ্রাদ্ধ'];
-  const filteredFiles = selectedCategory === 'সব' ? pdfFiles : pdfFiles.filter(f => f.category === selectedCategory);
+  const filteredFiles = selectedCategory === 'সব'
+    ? pdfFiles
+    : pdfFiles.filter(f => f.category === selectedCategory);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
+      {/* ── Header ── */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold gradient-text mb-2">PDF ডাউনলোড</h1>
-        <p className="text-gray-600">প্রয়োজনীয় ফাইল</p>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1 md:mb-2">
+          PDF ডাউনলোড
+        </h1>
+        <p className="text-gray-600 text-sm md:text-base">প্রয়োজনীয় ফাইল</p>
       </div>
-      <div className="flex flex-wrap gap-2">
+
+      {/* ── Category Filter ── */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={cn(
+              "px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap flex-shrink-0 active:scale-95",
+              selectedCategory === cat
+                ? "bg-orange-500 text-white shadow-md"
+                : "bg-white text-gray-700 hover:bg-orange-50 border border-gray-100"
+            )}
+          >
+            {cat}
+          </button>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredFiles.map((file) => (
-          <div key={file.id} className="card-hover bg-white rounded-xl p-6 shadow-lg">
-            <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-              <FileText className="w-7 h-7 text-red-600" />
+
+      {/* ── PDF Grid ── */}
+      {filteredFiles.length === 0 ? (
+        <div className="text-center py-10 bg-white rounded-xl shadow-sm">
+          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500 text-sm">কোনো ফাইল পাওয়া যায়নি</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {filteredFiles.map((file) => (
+            <div
+              key={file.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-[0.99]"
+            >
+              {/* Mobile: horizontal layout */}
+              <div className="md:hidden flex items-center gap-3 p-3">
+                <div className="w-11 h-11 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm truncate">{file.title}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">{file.category} • {file.size}</p>
+                </div>
+                <a
+                  href={file.url}
+                  download
+                  className="flex-shrink-0 flex items-center gap-1 px-3 py-2 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 active:scale-95 transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  ডাউনলোড
+                </a>
+              </div>
+
+              {/* Desktop: vertical layout (আগের মতো) */}
+              <div className="hidden md:block p-6">
+                <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+                  <FileText className="w-7 h-7 text-red-600" />
+                </div>
+                <h4 className="font-semibold mb-1">{file.title}</h4>
+                <p className="text-sm text-gray-500 mb-4">{file.category} • {file.size}</p>
+                <a
+                  href={file.url}
+                  download
+                  className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                >
+                  <Download className="w-4 h-4" />
+                  ডাউনলোড
+                </a>
+              </div>
             </div>
-            <h4 className="font-semibold mb-1">{file.title}</h4>
-            <p className="text-sm text-gray-500 mb-4">{file.category} • {file.size}</p>
-            <a href={file.url} download className="flex items-center justify-center gap-2 w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-              <Download className="w-4 h-4" />ডাউনলোড
-            </a>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
-
 function LiveTVPage() {
   const [liveChannels] = useDataLoader<LiveChannel[]>('/data/liveChannels.json', []);
   const { activeChannel, setActiveChannel } = useMedia();
