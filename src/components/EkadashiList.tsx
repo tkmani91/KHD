@@ -224,13 +224,11 @@ const EkadashiList = () => {
 
       {/* ── Print Area ── */}
      <div className="print-area">
-  <div className="print-only">
-    <div className="print-header" style={{ textAlign: 'center' }}>
-      <h1>একাদশী তালিকা - {data.year}</h1>
-      <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
-    </div>
-  </div>
-</div>
+        <div className="print-only">
+          <div className="print-header" style={{ textAlign: 'center' }}>
+            <h1> একাদশী তালিকা - {data.year}</h1>
+            <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
+          </div>
           <table className="print-table">
             <thead>
               <tr>
