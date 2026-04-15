@@ -1687,14 +1687,12 @@ function LiveTVPage() {
 
   useEffect(() => {
     if (!activeChannel) return;
-
     const loadStream = async () => {
       const video = videoRef.current;
       if (!video) return;
       if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
       setLocalLoading(true);
       setLocalError(false);
-
       try {
         const Hls = (await import('hls.js')).default;
         if (Hls.isSupported()) {
@@ -1706,63 +1704,135 @@ function LiveTVPage() {
             setLocalLoading(false);
             video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
           });
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => { if (data.fatal) { setLocalError(true); setLocalLoading(false); } });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data.fatal) { setLocalError(true); setLocalLoading(false); }
+          });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = activeChannel.streamUrl;
-          video.addEventListener('loadedmetadata', () => { setLocalLoading(false); video.play().catch(() => {}); });
+          video.addEventListener('loadedmetadata', () => {
+            setLocalLoading(false);
+            video.play().catch(() => {});
+          });
         }
       } catch { setLocalError(true); setLocalLoading(false); }
     };
-
     loadStream();
     return () => { if (hlsRef.current) hlsRef.current.destroy(); };
   }, [activeChannel]);
 
   if (!activeChannel) {
-    return <div className="text-center py-12">লোড হচ্ছে...</div>;
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
+
+      {/* ── Header ── */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold gradient-text mb-2">লাইভ TV</h1>
-        <p className="text-gray-600">ধর্মীয় চ্যানেল</p>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1 md:mb-2">লাইভ TV</h1>
+        <p className="text-gray-600 text-sm md:text-base">ধর্মীয় চ্যানেল</p>
       </div>
-      
-      <div className="bg-black rounded-2xl overflow-hidden relative">
+
+      {/* ── Video Player ── */}
+      <div className="bg-black rounded-xl md:rounded-2xl overflow-hidden shadow-xl">
         <div className="aspect-video relative">
-          <video ref={videoRef} className="w-full h-full object-contain bg-black" playsInline autoPlay controls />
+          <video
+            ref={videoRef}
+            className="w-full h-full object-contain bg-black"
+            playsInline
+            autoPlay
+            controls
+          />
+
+          {/* Loading overlay */}
           {localLoading && !localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center text-white">
-                <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p>লোড হচ্ছে...</p>
+                <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <p className="text-sm md:text-base">লোড হচ্ছে...</p>
               </div>
             </div>
           )}
+
+          {/* Error overlay */}
           {localError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/90">
-              <div className="text-center text-white">
-                <p className="text-xl mb-4">📡 চ্যানেল পাওয়া যাচ্ছে না</p>
-                <button onClick={() => setActiveChannel({...activeChannel})} className="px-6 py-2 bg-orange-500 rounded-lg">আবার চেষ্টা করুন</button>
+              <div className="text-center text-white px-4">
+                <p className="text-3xl md:text-4xl mb-3">📡</p>
+                <p className="text-sm md:text-xl mb-4 font-medium">চ্যানেল পাওয়া যাচ্ছে না</p>
+                <button
+                  onClick={() => setActiveChannel({ ...activeChannel })}
+                  className="px-5 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-medium active:scale-95 transition"
+                >
+                  আবার চেষ্টা করুন
+                </button>
               </div>
             </div>
           )}
         </div>
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 flex items-center gap-2">
-          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-          <span className="text-white font-medium">🔴 LIVE: {activeChannel.name}</span>
+
+        {/* Live indicator bar */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse flex-shrink-0" />
+          <span className="text-white font-medium text-xs md:text-base truncate">
+            🔴 LIVE: {activeChannel.name}
+          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* ── Channel List ── */}
+      {/* Mobile: horizontal scroll */}
+      <div className="md:hidden">
+        <p className="text-xs text-gray-500 font-medium mb-2 px-0.5">চ্যানেল বেছে নিন</p>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {liveChannels.map((channel) => (
+            <button
+              key={channel.id}
+              onClick={() => setActiveChannel(channel)}
+              className={cn(
+                "flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-xl transition-all active:scale-95 min-w-[80px]",
+                activeChannel.id === channel.id
+                  ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg shadow-orange-200"
+                  : "bg-white text-gray-700 shadow-sm border border-gray-100"
+              )}
+            >
+              <span className="text-2xl">{channel.logo}</span>
+              <p className="font-medium text-[11px] text-center leading-tight">{channel.name}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: grid (আগের মতো) */}
+      <div className="hidden md:grid grid-cols-2 sm:grid-cols-4 gap-3">
         {liveChannels.map((channel) => (
-          <button key={channel.id} onClick={() => setActiveChannel(channel)} className={cn("p-4 rounded-xl text-center transition-all", activeChannel.id === channel.id ? "bg-gradient-to-br from-orange-500 to-red-500 text-white" : "bg-white hover:bg-orange-50")}>
+          <button
+            key={channel.id}
+            onClick={() => setActiveChannel(channel)}
+            className={cn(
+              "p-4 rounded-xl text-center transition-all",
+              activeChannel.id === channel.id
+                ? "bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg"
+                : "bg-white hover:bg-orange-50 shadow-sm"
+            )}
+          >
             <div className="text-3xl mb-2">{channel.logo}</div>
             <p className="font-medium text-sm">{channel.name}</p>
           </button>
         ))}
       </div>
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
