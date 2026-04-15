@@ -347,42 +347,7 @@ const EkadashiList = () => {
           </div>
         )}
 
-        {/* Filter Tabs */}
-        <div className="flex gap-2 mb-4">
-          {([
-            { key: 'all', label: '📋 সব', count: data.entries.length },
-            { key: 'upcoming', label: '🟢 আসন্ন', count: stats.remaining },
-            { key: 'passed', label: '🔴 শেষ', count: stats.passed },
-          ] as const).map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`flex-1 py-2 px-2 md:px-4 rounded-lg text-xs md:text-sm font-semibold border-2 transition active:scale-95 ${
-                filter === f.key
-                  ? 'bg-orange-500 border-orange-500 text-white'
-                  : 'bg-white border-orange-200 text-gray-600 hover:border-orange-300'
-              }`}
-            >
-              {f.label}
-              <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                filter === f.key ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-500'
-              }`}>{f.count}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* List */}
-        {filteredEntries.length === 0 ? (
-          <div className="text-center py-10 bg-white rounded-xl border border-gray-100">
-            <div className="text-4xl mb-2">🔍</div>
-            <p className="text-gray-500 text-sm">কোনো একাদশী পাওয়া যায়নি</p>
-            <button onClick={() => setFilter('all')}
-              className="mt-3 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm active:scale-95 transition">
-              সব দেখুন
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+      
             {/* Table Header */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-3">
               <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 text-white text-[11px] font-bold">
