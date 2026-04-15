@@ -234,7 +234,7 @@ const EkadashiList = () => {
     padding-top: 5px;
   }
 
-  @page { size: A4 portrait; margin: 7mm; }
+  @page { size: A4 portrait; margin: 5mm; }
   tr { page-break-inside: avoid; }
   thead { display: table-header-group; }
 }
