@@ -263,7 +263,7 @@ const EkadashiList = () => {
 
       {/* ── Screen Header ── */}
       <div className="no-print">
-        <div className="max-w-5xl mx-auto px-4 py-4 md:py-6">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
 
           {/* মোবাইল */}
           <div className="flex items-center justify-between gap-3 md:hidden">
@@ -327,7 +327,7 @@ const EkadashiList = () => {
       </div>
 
       {/* ── Main Content ── */}
-      <div className="max-w-5xl mx-auto px-3 md:px-4 pb-6 no-print">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 pb-6 no-print">
 
         {/* আসন্ন একাদশী Card */}
         {upcoming && (
