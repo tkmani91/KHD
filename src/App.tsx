@@ -1172,7 +1172,10 @@ function MusicPage() {
   const { currentSong, isPlaying, isLoading, progress, duration, currentTime, volume, setVolume, playSong, togglePlayPause, skipForward, skipBack, seekTo } = useMedia();
 
   const categories = ['সব', 'দূর্গা পূজা স্পেশাল', 'শ্যামা সংগীত', 'ভজন', 'মহামন্ত্র'];
-  const filteredSongs = useMemo(() => selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory), [songs, selectedCategory]);
+  const filteredSongs = useMemo(() =>
+    selectedCategory === 'সব' ? songs : songs.filter(s => s.category === selectedCategory),
+    [songs, selectedCategory]
+  );
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
@@ -1202,81 +1205,270 @@ function MusicPage() {
     setTimeout(() => setDownloadingId(null), 1000);
   };
 
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
+
+      {/* ── Page Title ── */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold gradient-text mb-2">ধর্মীয় গান</h1>
-        <p className="text-gray-600">পবিত্র ভজন ও সংগীত</p>
+        <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-1 md:mb-2">ধর্মীয় গান</h1>
+        <p className="text-gray-600 text-sm md:text-base">পবিত্র ভজন ও সংগীত</p>
       </div>
 
+      {/* ── Now Playing Bar ── */}
       {currentSong && (
-        <div className="rounded-2xl p-6 text-white sticky top-20 z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
-              {isLoading ? (<div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />)
-                : isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>)
-                : (<Music className="w-8 h-8" />)}
+        <div className={cn(
+          "rounded-2xl text-white z-40 bg-gradient-to-r from-orange-600 to-red-600 shadow-2xl",
+          // মোবাইল অ্যাপ: bottom fixed (Spotify style)
+          isStandalone
+            ? "fixed bottom-20 left-0 right-0 mx-0 rounded-none rounded-t-2xl px-4 py-3"
+            : "sticky top-20 p-4 md:p-6"
+        )}>
+
+          {/* ── Desktop Player ── */}
+          <div className="hidden md:block">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                {isLoading ? (
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <div className="flex items-center gap-0.5">
+                    <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
+                    <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                ) : (
+                  <Music className="w-8 h-8" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
+                <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={skipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+                  <SkipBack className="w-5 h-5" />
+                </button>
+                <button onClick={togglePlayPause} disabled={isLoading}
+                  className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 disabled:opacity-50 transition">
+                  {isLoading ? <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                    : isPlaying ? <Pause className="w-6 h-6" />
+                    : <Play className="w-6 h-6 ml-1" />}
+                </button>
+                <button onClick={skipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+                  <SkipForward className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5" />
+                <input type="range" min="0" max="1" step="0.01" value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-lg truncate">{currentSong.title}</h3>
-              <p className="text-orange-100 text-sm truncate">{currentSong.artist}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={skipBack} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipBack className="w-5 h-5" /></button>
-              <button onClick={togglePlayPause} disabled={isLoading} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 disabled:opacity-50">
-                {isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : isPlaying ? (<Pause className="w-6 h-6" />) : (<Play className="w-6 h-6 ml-1" />)}
-              </button>
-              <button onClick={skipForward} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"><SkipForward className="w-5 h-5" /></button>
-            </div>
-            <div className="hidden md:flex items-center gap-2">
-              <Volume2 className="w-5 h-5" />
-              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer" />
+            <div className="mt-4 flex items-center gap-3">
+              <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
+              <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
+                <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+              </div>
+              <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-xs text-orange-200 w-10 text-right">{formatTime(currentTime)}</span>
-            <div className="flex-1 h-2 bg-white/20 rounded-full cursor-pointer" onClick={handleProgressClick}>
-              <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+
+          {/* ── Mobile Player (Spotify Style) ── */}
+          <div className="md:hidden">
+            {/* Song info + controls */}
+            <div className="flex items-center gap-3">
+              {/* Album art / equalizer */}
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <div className="flex items-center gap-0.5">
+                    <div className="w-0.5 h-3 bg-white rounded-full animate-bounce" />
+                    <div className="w-0.5 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-0.5 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                ) : (
+                  <Music className="w-5 h-5" />
+                )}
+              </div>
+
+              {/* Title + Artist */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-sm truncate">{currentSong.title}</h3>
+                <p className="text-orange-200 text-xs truncate">{currentSong.artist}</p>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button onClick={skipBack}
+                  className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition">
+                  <SkipBack className="w-4 h-4" />
+                </button>
+                <button onClick={togglePlayPause} disabled={isLoading}
+                  className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 hover:scale-105 disabled:opacity-50 transition shadow-lg">
+                  {isLoading
+                    ? <div className="w-5 h-5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                    : isPlaying
+                    ? <Pause className="w-5 h-5" />
+                    : <Play className="w-5 h-5 ml-0.5" />}
+                </button>
+                <button onClick={skipForward}
+                  className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition">
+                  <SkipForward className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <span className="text-xs text-orange-200 w-10">{formatTime(duration)}</span>
+
+            {/* Progress bar */}
+            <div className="flex items-center gap-2 mt-2.5">
+              <span className="text-[10px] text-orange-200 w-8 text-right">{formatTime(currentTime)}</span>
+              <div className="flex-1 h-1.5 bg-white/25 rounded-full cursor-pointer" onClick={handleProgressClick}>
+                <div className="h-full bg-white rounded-full transition-all" style={{ width: `${progress}%` }} />
+              </div>
+              <span className="text-[10px] text-orange-200 w-8">{formatTime(duration)}</span>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      {/* মোবাইলে player এর জন্য space */}
+      {currentSong && isStandalone && <div className="h-24 md:h-0" />}
+
+      {/* ── Category Filter ── */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {categories.map(cat => (
-          <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-full text-sm font-medium transition", selectedCategory === cat ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-orange-50")}>{cat}</button>
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={cn(
+              "px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap flex-shrink-0 active:scale-95",
+              selectedCategory === cat
+                ? "bg-orange-500 text-white shadow-md"
+                : "bg-white text-gray-700 hover:bg-orange-50 border border-gray-100"
+            )}
+          >
+            {cat}
+          </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* ── Song List ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
         {filteredSongs.map((song, index) => (
-          <div key={song.id} onClick={() => playSong(song, index, filteredSongs)} className={cn("card-hover bg-white rounded-xl p-4 flex items-center gap-4 cursor-pointer transition-all", currentSong?.id === song.id && "ring-2 ring-orange-500 bg-orange-50")}>
-            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all", currentSong?.id === song.id && isPlaying ? "bg-gradient-to-br from-orange-500 to-red-500" : "bg-orange-100")}>
-              {currentSong?.id === song.id && isLoading ? (<div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />)
-                : currentSong?.id === song.id && isPlaying ? (<div className="flex items-center gap-0.5"><div className="w-1 h-4 bg-white rounded-full animate-bounce" /><div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /></div>)
-                : (<Music className="w-6 h-6 text-orange-600" />)}
+          <div
+            key={song.id}
+            onClick={() => playSong(song, index, filteredSongs)}
+            className={cn(
+              "bg-white rounded-xl cursor-pointer transition-all active:scale-[0.99]",
+              "hover:shadow-md",
+              currentSong?.id === song.id
+                ? "ring-2 ring-orange-500 bg-orange-50 shadow-md"
+                : "shadow-sm"
+            )}
+          >
+            {/* Mobile Row */}
+            <div className="md:hidden flex items-center gap-3 px-3 py-2.5">
+              {/* Icon */}
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
+                currentSong?.id === song.id && isPlaying
+                  ? "bg-gradient-to-br from-orange-500 to-red-500"
+                  : "bg-orange-100"
+              )}>
+                {currentSong?.id === song.id && isLoading ? (
+                  <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : currentSong?.id === song.id && isPlaying ? (
+                  <div className="flex items-center gap-0.5">
+                    <div className="w-0.5 h-3 bg-white rounded-full animate-bounce" />
+                    <div className="w-0.5 h-4 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  </div>
+                ) : (
+                  <Music className="w-5 h-5 text-orange-600" />
+                )}
+              </div>
+
+              {/* Title + Artist */}
+              <div className="flex-1 min-w-0">
+                <h4 className={cn(
+                  "font-semibold text-sm truncate",
+                  currentSong?.id === song.id ? "text-orange-600" : "text-gray-800"
+                )}>
+                  {song.title}
+                </h4>
+                <p className="text-xs text-gray-500 truncate">{song.artist}</p>
+              </div>
+
+              {/* Duration + Download */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-gray-400">{song.duration}</span>
+                <button
+                  onClick={(e) => handleDownload(e, song)}
+                  disabled={downloadingId === song.id}
+                  className="w-7 h-7 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200 active:scale-95 transition"
+                >
+                  {downloadingId === song.id
+                    ? <div className="w-3.5 h-3.5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                    : <Download className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold truncate">{song.title}</h4>
-              <p className="text-sm text-gray-500 truncate">{song.artist}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-400">{song.duration}</span>
-              <button onClick={(e) => handleDownload(e, song)} disabled={downloadingId === song.id} className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200">
-                {downloadingId === song.id ? (<div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />) : (<Download className="w-4 h-4" />)}
-              </button>
+
+            {/* Desktop Row (আগের মতো) */}
+            <div className="hidden md:flex items-center gap-4 p-4">
+              <div className={cn(
+                "w-14 h-14 rounded-xl flex items-center justify-center transition-all flex-shrink-0",
+                currentSong?.id === song.id && isPlaying
+                  ? "bg-gradient-to-br from-orange-500 to-red-500"
+                  : "bg-orange-100"
+              )}>
+                {currentSong?.id === song.id && isLoading ? (
+                  <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                ) : currentSong?.id === song.id && isPlaying ? (
+                  <div className="flex items-center gap-0.5">
+                    <div className="w-1 h-4 bg-white rounded-full animate-bounce" />
+                    <div className="w-1 h-6 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  </div>
+                ) : (
+                  <Music className="w-6 h-6 text-orange-600" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold truncate">{song.title}</h4>
+                <p className="text-sm text-gray-500 truncate">{song.artist}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-400">{song.duration}</span>
+                <button
+                  onClick={(e) => handleDownload(e, song)}
+                  disabled={downloadingId === song.id}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-orange-100 text-orange-600 hover:bg-orange-200 transition"
+                >
+                  {downloadingId === song.id
+                    ? <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                    : <Download className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* ── Empty State ── */}
       {filteredSongs.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
-          <Music className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-500">এই ক্যাটাগরিতে গান নেই</p>
+        <div className="text-center py-10 md:py-12 bg-white rounded-2xl shadow-lg">
+          <Music className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 text-gray-300" />
+          <p className="text-gray-500 text-sm md:text-base">এই ক্যাটাগরিতে গান নেই</p>
         </div>
       )}
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
