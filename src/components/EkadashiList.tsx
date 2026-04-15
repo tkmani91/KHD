@@ -226,7 +226,7 @@ const EkadashiList = () => {
       <div className="print-area">
         <div className="print-only">
           <div className="print-header">
-            <h1>🙏 একাদশী তালিকা - {data.year}</h1>
+            <h1> একাদশী তালিকা - {data.year}</h1>
             <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
           </div>
           <table className="print-table">
@@ -268,7 +268,7 @@ const EkadashiList = () => {
           {/* মোবাইল */}
           <div className="flex items-center justify-between gap-3 md:hidden">
             <div>
-              <h1 className="text-base font-black gradient-text">🙏 একাদশী তালিকা</h1>
+              <h1 className="text-base font-black gradient-text">একাদশী তালিকা</h1>
               <p className="text-gray-500 text-[11px] mt-0.5">{data.year}</p>
             </div>
             <div className="flex items-center gap-2">
