@@ -157,102 +157,144 @@ const EkadashiList = () => {
 
   return (
     <div className="bg-[#fffbf5] min-h-screen">
-     <style>{`
-  @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
-    body * { visibility: hidden; }
-    .print-area, .print-area * { visibility: visible; }
-    .print-area { position: absolute; left: 0; top: 0; width: 100%; }
-    .no-print { display: none !important; }
-    .print-only { display: block !important; }
-    .min-h-screen { min-height: 0 !important; }
-    .print-header { 
-      background: linear-gradient(135deg, #ea580c, #f59e0b) !important; 
-      color: white !important; 
-      padding: 6px 12px; 
-      border-radius: 6px; 
-      margin-bottom: 6px; 
-      text-align: center; 
-    }
-    .print-header h1 { font-size: 13px; font-weight: 800; margin: 0; }
-    .print-header p { font-size: 9px; margin: 2px 0 0; opacity: 0.9; }
-    .print-table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      font-size: 9px; 
-    }
-    .print-table th { 
-      background: #1f2937 !important; 
-      color: white !important; 
-      padding: 3px 4px; 
-      font-size: 9px; 
-      border: 1px solid #374151;
-      line-height: 1.2;
-    }
-    .print-table td { 
-      padding: 1.5px 4px; 
-      border: 1px solid #e5e7eb; 
-      font-size: 9px; 
-      vertical-align: middle;
-      line-height: 1.3;
-    }
-    .print-table tr.passed td { 
-      background: #fff5f5 !important; 
-      color: #dc2626; 
-      text-decoration: line-through; 
-      opacity: 0.7; 
-    }
-    .print-table tr.upcoming td { 
-      background: #f0fdf4 !important; 
-      color: #15803d; 
-      font-weight: 700; 
-    }
-    .print-table tr:nth-child(even):not(.passed):not(.upcoming) td { 
-      background: #f9fafb !important; 
-    }
-    .print-badge { 
-      padding: 0px 4px; 
-      border-radius: 8px; 
-      font-size: 8px; 
-      font-weight: 700; 
-      white-space: nowrap;
-    }
-    .print-badge.passed { background: #fee2e2 !important; color: #dc2626 !important; }
-    .print-badge.upcoming { background: #dcfce7 !important; color: #15803d !important; }
-    .print-badge.future { background: #f3f4f6 !important; color: #4b5563 !important; }
-    .print-footer { 
-      margin-top: 8px; 
-      text-align: center; 
-      font-size: 9px; 
-      color: #6b7280; 
-      border-top: 1px solid #e5e7eb; 
-      padding-top: 6px; 
-    }
-    @page { size: A4 portrait; margin: 6mm; }
-    tr { page-break-inside: avoid; }
-    thead { display: table-header-group; }
-  }
-  .print-only { display: none; }
-`}</style>
+      <style>{`
+        @media print {
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
+          body * { visibility: hidden; }
+          .print-area, .print-area * { visibility: visible; }
+          .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          .min-h-screen { min-height: 0 !important; }
+
+          /* ── Print Header ── */
+          .print-header {
+            background: linear-gradient(135deg, #ea580c, #f59e0b) !important;
+            color: white !important;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .print-header-left h1 {
+            font-size: 13px;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.3;
+          }
+          .print-header-left p {
+            font-size: 8px;
+            margin: 1px 0 0;
+            opacity: 0.85;
+          }
+          /* ── Stats sidebar (ডানে) ── */
+          .print-header-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 9px;
+            font-weight: 700;
+          }
+          .print-stat-box {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            padding: 3px 7px;
+            text-align: center;
+            line-height: 1.3;
+          }
+          .print-stat-box .val { font-size: 12px; font-weight: 800; display: block; }
+          .print-stat-box .lbl { font-size: 7.5px; opacity: 0.9; }
+
+          /* ── Table ── */
+          .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9.5px;
+          }
+          .print-table th {
+            background: #1f2937 !important;
+            color: white !important;
+            padding: 2px 3px;
+            font-size: 9px;
+            border: 1px solid #374151;
+            line-height: 1.2;
+          }
+          .print-table td {
+            padding: 1px 3px;
+            border: 1px solid #e5e7eb;
+            font-size: 9.5px;
+            vertical-align: middle;
+            line-height: 1.25;
+          }
+          .print-table tr.passed td {
+            background: #fff5f5 !important;
+            color: #dc2626;
+            text-decoration: line-through;
+            opacity: 0.7;
+          }
+          .print-table tr.upcoming td {
+            background: #f0fdf4 !important;
+            color: #15803d;
+            font-weight: 700;
+          }
+          .print-table tr:nth-child(even):not(.passed):not(.upcoming) td {
+            background: #f9fafb !important;
+          }
+
+          /* ── Footer ── */
+          .print-footer {
+            margin-top: 5px;
+            text-align: center;
+            font-size: 8px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 4px;
+          }
+
+          @page { size: A4 portrait; margin: 5mm; }
+          tr { page-break-inside: avoid; }
+          thead { display: table-header-group; }
+        }
+        .print-only { display: none; }
+      `}</style>
 
       {/* ── Print Area ── */}
       <div className="print-area">
         <div className="print-only">
+          {/* Header: বাঁয়ে title, ডানে stats */}
           <div className="print-header">
-            <h1> একাদশী তালিকা - {data.year} </h1>
-            <p>কলম হিন্দু ধর্মসভা | মোট: {stats.total} | শেষ: {stats.passed} | বাকি: {stats.remaining}</p>
+            <div className="print-header-left">
+              <h1>🙏 একাদশী তালিকা - {data.year}</h1>
+              <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
+            </div>
+            <div className="print-header-stats">
+              <div className="print-stat-box">
+                <span className="val">{stats.total}</span>
+                <span className="lbl">মোট</span>
+              </div>
+              <div className="print-stat-box">
+                <span className="val">{stats.passed}</span>
+                <span className="lbl">শেষ</span>
+              </div>
+              <div className="print-stat-box">
+                <span className="val">{stats.remaining}</span>
+                <span className="lbl">বাকি</span>
+              </div>
+            </div>
           </div>
+
+          {/* Table — অবস্থা কলাম নেই */}
           <table className="print-table">
             <thead>
               <tr>
-                <th style={{width:'5%'}}>ক্রঃ</th>
-                <th style={{width:'14%'}}>বাংলা তারিখ</th>
+                <th style={{width:'4%'}}>ক্রঃ</th>
+                <th style={{width:'13%'}}>বাংলা তারিখ</th>
                 <th style={{width:'13%'}}>ইং তারিখ</th>
                 <th style={{width:'8%'}}>বার</th>
-                <th style={{width:'35%'}}>ব্রতের নাম</th>
-                <th style={{width:'18%'}}>পারণের সময়</th>
-                <th style={{width:'7%'}}>অবস্থা</th>
+                <th style={{width:'43%'}}>ব্রতের নাম</th>
+                <th style={{width:'19%'}}>পারণের সময়</th>
               </tr>
             </thead>
             <tbody>
@@ -265,70 +307,105 @@ const EkadashiList = () => {
                   <td style={{fontWeight: entry.status === 'upcoming' ? 700 : 400}}>
                     {STATUS_CONFIG[entry.status].icon} {entry.vratName}
                   </td>
-                  <td>🕐 {entry.paranTime}</td>
-                  <td style={{textAlign:'center'}}>
-                    <span className={`print-badge ${entry.status}`}>
-                      {entry.status === 'upcoming' ? getDaysRemaining(entry.englishDate) : STATUS_CONFIG[entry.status].badgeLabel}
-                    </span>
-                  </td>
+                  <td>{entry.paranTime}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+
           <div className="print-footer">
-            <p>🙏 হরে কৃষ্ণ 🙏 | সকল তথ্য পঞ্জিকা অনুসারে | প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}</p>
+            <p>🙏 হরে কৃষ্ণ 🙏 | সকল তথ্য পঞ্জিকা অনুসারে সংকলিত | প্রিন্টের তারিখ: {new Date().toLocaleDateString('bn-BD')}</p>
           </div>
         </div>
       </div>
 
-      {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 text-white px-4 py-3 no-print">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between gap-3">
-            {/* Title */}
-            <div>
-              <h1 className="text-base md:text-xl font-black tracking-wide leading-tight">
-                একাদশী তালিকা
-              </h1>
-              <p className="text-orange-100 text-xs mt-0.5">{data.year}</p>
-            </div>
-
-            {/* Stats + Print */}
-            <div className="flex items-center gap-2">
-              {/* Compact Stats */}
-              <div className="flex items-center gap-1.5 bg-white/15 rounded-lg px-2.5 py-1.5 text-xs">
-                <span className="text-white font-bold">{stats.total}</span>
-                <span className="text-orange-100">মোট</span>
-                <span className="text-orange-200">|</span>
-                <span className="text-red-200 font-bold">{stats.passed}</span>
-                <span className="text-orange-100">শেষ</span>
-                <span className="text-orange-200">|</span>
-                <span className="text-green-200 font-bold">{stats.remaining}</span>
-                <span className="text-orange-100">বাকি</span>
+      {/* ══════════════════════════════════════
+          ── Screen Header (নতুন ডিজাইন) ──
+          ══════════════════════════════════════ */}
+      <div className="no-print">
+        {/* Top gradient banner */}
+        <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 text-white">
+          <div className="max-w-5xl mx-auto px-4 py-4 md:py-6">
+            {/* মোবাইল layout */}
+            <div className="flex items-center justify-between gap-3 md:hidden">
+              <div>
+                <h1 className="text-base font-black tracking-wide leading-tight">
+                  🙏 একাদশী তালিকা
+                </h1>
+                <p className="text-orange-100 text-[11px] mt-0.5">{data.year}</p>
               </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-white/15 rounded-lg px-2 py-1.5 text-[11px]">
+                  <span className="text-white font-bold">{stats.total}</span>
+                  <span className="text-orange-100">মোট</span>
+                  <span className="text-orange-200">|</span>
+                  <span className="text-red-200 font-bold">{stats.passed}</span>
+                  <span className="text-orange-100">শেষ</span>
+                  <span className="text-orange-200">|</span>
+                  <span className="text-green-200 font-bold">{stats.remaining}</span>
+                  <span className="text-orange-100">বাকি</span>
+                </div>
+                <button onClick={handlePrint}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold active:scale-95 transition border border-white/20">
+                  <Printer className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
 
-              {/* Print Button */}
-              <button
-                onClick={handlePrint}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-semibold active:scale-95 transition border border-white/20"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">প্রিন্ট/PDF</span>
-              </button>
+            {/* ডেস্কটপ layout — বড় সুন্দর হেডার */}
+            <div className="hidden md:block">
+              <div className="flex items-center justify-between gap-6">
+                {/* বাঁয়ে: icon + title */}
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
+                    🙏
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-black tracking-wide leading-tight">
+                      একাদশী ও বিশেষ ব্রত তালিকা
+                    </h1>
+                    <p className="text-orange-100 text-sm mt-1 font-medium">{data.year}</p>
+                    <p className="text-orange-200 text-xs mt-0.5">কলম হিন্দু ধর্মসভা • কলম, সিংড়া, নাটোর</p>
+                  </div>
+                </div>
+
+                {/* ডানে: stats + print */}
+                <div className="flex items-center gap-3">
+                  {/* Stats cards */}
+                  {[
+                    { label: 'মোট ব্রত', value: stats.total, color: 'text-white', bg: 'bg-white/15' },
+                    { label: 'সম্পন্ন', value: stats.passed, color: 'text-red-200', bg: 'bg-white/10' },
+                    { label: 'বাকি', value: stats.remaining, color: 'text-green-200', bg: 'bg-white/10' },
+                  ].map(s => (
+                    <div key={s.label} className={`${s.bg} rounded-xl px-4 py-2.5 text-center border border-white/10`}>
+                      <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
+                      <div className="text-orange-100 text-xs mt-0.5">{s.label}</div>
+                    </div>
+                  ))}
+
+                  {/* Print button */}
+                  <button onClick={handlePrint}
+                    className="flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-semibold active:scale-95 transition border border-white/20 shadow-lg">
+                    <Printer className="w-4 h-4" />
+                    প্রিন্ট/PDF
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-3 md:px-4 py-3 no-print">
+      {/* ── Main Content ── */}
+      <div className="max-w-5xl mx-auto px-3 md:px-4 py-3 no-print">
 
-        {/* ── আসন্ন একাদশী Card ── */}
+        {/* আসন্ন একাদশী Card */}
         {upcoming && (
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-3 md:p-4 text-white mb-3 shadow-lg shadow-green-200/50">
-            <p className="text-[11px] font-bold opacity-90 mb-1.5">⏭️ আসন্ন একাদশী / ব্রত</p>
-            <div className="bg-white/15 rounded-lg p-2.5 md:p-3">
-              <h3 className="font-black text-sm md:text-base mb-1.5">{upcoming.vratName}</h3>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-90">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl p-3 md:p-5 text-white mb-3 shadow-lg shadow-green-200/50">
+            <p className="text-[11px] md:text-xs font-bold opacity-90 mb-1.5">⏭️ আসন্ন একাদশী / ব্রত</p>
+            <div className="bg-white/15 rounded-lg p-2.5 md:p-4">
+              <h3 className="font-black text-sm md:text-lg mb-1.5">{upcoming.vratName}</h3>
+              <div className="flex flex-wrap gap-x-3 md:gap-x-5 gap-y-1 text-xs md:text-sm opacity-90">
                 <span>📅 {upcoming.displayDate}</span>
                 <span>📆 {upcoming.day}</span>
                 <span>🕐 পারণ: {upcoming.paranTime}</span>
@@ -340,7 +417,7 @@ const EkadashiList = () => {
           </div>
         )}
 
-        {/* ── Filter Tabs ── */}
+        {/* Filter Tabs */}
         <div className="flex gap-2 mb-3">
           {([
             { key: 'all', label: '📋 সব', count: data.entries.length },
@@ -350,7 +427,7 @@ const EkadashiList = () => {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`flex-1 py-1.5 px-2 md:px-4 rounded-lg text-xs md:text-sm font-semibold border-2 transition active:scale-95 ${
+              className={`flex-1 py-1.5 md:py-2 px-2 md:px-4 rounded-lg text-xs md:text-sm font-semibold border-2 transition active:scale-95 ${
                 filter === f.key
                   ? 'bg-orange-500 border-orange-500 text-white'
                   : 'bg-white border-orange-200 text-gray-600 hover:border-orange-300'
@@ -364,7 +441,7 @@ const EkadashiList = () => {
           ))}
         </div>
 
-        {/* ── List ── */}
+        {/* List */}
         {filteredEntries.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-xl border border-gray-100">
             <div className="text-4xl mb-2">🔍</div>
@@ -377,13 +454,14 @@ const EkadashiList = () => {
         ) : (
           <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
             {/* Table Header */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-2.5">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-3">
               <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 text-white text-[11px] font-bold">
                 <div className="text-center">ক্রঃ</div>
                 <div>তারিখ • বার • ব্রত • পারণ</div>
                 <div>অবস্থা</div>
               </div>
-              <div className="hidden md:grid grid-cols-[40px_120px_120px_80px_1fr_140px_90px] gap-2 text-white text-xs font-bold">
+              {/* ডেস্কটপে বড় column */}
+              <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 text-white text-sm font-bold">
                 <div className="text-center">ক্রঃ</div>
                 <div>বাংলা তারিখ</div>
                 <div>ইং তারিখ</div>
@@ -394,7 +472,6 @@ const EkadashiList = () => {
               </div>
             </div>
 
-            {/* Rows */}
             <div className="divide-y divide-gray-100">
               {filteredEntries.map((entry) => {
                 const cfg = STATUS_CONFIG[entry.status];
@@ -434,10 +511,10 @@ const EkadashiList = () => {
                       </div>
                     </div>
 
-                    {/* Desktop Row */}
-                    <div className="hidden md:grid grid-cols-[40px_120px_120px_80px_1fr_140px_90px] gap-2 px-4 py-3 items-center">
+                    {/* Desktop Row — বড় font */}
+                    <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 px-4 py-2.5 items-center">
                       <div className="flex justify-center">
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${cfg.serial}`}>
+                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${cfg.serial}`}>
                           {entry.serialBn}
                         </span>
                       </div>
@@ -461,10 +538,10 @@ const EkadashiList = () => {
           </div>
         )}
 
-        {/* ── Footer ── */}
-        <div className="mt-4 bg-white rounded-xl p-3 text-center border border-orange-100">
-          <p className="text-orange-500 font-bold text-sm">🙏 হরে কৃষ্ণ 🙏</p>
-          <p className="text-gray-400 text-xs mt-1">
+        {/* Footer */}
+        <div className="mt-4 bg-white rounded-xl p-3 md:p-4 text-center border border-orange-100">
+          <p className="text-orange-500 font-bold text-sm md:text-base">🙏 হরে কৃষ্ণ 🙏</p>
+          <p className="text-gray-400 text-xs md:text-sm mt-1">
             সকল তথ্য পঞ্জিকা অনুসারে সংকলিত। পারণের সময় স্থানভেদে পরিবর্তন হতে পারে।
           </p>
         </div>
