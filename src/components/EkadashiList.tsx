@@ -223,31 +223,31 @@ const EkadashiList = () => {
       `}</style>
 
       {/* ── Print Area ── */}
-     <div className="print-area">
+      <div className="print-area">
         <div className="print-only">
           <div className="print-header" style={{ textAlign: 'center' }}>
-            <h1> একাদশী তালিকা - {data.year}</h1>
+            <h1>একাদশী তালিকা - {data.year}</h1>
             <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
           </div>
           <table className="print-table">
             <thead>
               <tr>
-                <th style={{width:'4%'}}>ক্রঃ</th>
-                <th style={{width:'13%'}}>বাংলা তারিখ</th>
-                <th style={{width:'13%'}}>ইং তারিখ</th>
-                <th style={{width:'8%'}}>বার</th>
-                <th style={{width:'43%'}}>ব্রতের নাম</th>
-                <th style={{width:'19%'}}>পারণের সময়</th>
+                <th style={{ width: '4%' }}>ক্রঃ</th>
+                <th style={{ width: '13%' }}>বাংলা তারিখ</th>
+                <th style={{ width: '13%' }}>ইং তারিখ</th>
+                <th style={{ width: '8%' }}>বার</th>
+                <th style={{ width: '43%' }}>ব্রতের নাম</th>
+                <th style={{ width: '19%' }}>পারণের সময়</th>
               </tr>
             </thead>
             <tbody>
               {filteredEntries.map((entry) => (
                 <tr key={entry.id} className={entry.status}>
-                  <td style={{textAlign:'center', fontWeight:700}}>{entry.serialBn}</td>
+                  <td style={{ textAlign: 'center', fontWeight: 700 }}>{entry.serialBn}</td>
                   <td>{entry.bengaliDate}</td>
                   <td>{entry.displayDate}</td>
                   <td>{entry.day}</td>
-                  <td style={{fontWeight: entry.status === 'upcoming' ? 700 : 400}}>
+                  <td style={{ fontWeight: entry.status === 'upcoming' ? 700 : 400 }}>
                     {STATUS_CONFIG[entry.status].icon} {entry.vratName}
                   </td>
                   <td>{entry.paranTime}</td>
@@ -303,7 +303,6 @@ const EkadashiList = () => {
                 <p className="text-gray-400 text-xs mt-0.5">কলম হিন্দু ধর্মসভা • কলম, সিংড়া, নাটোর</p>
               </div>
             </div>
-
             <div className="flex items-center gap-3">
               {[
                 { label: 'মোট ব্রত', value: stats.total, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-100' },
@@ -347,90 +346,94 @@ const EkadashiList = () => {
           </div>
         )}
 
-      
-            {/* Table Header */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-3">
-              <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 text-white text-[11px] font-bold">
-                <div className="text-center">ক্রঃ</div>
-                <div>তারিখ • বার • ব্রত • পারণ</div>
-                <div>অবস্থা</div>
-              </div>
-              <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 text-white text-sm font-bold">
-                <div className="text-center">ক্রঃ</div>
-                <div>বাংলা তারিখ</div>
-                <div>ইং তারিখ</div>
-                <div>বার</div>
-                <div>ব্রতের নাম</div>
-                <div>পারণের সময়</div>
-                <div className="text-center">অবস্থা</div>
-              </div>
+        {/* ── Table ── */}
+        <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+
+          {/* Table Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-2 md:px-4 md:py-3">
+            <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 text-white text-[11px] font-bold">
+              <div className="text-center">ক্রঃ</div>
+              <div>তারিখ • বার • ব্রত • পারণ</div>
+              <div>অবস্থা</div>
             </div>
-
-            <div className="divide-y divide-gray-100">
-              {filteredEntries.map((entry) => {
-                const cfg = STATUS_CONFIG[entry.status];
-                const originalIndex = data.entries.findIndex(e => e.id === entry.id);
-                return (
-                  <div
-                    key={entry.id}
-                    id={`ekadashi-${originalIndex}`}
-                    className={`relative ${cfg.row} transition-colors`}
-                  >
-                    {entry.status === 'upcoming' && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-r" />
-                    )}
-
-                    {/* Mobile Row */}
-                    <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 px-3 py-2.5 items-start">
-                      <div className="flex justify-center pt-0.5">
-                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${cfg.serial}`}>
-                          {entry.serialBn}
-                        </span>
-                      </div>
-                      <div className="min-w-0 space-y-0.5">
-                        <div className={`font-bold text-sm leading-snug ${cfg.text}`}>
-                          {cfg.icon} {entry.vratName}
-                        </div>
-                        <div className={`text-[11px] ${cfg.date}`}>
-                          {entry.bengaliDate} • {entry.displayDate} • {entry.day}
-                        </div>
-                        <div className={`text-[11px] ${cfg.paran}`}>
-                          🕐 {entry.paranTime}
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0 pt-0.5">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${cfg.badge}`}>
-                          {entry.status === 'upcoming' ? getDaysRemaining(entry.englishDate) : cfg.badgeLabel}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Desktop Row */}
-                    <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 px-4 py-2.5 items-center">
-                      <div className="flex justify-center">
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${cfg.serial}`}>
-                          {entry.serialBn}
-                        </span>
-                      </div>
-                      <div className={`text-sm font-semibold ${cfg.date}`}>{entry.bengaliDate}</div>
-                      <div className={`text-sm ${cfg.date}`}>{entry.displayDate}</div>
-                      <div className={`text-sm ${cfg.date}`}>{entry.day}</div>
-                      <div className={`text-sm font-semibold ${cfg.text}`}>
-                        {cfg.icon} {entry.vratName}
-                      </div>
-                      <div className={`text-sm ${cfg.paran}`}>🕐 {entry.paranTime}</div>
-                      <div className="flex justify-center">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${cfg.badge}`}>
-                          {entry.status === 'upcoming' ? getDaysRemaining(entry.englishDate) : cfg.badgeLabel}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 text-white text-sm font-bold">
+              <div className="text-center">ক্রঃ</div>
+              <div>বাংলা তারিখ</div>
+              <div>ইং তারিখ</div>
+              <div>বার</div>
+              <div>ব্রতের নাম</div>
+              <div>পারণের সময়</div>
+              <div className="text-center">অবস্থা</div>
             </div>
           </div>
-        )}
+
+          {/* Table Rows */}
+          <div className="divide-y divide-gray-100">
+            {filteredEntries.map((entry) => {
+              const cfg = STATUS_CONFIG[entry.status];
+              const originalIndex = data.entries.findIndex(e => e.id === entry.id);
+              return (
+                <div
+                  key={entry.id}
+                  id={`ekadashi-${originalIndex}`}
+                  className={`relative ${cfg.row} transition-colors`}
+                >
+                  {entry.status === 'upcoming' && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-r" />
+                  )}
+
+                  {/* Mobile Row */}
+                  <div className="md:hidden grid grid-cols-[32px_1fr_auto] gap-2 px-3 py-2.5 items-start">
+                    <div className="flex justify-center pt-0.5">
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${cfg.serial}`}>
+                        {entry.serialBn}
+                      </span>
+                    </div>
+                    <div className="min-w-0 space-y-0.5">
+                      <div className={`font-bold text-sm leading-snug ${cfg.text}`}>
+                        {cfg.icon} {entry.vratName}
+                      </div>
+                      <div className={`text-[11px] ${cfg.date}`}>
+                        {entry.bengaliDate} • {entry.displayDate} • {entry.day}
+                      </div>
+                      <div className={`text-[11px] ${cfg.paran}`}>
+                        🕐 {entry.paranTime}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 pt-0.5">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${cfg.badge}`}>
+                        {entry.status === 'upcoming' ? getDaysRemaining(entry.englishDate) : cfg.badgeLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Desktop Row */}
+                  <div className="hidden md:grid grid-cols-[44px_130px_130px_90px_1fr_160px_95px] gap-2 px-4 py-2.5 items-center">
+                    <div className="flex justify-center">
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${cfg.serial}`}>
+                        {entry.serialBn}
+                      </span>
+                    </div>
+                    <div className={`text-sm font-semibold ${cfg.date}`}>{entry.bengaliDate}</div>
+                    <div className={`text-sm ${cfg.date}`}>{entry.displayDate}</div>
+                    <div className={`text-sm ${cfg.date}`}>{entry.day}</div>
+                    <div className={`text-sm font-semibold ${cfg.text}`}>
+                      {cfg.icon} {entry.vratName}
+                    </div>
+                    <div className={`text-sm ${cfg.paran}`}>🕐 {entry.paranTime}</div>
+                    <div className="flex justify-center">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${cfg.badge}`}>
+                        {entry.status === 'upcoming' ? getDaysRemaining(entry.englishDate) : cfg.badgeLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+        </div>{/* ── Table End ── */}
 
         {/* Footer */}
         <div className="mt-4 bg-white rounded-xl p-3 md:p-4 text-center border border-orange-100">
@@ -440,6 +443,7 @@ const EkadashiList = () => {
           </p>
         </div>
         <div className="h-6" />
+
       </div>
     </div>
   );
