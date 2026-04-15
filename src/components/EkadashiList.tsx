@@ -269,7 +269,7 @@ const EkadashiList = () => {
           <div className="flex items-center justify-between gap-3 md:hidden">
             <div>
               <h1 className="text-base font-black gradient-text">একাদশী তালিকা</h1>
-              <p className="text-gray-500 text-[10px] mt-0">{data.year}</p>
+              <p className="text-gray-500 text-[8px] mt-0">{data.year}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 rounded-lg px-2 py-1.5 text-[11px]">
