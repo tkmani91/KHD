@@ -142,14 +142,6 @@ const deities: Deity[] = [
   }
 ];
 
-const notices = [
-  '🙏 সকলকে দূর্গাপূজার আন্তরিক শুভেচ্ছা!',
-  '🎉 দুর্গাপূজা ২০২৬ এর সময়সূচী ঘোষণা',
-  '📢 WE WANT TO ARISE THE TRUTH & BEAUTY OF HINDU RELIGION AND AVOID THE MYTH ',
-  '🎉 মেম্বার তথ্য এবং  বিবরণী দেখতে মেম্বার লগইন এ প্রবেশ করুণ।',
-  '📱 আমাদের ফেসবুক পেজে লাইক দিন!'
-  
-];
 
 // ==================== GLOBAL MEDIA CONTEXT ====================
 
@@ -530,6 +522,23 @@ function CountdownDisplay({ targetDate, title }: { targetDate: string; title: st
 }
 
 function NoticeMarquee() {
+  const [notices, setNotices] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch(`/data/marquee.json?t=${Date.now()}`, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        const active = data.messages
+          .filter((m: any) => m.active)
+          .map((m: any) => m.text);
+        setNotices(active);
+      })
+      .catch(err => console.error('Marquee load error:', err));
+  }, []);
+
+  // ডেটা লোড না হলে কিছু দেখাবে না
+  if (notices.length === 0) return null;
+
   return (
     <div className="bg-gradient-to-r from-orange-600 via-red-500 to-orange-600 text-white py-2 overflow-hidden">
       <div className="marquee whitespace-nowrap flex items-center gap-8">
@@ -539,6 +548,7 @@ function NoticeMarquee() {
             {notice}
           </span>
         ))}
+        {/* Duplicate for seamless loop */}
         {notices.map((notice, index) => (
           <span key={`dup-${index}`} className="flex items-center gap-2 text-sm">
             <span className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
@@ -549,7 +559,6 @@ function NoticeMarquee() {
     </div>
   );
 }
-
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
