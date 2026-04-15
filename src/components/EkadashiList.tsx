@@ -190,34 +190,24 @@ const EkadashiList = () => {
     margin: 2px 0 0;
     opacity: 0.9;
   }
-  .print-header-stats { display: flex; gap: 6px; }
-  .print-stat-box {
-    background: rgba(255,255,255,0.2);
-    border-radius: 4px;
-    padding: 4px 10px;
-    text-align: center;
-    line-height: 1.3;
-  }
-  .print-stat-box .val { font-size: 14px; font-weight: 800; display: block; }
-  .print-stat-box .lbl { font-size: 8.5px; opacity: 0.9; }
-
+ 
   /* ── Table ── */
   .print-table { width: 100%; border-collapse: collapse; }
   .print-table th {
     background: #1f2937 !important;
     color: white !important;
-    padding: 4px 6px;
+    padding: 3px 6px;
     font-size: 10.5px;
     border: 1px solid #374151;
-    line-height: 1.3;
+    line-height: 1.2;
     font-weight: 700;
   }
   .print-table td {
-    padding: 3px 6px;
+    padding: 2px 6px;
     border: 1px solid #e5e7eb;
     font-size: 10.5px;
     vertical-align: middle;
-    line-height: 1.4;
+    line-height: 1.3;
   }
   .print-table tr.passed td {
     background: #fff5f5 !important;
@@ -244,37 +234,22 @@ const EkadashiList = () => {
     padding-top: 5px;
   }
 
-  @page { size: A4 portrait; margin: 8mm; }
+  @page { size: A4 portrait; margin: 7mm; }
   tr { page-break-inside: avoid; }
   thead { display: table-header-group; }
 }
 .print-only { display: none; }
       `}</style>
 
-      {/* ── Print Area ── */}
-      <div className="print-area">
-        <div className="print-only">
-          {/* Header: বাঁয়ে title, ডানে stats */}
-          <div className="print-header">
-            <div className="print-header-left">
-              <h1>🙏 একাদশী তালিকা - {data.year}</h1>
-              <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
-            </div>
-            <div className="print-header-stats">
-              <div className="print-stat-box">
-                <span className="val">{stats.total}</span>
-                <span className="lbl">মোট</span>
-              </div>
-              <div className="print-stat-box">
-                <span className="val">{stats.passed}</span>
-                <span className="lbl">শেষ</span>
-              </div>
-              <div className="print-stat-box">
-                <span className="val">{stats.remaining}</span>
-                <span className="lbl">বাকি</span>
-              </div>
-            </div>
-          </div>
+    {/* ── Print Area ── */}
+<div className="print-area">
+  <div className="print-only">
+    <div className="print-header">
+      <div className="print-header-left">
+        <h1>🙏 একাদশী তালিকা - {data.year}</h1>
+        <p>কলম হিন্দু ধর্মসভা | কলম, সিংড়া, নাটোর</p>
+      </div>
+    </div>
 
           {/* Table — অবস্থা কলাম নেই */}
           <table className="print-table">
